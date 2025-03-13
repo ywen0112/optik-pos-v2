@@ -31,12 +31,12 @@ const MainLayout = ({ title }) => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen w-screen">
       <SideBar />
       <div className="flex flex-col flex-1 bg-gray-100">
         <HeaderBar />
-        <div className="p-6 text-2xl font-bold">{title}</div>
-        <div className="p-2 h-screen w-screen">{renderContent()}</div>
+        <div className="p-4 text-2xl font-bold text-secondary">{title}</div>
+        <div className="flex-grow p-2">{renderContent()}</div>
       </div>
     </div>
   );

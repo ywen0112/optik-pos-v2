@@ -35,13 +35,14 @@ const SideBar = ({ onSelectCompany }) => {
 
   const handleCompanyChange = (event) => {
     const companyId = event.target.value;
-    const newSelectedCompany = companyOptions.find(c => c.customerId === companyId);
+    const newSelectedCompany = companyOptions.find(c => String(c.customerId) === companyId); 
 
     if (newSelectedCompany) {
       setSelectedCompany(newSelectedCompany);
       localStorage.setItem("selectedCompany", JSON.stringify(newSelectedCompany));
       localStorage.setItem("userId", newSelectedCompany.userId);
       localStorage.setItem("customerId", newSelectedCompany.customerId);
+      localStorage.setItem("locationId", newSelectedCompany.locationId);
       localStorage.setItem("accessRights", JSON.stringify(newSelectedCompany.accessRight));
 
       onSelectCompany(newSelectedCompany.customerId);
@@ -78,13 +79,13 @@ const SideBar = ({ onSelectCompany }) => {
         )}
       </select>
 
-      <nav className="mt-4 flex-grow">
+      <nav className="mt-8 flex-grow">
         <ul>
           {menuItems.map((item) => (
             <li
               key={item.name}
               className={`flex items-center p-3 rounded cursor-pointer transition-colors 
-                ${activeMenu === item.path ? "bg-yellow-500 text-black font-semibold" : "hover:bg-gray-700"}`}
+                ${activeMenu === item.path ? "bg-primary text-black font-semibold" : "hover:bg-gray-700"}`}
               onClick={() => {
                 setActiveMenu(item.path);
                 navigate(item.path);

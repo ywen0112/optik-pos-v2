@@ -3,12 +3,14 @@ import ErrorModal from "../modals/ErrorModal";
 import logo from "../assets/logo_white.png";
 import axios from "axios";
 import { GetUserLogins } from "../apiconfig";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,19 +49,28 @@ const Login = ({ onLoginSuccess }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter email"
-              className="w-full mt-3 px-3 py-2 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              className="w-full mt-3 px-3 py-2 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm text-secondary"
             />
           </div>
 
           <div className="mt-4">
             <label className="block text-sm text-gray-700">Password:</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              className="w-full mt-3 px-3 py-2 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                className="w-full mt-3 px-3 py-2 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm text-secondary"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-4 text-gray-500 bg-gray-100 px-1 py-1"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+              </button>
+            </div>
           </div>
 
           <div className="mt-8 text-center">
