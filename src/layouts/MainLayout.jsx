@@ -4,6 +4,7 @@ import HeaderBar from "./HeaderBar";
 import Dashboard from "../pages/Dashboard";
 import Transactions from "../pages/Transactions";
 import TransactionsInquiry from "../pages/TransactionsInquiry";
+import Maintenance from "../pages/Maintenance";
 import AuditLogs from "../pages/AuditLogs";
 import CompanyProfile from "../pages/CompanyProfile";
 import Reports from "../pages/Reports";
@@ -19,6 +20,8 @@ const MainLayout = ({ title }) => {
         return <Transactions />;
       case "/transactions-inquiry":
         return <TransactionsInquiry />;
+      case "/maintenances":
+        return <Maintenance />;
       case "/audit-logs":
         return <AuditLogs />;
       case "/company-profile":

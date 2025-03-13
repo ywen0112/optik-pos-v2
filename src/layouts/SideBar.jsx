@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Clock, Briefcase, FileText, UserCheck, Building, BarChart2 } from "lucide-react"; 
+import { Clock, Briefcase, FileText, UserCheck, Building, BarChart2, Wrench } from "lucide-react"; 
 
 const SideBar = ({ onSelectCompany }) => {
   const navigate = useNavigate();
@@ -53,14 +53,20 @@ const SideBar = ({ onSelectCompany }) => {
     { name: "Dashboard", icon: <Clock size={20} />, path: "/dashboard" },
     { name: "Transactions", icon: <Briefcase size={20} />, path: "/transactions" },
     { name: "Transactions Inquiry", icon: <FileText size={20} />, path: "/transactions-inquiry" },
+    { name: "Maintenance", icon: <Wrench size={20} />, path: "/maintenances" },
     { name: "Audit Logs", icon: <UserCheck size={20} />, path: "/audit-logs" },
     { name: "Company Profile", icon: <Building size={20} />, path: "/company-profile" },
     { name: "Reports", icon: <BarChart2 size={20} />, path: "/reports" },
   ];
 
   return (
-    <div className="w-60 bg-gray-900 text-white h-screen flex flex-col p-4">
-      <div className="text-lg font-bold mb-6">OPTIKPOS</div>
+    <div className="w-60 bg-secondary text-white h-screen flex flex-col p-4">
+      <div className="items-center justify-center mb-4">
+        <span className="text-yellow-500 font-bold text-lg mt-2">OPTIK</span>
+        <span className="text-white font-bold text-lg">POS</span>
+      </div>
+
+      <div className="border-b border-gray-500 mb-8"></div>
 
       <label className="text-sm">Select Company:</label>
       <select
