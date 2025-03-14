@@ -70,7 +70,7 @@ const SideBar = ({ onSelectCompany }) => {
 
       <label className="text-sm">Select Company:</label>
       <select
-        className="w-full bg-white p-1 rounded mt-2 text-secondary"
+        className="w-full bg-white p-1 rounded mt-2 text-secondary text-sm"
         value={selectedCompany?.customerId || ""}
         onChange={handleCompanyChange}
       >
