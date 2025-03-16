@@ -38,8 +38,8 @@ const MainLayout = ({ title }) => {
       <SideBar />
       <div className="flex flex-col flex-1 bg-gray-100">
         <HeaderBar />
-        <div className="p-4 text-2xl font-bold text-secondary">{title}</div>
-        <div className="flex-grow p-2">{renderContent()}</div>
+        <div className="px-4 mt-4 text-2xl font-bold text-secondary">{title}</div>
+        <div className="flex-grow py-2 px-4">{renderContent()}</div>
       </div>
     </div>
   );
