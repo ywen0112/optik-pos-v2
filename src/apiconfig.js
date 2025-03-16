@@ -1,4 +1,4 @@
-export const ApiBaseUrl = "https://optikposwebsiteapi.absplt.com/";
+export const ApiBaseUrl = "https://optikposwebsiteapistaging.4788511.xyz/";
 
 //Users
 export const UsersApi = `${ApiBaseUrl}Users/`;

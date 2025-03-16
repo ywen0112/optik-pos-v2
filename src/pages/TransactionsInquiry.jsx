@@ -323,6 +323,32 @@ const CounterSessionTable = ({ tableData, expandedRows, toggleExpandRow, exportR
                   </button>
                 </td>
               </tr>
+              {expandedRows[index] && (
+                <tr>
+                  <td colSpan={6} className="p-2 bg-gray-50 text-xs">
+                    <table className="w-full border-collapse border">
+                      <thead className="bg-gray-100 border-b">
+                        <tr>
+                          <th className="p-2 border">Sales Amount</th>
+                          <th className="p-2 border">Purchase Amount</th>
+                          <th className="p-2 border">Cash In</th>
+                          <th className="p-2 border">Cash Out</th>
+                          <th className="p-2 border">Expected Closing Balance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="p-2 border">{row.salesAmt}</td>
+                          <td className="p-2 border">{row.purchaseAmt}</td>
+                          <td className="p-2 border">{row.cashInAmt}</td>
+                          <td className="p-2 border">{row.cashOutAmt}</td>
+                          <td className="p-2 border">{row.expectedClosingBalance}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+              </tr>
+              )}
             </React.Fragment>
           ))}
         </tbody>
