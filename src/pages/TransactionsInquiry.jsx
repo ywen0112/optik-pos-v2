@@ -40,9 +40,11 @@ const TransactionsInquiry = () => {
   });
   const [errorModal, setErrorModal] = useState({title: "", message: "" });
   const [confirmationModal, setConfirmationModal] = useState({ isOpen: false, transactionId: null});
+  const [loading, setLoading] = useState(false); 
  
   useEffect(() => {
     setTableData([]); 
+    setLoading(true);
     if (activeTab === "Counter Session") {
       fetchCounterSessions();
     }
@@ -90,6 +92,8 @@ const TransactionsInquiry = () => {
       }
     } catch (error) {
       setErrorModal({ title: "Fetch Error",  message: error.message });
+    } finally {
+      setLoading(false); 
     }
   };
 
@@ -122,6 +126,8 @@ const TransactionsInquiry = () => {
       }
     } catch (error) {
       setErrorModal({ title: "Fetch Error", message: error.message });
+    } finally {
+      setLoading(false); 
     }
   };
 
@@ -185,7 +191,7 @@ const TransactionsInquiry = () => {
     const requestBody = {
       customerId: Number(customerId),
       userId: userId,
-      locationId: locationId || "",  
+      locationId: locationId,  
       id: confirmationModal.transactionId, 
     };
   
@@ -253,8 +259,8 @@ const TransactionsInquiry = () => {
         ))}
       </nav>
       
-      {activeTab === "Counter Session" && <CounterSessionTable tableData={tableData} expandedRows={expandedRows} toggleExpandRow={toggleExpandRow} exportReport={exportReport}/>}
-      {activeTab === "Cash Transactions" && <CashTransactionsTable tableData={tableData} setConfirmationModal={setConfirmationModal}/>}
+      {activeTab === "Counter Session" && <CounterSessionTable tableData={tableData} expandedRows={expandedRows} toggleExpandRow={toggleExpandRow} exportReport={exportReport} loading={loading} />}
+      {activeTab === "Cash Transactions" && <CashTransactionsTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} />}
 
       <div className="flex justify-between p-4 text-xs text-secondary mt-4">
         <span>
@@ -283,9 +289,12 @@ const TransactionsInquiry = () => {
   );
 };
 
-const CounterSessionTable = ({ tableData, expandedRows, toggleExpandRow, exportReport }) => {
+const CounterSessionTable = ({ tableData, expandedRows, toggleExpandRow, exportReport, loading }) => {
   return (
     <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
+      {loading ? (
+        <p className="text-center py-4 text-gray-500">Loading...</p>
+      ) : (
       <table className="w-full border-collapse">
         <thead className="bg-gray-200 border-b-2 border-gray-100 font-bold">
           <tr className="text-left text-xs text-secondary">
@@ -353,13 +362,17 @@ const CounterSessionTable = ({ tableData, expandedRows, toggleExpandRow, exportR
           ))}
         </tbody>
       </table>
+      )}
     </div>
   );
 };
 
-const CashTransactionsTable = ({ tableData, setConfirmationModal }) => {
+const CashTransactionsTable = ({ tableData, setConfirmationModal, loading }) => {
   return (
     <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
+      {loading ? (
+        <p className="text-center py-4 text-gray-500">Loading...</p>
+      ) : (
       <table className="w-full border-collapse">
         <thead className="bg-gray-200 border-b-2 border-gray-100 font-bold">
           <tr className="text-left text-xs text-secondary">
@@ -402,6 +415,7 @@ const CashTransactionsTable = ({ tableData, setConfirmationModal }) => {
           ))}
         </tbody>
       </table>
+      )}
     </div>
   );
 };
