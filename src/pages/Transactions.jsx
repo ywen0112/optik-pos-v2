@@ -1,14 +1,13 @@
 import { useLocation } from "react-router-dom";
-import { useState } from "react";
-import { OpenCounterSession, NewCashTransaction } from "../apiconfig";
+import { useState, useEffect } from "react";
+import { OpenCounterSession, NewCashTransaction, CheckCounterSession } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import NotificationModal from "../modals/NotificationModal";
 
 const Transactions = () => {
   const location = useLocation();
   const { counterSession: initialSession } = location.state || {}; 
-
-  const [counterSession, setCounterSession] = useState(initialSession || {});
+  const [counterSession, setCounterSession] = useState(initialSession || { isExist: false });
   const [openingBalance, setOpeningBalance] = useState("");
   const [activeTab, setActiveTab] = useState("Cash In");
   const customerId = localStorage.getItem("customerId");
@@ -19,6 +18,25 @@ const Transactions = () => {
   const [notificationModal, setNotificationModal] = useState({ isOpen: false, title: "", message: "", onClose: null });
   const [transactionAmount, setTransactionAmount] = useState("");
   const [transactionDescription, setTransactionDescription] = useState("");
+  
+  useEffect(() => {
+    if (!counterSession?.isExist) {
+      setOpeningBalance(""); 
+      setTransactionAmount("");
+      setTransactionDescription("");
+    }
+  }, [counterSession]);
+
+  useEffect(() => {
+    if (activeTab === "Cash In") {
+      setTransactionAmount(""); 
+      setTransactionDescription("")
+    }
+    else if (activeTab === "Cash Out") {
+      setTransactionAmount(""); 
+      setTransactionDescription("")
+    }
+  }, [activeTab]);
 
   const openCounter = async () => {
     if (!openingBalance) {
@@ -87,41 +105,33 @@ const Transactions = () => {
       setLoading(false); 
     }
   };
-
+  
   const handleAddTransaction = async () => {
     if (!transactionAmount) {
       setErrorModal({ title: "Input Error", message: "Please enter an amount." });
       return;
     }
-
+  
     if (Number(transactionAmount) < 0) {
       setErrorModal({ title: "Invalid Amount", message: "Amount cannot be negative. Please enter a valid amount." });
       return;
     }
-
+  
     setLoading(true);
     try {
       const requestBody = {
-        actionData: {
-          customerId: Number(customerId),
-          userId,
-          locationId,
-          id: counterSession.counterSessionId
-        },
+        actionData: { customerId: Number(customerId), userId, locationId, id: "" },
         isCashOut: activeTab === "Cash Out",
         remarks: transactionDescription,
         effectedAmount: Number(transactionAmount)
       };
-
+  
       const response = await fetch(NewCashTransaction, {
         method: "POST",
-        headers: {
-          "Accept": "text/plain",
-          "Content-Type": "application/json",
-        },
+        headers: { "Accept": "text/plain", "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
-
+  
       const data = await response.json();
       if (data.success) {
         setNotificationModal({
@@ -136,9 +146,9 @@ const Transactions = () => {
         if (data.errorMessage === "There is currently no active counter session.") {
           setErrorModal({
             title: "Session Error",
-            message: "There is currently no active counter session. Please enter an opening balance.",
+            message: data.errorMessage,
             onClose: () => {
-              setCounterSession({});
+              setCounterSession(null); 
               setErrorModal({ title: "", message: "" });
             }
           });
@@ -151,7 +161,7 @@ const Transactions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   const handleCancelTransaction = () => {
     setTransactionAmount("");
@@ -160,13 +170,8 @@ const Transactions = () => {
 
   return (
     <div>
-      <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
-      <NotificationModal
-        isOpen={notificationModal.isOpen}
-        title={notificationModal.title}
-        message={notificationModal.message}
-        onClose={notificationModal.onClose || (() => setNotificationModal({ isOpen: false }))}
-      />
+      <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => { if (errorModal.onClose) { errorModal.onClose(); } setErrorModal({ title: "", message: "", onClose: null }); }} />
+      <NotificationModal isOpen={notificationModal.isOpen} title={notificationModal.title} message={notificationModal.message} onClose={notificationModal.onClose || (() => setNotificationModal({ isOpen: false }))} />
 
       <style>
         {`
