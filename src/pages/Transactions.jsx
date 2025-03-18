@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { OpenCounterSession, NewCashTransaction, CheckCounterSession } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import NotificationModal from "../modals/NotificationModal";
+import SalesInvoice from "./SalesInvoice";
 
 const Transactions = () => {
   const location = useLocation();
@@ -231,7 +232,7 @@ const Transactions = () => {
             ))}
           </nav>
 
-          <div className="mt-8">
+          <div className="mt-4">
             {activeTab === "Cash In" || activeTab === "Cash Out" ? (
               <div className="w-1/3 bg-white shadow-md p-6 rounded-md mx-auto">
                 <h2 className="text-xl font-semibold mb-4">{activeTab}</h2>
@@ -240,28 +241,32 @@ const Transactions = () => {
                   placeholder="Enter Amount"
                   value={transactionAmount}
                   onChange={(e) => setTransactionAmount(e.target.value)}
-                  className="w-full p-2 border rounded mb-3"
+                  className="w-full p-1 border rounded mb-3 text-sm"
                 />
                 <textarea
                   placeholder="Enter Description (Optional)"
                   value={transactionDescription}
                   onChange={(e) => setTransactionDescription(e.target.value)}
-                  className="w-full p-2 border rounded mb-3 h-20"
+                  className="w-full p-2 border rounded mb-3 h-20  text-sm"
                 />
                 <div className="flex justify-between">
                   <button
                     onClick={handleAddTransaction}
-                    className="px-4 py-2 bg-green-500 text-white rounded-md"
+                    className="px-4 py-2 bg-green-500 text-white rounded-md text-sm"
                   >
                     Add
                   </button>
                   <button
                     onClick={handleCancelTransaction}
-                    className="px-4 py-2 bg-red-500 text-white rounded-md"
+                    className="px-2 py-2 bg-red-500 text-white rounded-md text-sm"
                   >
                     Cancel
                   </button>
                 </div>
+              </div>
+            ) : activeTab === "Sales Invoice" ? (
+              <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
+               <SalesInvoice />
               </div>
             ) : (
               <p className="text-gray-500">Content for "{activeTab}" will be displayed here.</p>

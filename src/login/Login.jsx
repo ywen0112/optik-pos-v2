@@ -65,7 +65,7 @@ const Login = ({ onLoginSuccess }) => {
               />
               <button
                 type="button"
-                className="absolute right-3 top-4 text-gray-500 bg-gray-100 px-1 py-1"
+                className="absolute right-3 top-4 text-gray-500 bg-transparent px-1 py-1"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
