@@ -12,9 +12,7 @@ const CompanySelection = ({ companies, onCancel }) => {
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("accessRights", JSON.stringify(company.accessRight));
     localStorage.setItem("selectedCompany", JSON.stringify(company));
-  
-    console.log("Saved selectedCompany:", localStorage.getItem("selectedCompany"));
-  
+    
     navigate("/dashboard");
   };
 

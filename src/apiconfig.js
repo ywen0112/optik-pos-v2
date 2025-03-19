@@ -4,6 +4,7 @@ export const ApiBaseUrl = "https://optikposwebsiteapistaging.4788511.xyz/";
 export const UsersApi = `${ApiBaseUrl}Users/`;
 export const GetUserLogins = `${UsersApi}GetUserLogins`;
 export const GetSpecificUser = `${UsersApi}GetSpecificUser`;
+export const GetUsers = `${UsersApi}GetUsers`;
 
 //Cash Counter
 export const CashCounterApi = `${ApiBaseUrl}CashCounter/`;
@@ -14,3 +15,11 @@ export const GetCashTransactionsRecords = `${CashCounterApi}GetCashTransactionsR
 export const VoidCashTransaction = `${CashCounterApi}VoidCashTransaction`;
 export const OpenCounterSession = `${CashCounterApi}OpenCounterSession`;
 export const NewCashTransaction = `${CashCounterApi}NewCashTransaction`;
+
+//Debtor
+export const DebtorApi = `${ApiBaseUrl}Debtor/`;
+export const GetDebtorRecords = `${DebtorApi}GetRecords`;
+
+//Location
+export const LocationApi = `${ApiBaseUrl}Location/`;
+export const GetLocationRecords = `${LocationApi}GetRecords`;

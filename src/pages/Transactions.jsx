@@ -247,7 +247,7 @@ const Transactions = () => {
                   placeholder="Enter Description (Optional)"
                   value={transactionDescription}
                   onChange={(e) => setTransactionDescription(e.target.value)}
-                  className="w-full p-2 border rounded mb-3 h-20  text-sm"
+                  className="w-full p-1 border rounded mb-3 h-20 text-sm"
                 />
                 <div className="flex justify-between">
                   <button
