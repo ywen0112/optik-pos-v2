@@ -5,7 +5,7 @@ import { Trash2 } from "lucide-react";
 import { GetDebtorRecords, GetLocationRecords, GetUsers } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 
-const SalesInvoice = () => {
+const PurchasesInvoice = () => {
   const customerId = localStorage.getItem("customerId");
   const [debtorOptions, setDebtorOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
@@ -289,7 +289,7 @@ const SalesInvoice = () => {
   return (
     <div>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() =>setErrorModal({ title: "", message: "" })}/>
-      <h2 className="text-xl font-bold text-secondary">Sales Invoice</h2>
+      <h2 className="text-xl font-bold text-secondary">Purchases Invoice</h2>
       <div className="grid grid-cols-5 gap-2">
         <div>
           <label className="block text-xs font-semibold">Debtor Code</label>
@@ -455,4 +455,4 @@ const SalesInvoice = () => {
   );
 };
 
-export default SalesInvoice;
+export default PurchasesInvoice;

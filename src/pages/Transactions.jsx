@@ -4,6 +4,7 @@ import { OpenCounterSession, NewCashTransaction, CheckCounterSession } from "../
 import ErrorModal from "../modals/ErrorModal";
 import NotificationModal from "../modals/NotificationModal";
 import SalesInvoice from "./SalesInvoice";
+import PurchasesInvoice from "./PurchasesInvoice";
 
 const Transactions = () => {
   const location = useLocation();
@@ -187,23 +188,23 @@ const Transactions = () => {
 
       {counterSession?.isExist ? (
         <div className="flex items-center gap-2 w-full mt-2">
-          <label className="text-sm font-semibold whitespace-nowrap">Opening Balance:</label>
+          <label className="text-sm text-secondary font-semibold whitespace-nowrap">Opening Balance:</label>
           <input
             type="text"
             value={counterSession.openingBal}
             disabled
-            className="w-1/3 p-1 border rounded bg-gray-200 cursor-not-alloweds text-left"
+            className="w-1/3 p-1 text-secondary border rounded bg-gray-200 cursor-not-alloweds text-left"
           />
         </div>
       ) : (
         <div className="w-1/3 bg-white shadow-md p-4 rounded-md mt-6">
-          <label className="text-sm font-semibold">Enter Opening Balance:</label>
+          <label className="text-sm text-secondary font-semibold">Enter Opening Balance:</label>
           <div className="flex items-center gap-2 w-full">
             <input
               type="number"
               value={openingBalance}
               onChange={(e) => setOpeningBalance(e.target.value)}
-              className="flex-grow p-2 border rounded"
+              className="flex-grow p-2 border rounded bg-white text-secondary "
             />
             <button
               onClick={openCounter}
@@ -235,19 +236,19 @@ const Transactions = () => {
           <div className="mt-4">
             {activeTab === "Cash In" || activeTab === "Cash Out" ? (
               <div className="w-1/3 bg-white shadow-md p-6 rounded-md mx-auto">
-                <h2 className="text-xl font-semibold mb-4">{activeTab}</h2>
+                <h2 className="text-xl font-semibold mb-4 text-secondary">{activeTab}</h2>
                 <input
                   type="number"
                   placeholder="Enter Amount"
                   value={transactionAmount}
                   onChange={(e) => setTransactionAmount(e.target.value)}
-                  className="w-full p-1 border rounded mb-3 text-sm"
+                  className="w-full p-1 border rounded mb-3 text-sm bg-white text-secondary"
                 />
                 <textarea
                   placeholder="Enter Description (Optional)"
                   value={transactionDescription}
                   onChange={(e) => setTransactionDescription(e.target.value)}
-                  className="w-full p-1 border rounded mb-3 h-20 text-sm"
+                  className="w-full p-1 border rounded mb-3 h-20 text-sm bg-white text-secondary"
                 />
                 <div className="flex justify-between">
                   <button
@@ -267,6 +268,10 @@ const Transactions = () => {
             ) : activeTab === "Sales Invoice" ? (
               <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
                <SalesInvoice />
+              </div>
+            ) : activeTab === "Purchases Invoice" ? (
+              <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
+               <PurchasesInvoice />
               </div>
             ) : (
               <p className="text-gray-500">Content for "{activeTab}" will be displayed here.</p>
