@@ -58,6 +58,17 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  background: white; /* Make the spinner white */
+  width: 16px;
+  height: 16px;
+  opacity: 1; /* Keep it visible */
+  border-radius: 3px;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

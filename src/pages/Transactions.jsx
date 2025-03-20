@@ -1,10 +1,11 @@
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { OpenCounterSession, NewCashTransaction, CheckCounterSession } from "../apiconfig";
+import { OpenCounterSession, NewCashTransaction, NewSales, NewPurchases, NewCreditNote, CloseCounterSession } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import NotificationModal from "../modals/NotificationModal";
 import SalesInvoice from "./SalesInvoice";
 import PurchasesInvoice from "./PurchasesInvoice";
+import CreditNote from "./CreditNote";
 
 const Transactions = () => {
   const location = useLocation();
@@ -20,6 +21,18 @@ const Transactions = () => {
   const [notificationModal, setNotificationModal] = useState({ isOpen: false, title: "", message: "", onClose: null });
   const [transactionAmount, setTransactionAmount] = useState("");
   const [transactionDescription, setTransactionDescription] = useState("");
+  const [salesId, setSalesId] = useState(null);
+  const [docNo, setDocNo] = useState(null);
+  const [salesLocationId, setSalesLocationId] = useState(null);
+  const [purchasesId, setPurchasesId] = useState(null);
+  const [purchasesLocationId, setPurchasesLocationId] = useState(null);
+  const [creditNoteId, setCreditNoteId] = useState(null);
+  const [creditNoteLocationId, setCreditNoteLocationId] = useState(null);
+  // const [counterSession, setCounterSession] = useState({ isExist: true }); 
+  const [closingBalanceModal, setClosingBalanceModal] = useState(false);
+  const [sessionDetailsModal, setSessionDetailsModal] = useState(false);
+  const [sessionDetails, setSessionDetails] = useState({});
+  const [closingBalance, setClosingBalance] = useState("");
   
   useEffect(() => {
     if (!counterSession?.isExist) {
@@ -38,7 +51,22 @@ const Transactions = () => {
       setTransactionAmount(""); 
       setTransactionDescription("")
     }
+    else if (activeTab === "Sales Invoice") {
+      fetchNewSalesInvoice();
+    }
+    else if (activeTab === "Purchases Invoice") {
+      fetchNewPurchasesInvoice();
+    }
+    else if (activeTab === "Credit Note") {
+      fetchNewCreditNote();
+    }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (closingBalanceModal == true) {
+      setClosingBalance("");
+    }
+  }, [closingBalanceModal]);
 
   const openCounter = async () => {
     if (!openingBalance) {
@@ -170,6 +198,178 @@ const Transactions = () => {
     setTransactionDescription("");
   };
 
+  const fetchNewSalesInvoice = async () => {
+    setLoading(true);
+    try {
+      const requestBody = {
+        customerId: Number(customerId),
+        userId,
+        locationId,
+        id: ""
+      };
+
+      const response = await fetch(NewSales, {
+        method: "POST",
+        headers: { "Accept": "text/plain", "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setSalesId(data.data.salesId);
+        setDocNo(data.data.docNo);
+        setSalesLocationId(data.data.locationId);
+      } else {
+        throw new Error(data.errorMessage || "Failed to create new sales invoice.");
+      }
+    } catch (error) {
+      setErrorModal({ title: "Sales Invoice Error", message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchNewPurchasesInvoice = async () => {
+    setLoading(true);
+    try {
+      const requestBody = {
+        customerId: Number(customerId),
+        userId,
+        locationId,
+        id: ""
+      };
+
+      const response = await fetch(NewPurchases, {
+        method: "POST",
+        headers: { "Accept": "text/plain", "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setPurchasesId(data.data.purchasesId);
+        setDocNo(data.data.docNo);
+        setPurchasesLocationId(data.data.locationId);
+      } else {
+        throw new Error(data.errorMessage || "Failed to create new purchases invoice.");
+      }
+    } catch (error) {
+      setErrorModal({ title: "Purchases Invoice Error", message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchNewCreditNote = async () => {
+    setLoading(true);
+    try {
+      const requestBody = {
+        customerId: Number(customerId),
+        userId,
+        locationId,
+        id: ""
+      };
+
+      const response = await fetch(NewCreditNote, {
+        method: "POST",
+        headers: { "Accept": "text/plain", "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setCreditNoteId(data.data.creditNoteId);
+        setDocNo(data.data.docNo);
+        setCreditNoteLocationId(data.data.locationId);
+      } else {
+        throw new Error(data.errorMessage || "Failed to create new credi note.");
+      }
+    } catch (error) {
+      setErrorModal({ title: "Credit Note Error", message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeCounter = async () => {
+    if (!closingBalance) {
+      setErrorModal({ title: "Input Error", message: "Please enter an closing balance." });
+      return;
+    }
+  
+    if (Number(closingBalance) < 0) {
+      setErrorModal({ title: "Invalid Amount", message: "Closing balance cannot be negative. Please enter a valid amount." });
+      return;
+    }
+
+    setLoading(true); 
+    try {
+      const requestBody = {
+        actionData: {
+          customerId: Number(customerId),
+          userId,
+          locationId,
+          id: ""
+        },
+        closingBalance: Number(closingBalance)
+      };
+
+      const response = await fetch(CloseCounterSession, {
+        method: "POST",
+        headers: {
+          "Accept": "text/plain",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setSessionDetails({
+          initialBalance: data.data.initialBalance,
+          salesAmt: data.data.salesAmt,
+          purchaseAmt: data.data.purchaseAmt,
+          salesPaymentAmt: data.data.salesPaymentAmt,
+          purchasePaymentAmt: data.data.purchasePaymentAmt,
+          cashInAmt: data.data.cashInAmt,
+          cashOutAmt: data.data.cashOutAmt,
+          closingBalance: data.data.closingBalance,
+          salesAmtToBeReceived: data.data.salesAmtToBeReceived,
+          salesAmtChanged: data.data.salesAmtChanged,
+          purchaseAmtToBePaid: data.data.purchaseAmtToBePaid,
+          purchaseAmtChangeReceived: data.data.purchaseAmtChangeReceived,
+          expectedClosingBalance: data.data.expectedClosingBalance,
+          balanceDifference: data.data.balanceDifference,
+        });
+        setSessionDetailsModal(true);
+      } else {
+        if (data.errorMessage === "There is currently no active counter session.") {
+          setErrorModal({
+            title: "Session Error",
+            message: data.errorMessage,
+            onClose: () => {
+              setCounterSession(null);
+              setErrorModal({ title: "", message: "" });
+              setClosingBalanceModal(false);
+            },
+          });
+        } else {
+          throw new Error(data.errorMessage || "Failed to close counter.");
+        }
+      }
+    } catch (error) {
+      setErrorModal({ title: "Close Counter Error", message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeSessionDetails = () => {
+    setSessionDetailsModal(false);
+    setClosingBalanceModal(false)
+    setCounterSession(null);
+  }
+
   return (
     <div>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => { if (errorModal.onClose) { errorModal.onClose(); } setErrorModal({ title: "", message: "", onClose: null }); }} />
@@ -195,6 +395,13 @@ const Transactions = () => {
             disabled
             className="w-1/3 p-1 text-secondary border rounded bg-gray-200 cursor-not-alloweds text-left"
           />
+          <button
+              onClick={() => setClosingBalanceModal(true)}
+              disabled={loading}
+              className={`text-xs p-2 rounded-md ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 text-white"}`}
+            >
+              {loading ? "Closing..." : "Closing Counter"}
+            </button>
         </div>
       ) : (
         <div className="w-1/3 bg-white shadow-md p-4 rounded-md mt-6">
@@ -253,7 +460,7 @@ const Transactions = () => {
                 <div className="flex justify-between">
                   <button
                     onClick={handleAddTransaction}
-                    className="px-4 py-2 bg-green-500 text-white rounded-md text-sm"
+                    className="px-2 py-2 bg-green-500 text-white rounded-md text-sm"
                   >
                     Add
                   </button>
@@ -267,15 +474,63 @@ const Transactions = () => {
               </div>
             ) : activeTab === "Sales Invoice" ? (
               <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
-               <SalesInvoice />
+               <SalesInvoice salesId={salesId} docNo={docNo} salesLocationId={salesLocationId}/>
               </div>
             ) : activeTab === "Purchases Invoice" ? (
               <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
-               <PurchasesInvoice />
+               <PurchasesInvoice purchasesId={purchasesId} docNo={docNo} purchasesLocationId={purchasesLocationId}/>
+              </div>
+            ) : activeTab === "Credit Note" ? (
+              <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
+               <CreditNote creditNoteId={creditNoteId} docNo={docNo} creditNoteLocationId={creditNoteLocationId}/>
               </div>
             ) : (
               <p className="text-gray-500">Content for "{activeTab}" will be displayed here.</p>
             )}
+          </div>
+        </div>
+      )}
+
+      {closingBalanceModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <div className="bg-white p-6 rounded-md shadow-lg w-96">
+            <h2 className="text-lg font-semibold mb-4 text-secondary">Close Counter</h2>
+            <input
+              type="number"
+              min={0}
+              placeholder="Enter Closing Balance"
+              value={closingBalance}
+              onChange={(e) => setClosingBalance(e.target.value)}
+              className="w-full p-2 border rounded mb-3 text-secondary bg-white"
+            />
+            <div className="flex justify-between">
+              <button onClick={closeCounter} className="p-2 text-sm bg-green-500 text-white rounded-md mr-2">
+                Confirm
+              </button>
+              <button onClick={() => setClosingBalanceModal(false)} className="p-2 bg-red-500 text-white rounded-md text-sm">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {sessionDetailsModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <div className="bg-white p-6 rounded-md shadow-lg w-96">
+            <h2 className="text-lg font-semibold mb-4 text-secondary">Counter Session Closed</h2>
+            <ul className="text-sm text-gray-700">
+              {Object.entries(sessionDetails).map(([key, value]) => (
+                <li key={key} className="mb-1">
+                  <strong>{key}:</strong> {value}
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-end">
+              <button onClick={closeSessionDetails} className="px-4 py-2 bg-blue-500 text-white rounded-md">
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

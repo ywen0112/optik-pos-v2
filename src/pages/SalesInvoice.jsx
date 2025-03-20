@@ -2,39 +2,33 @@ import { useState, useEffect } from "react";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
-import { GetDebtorRecords, GetLocationRecords, GetUsers } from "../apiconfig";
+import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
+import ConfirmationModal from "../modals/ConfirmationModal";
 
-const SalesInvoice = () => {
+const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
   const customerId = localStorage.getItem("customerId");
   const [debtorOptions, setDebtorOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [agentOptions, setAgentOptions] = useState([]);
-
   const paymentTypeOptions = [
     { value: "Cash Payment", label: "Cash Payment" },
-    { value: "Credit Card", label: "Credit Card" }
+    { value: "Card Payment", label: "Card Payment" },
+    { value: "Bank Transfer", label: "Bank Transfer" },
+    { value: "Multi Payment", label: "Multi Payment" }
   ];
-  const itemOptions = [
-    { value: "Item1", label: "Item 1" },
-    { value: "Item2", label: "Item 2" }
-  ];
-  const uomOptions = [
-    { value: "Unit", label: "Unit" },
-    { value: "Box", label: "Box" }
-  ];
+  const [itemOptions, setItemOptions] = useState([]);
   const discountTypeOptions = [
     { value: "Percentage", label: "Percentage" },
-    { value: "Amount", label: "Amount" }
+    { value: "Fixed", label: "Fixed" }
   ];
-
   const [invoiceItems, setInvoiceItems] = useState([
     { 
       itemCode: "", 
       description: "", 
       uom: "", 
       unitPrice: 0, 
-      quantity: 1, 
+      quantity: 0, 
       discountType: "Percentage", 
       discount: 0, 
       subtotal: 0 
@@ -46,9 +40,27 @@ const SalesInvoice = () => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [selectedPaymentType, setSelectedPaymentType] = useState(null);
 
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [enteredAmount, setEnteredAmount] = useState("");
+
+  const [isCardPaymentModalOpen, setIsCardPaymentModalOpen] = useState(false);
+  const [cardReceiptRef, setCardReceiptRef] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [approvalCode, setApprovalCode] = useState("");
+
+  const [isBankTransferModalOpen, setIsBankTransferModalOpen] = useState(false);
+  const [bankReceiptRef, setBankReceiptRef] = useState("");
+  const [bankRef, setBankRef] = useState("");
+
+  const [isMultiPaymentModalOpen, setIsMultiPaymentModalOpen] = useState(false);
+  const [multiPaymentMethods, setMultiPaymentMethods] = useState([]);
+
+  const [outstandingOrChange, setOutstandingOrChange] = useState(0);
+  const [isOutstanding, setIsOutstanding] = useState(false);
   const [total, setTotal] = useState(0);
-  const [changes, setChanges] = useState(0);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
   
 
   useEffect(() => {
@@ -123,6 +135,12 @@ const SalesInvoice = () => {
             label: `${location.locationCode} - ${location.description}`
           }));
           setLocationOptions(options);
+          if (salesLocationId) {
+            const matchedLocation = options.find(loc => loc.value === salesLocationId);
+            if (matchedLocation) {
+              setSelectedLocation(matchedLocation);
+            }
+          }
         } else {
           throw new Error(data.errorMessage || "Failed to fetch location records.");
         }
@@ -132,44 +150,7 @@ const SalesInvoice = () => {
     };
 
     fetchLocations();
-  }, []);
-
-  useEffect(() => {
-    const fetchLocations = async () => {
-      const requestBody = {
-        customerId: Number(customerId),
-        keyword: "",
-        offset: 0,
-        limit: 9999
-      };
-
-      try {
-        const response = await fetch(GetLocationRecords, {
-          method: "POST",
-          headers: {
-            "Accept": "text/plain",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(requestBody)
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          const options = data.data.map((location) => ({
-            value: location.locationId,
-            label: `${location.locationCode} - ${location.description}`
-          }));
-          setLocationOptions(options);
-        } else {
-          throw new Error(data.errorMessage || "Failed to fetch location records.");
-        }
-      } catch (error) {
-        setErrorModal({ title: "Fetch Error", message: error.message });
-      }
-    };
-
-    fetchLocations();
-  }, []);
+  }, [salesLocationId]);
 
   useEffect(() => {
     const fetchAgents = async () => {
@@ -209,51 +190,297 @@ const SalesInvoice = () => {
   }, []);
   
 
-  const calculateTotals = (items) => {
-    let newTotal = 0;
-    items.forEach((item) => {
-      const discountAmount =
-        item.discountType === "Percentage"
-          ? (item.unitPrice * item.quantity * item.discount) / 100
-          : item.discount;
-      const subtotal = item.unitPrice * item.quantity - discountAmount;
-      item.subtotal = subtotal;
-      newTotal += subtotal;
-    });
-    setTotal(newTotal);
-  };
+  useEffect(() => {
+    const fetchItems = async () => {
+      const requestBody = {
+        customerId: Number(customerId),
+        keyword: "",
+        offset: 0,
+        limit: 9999
+      };
 
-  // Handle change in row data; for react-select we extract the option's value
-  const handleRowChange = (index, field, value) => {
+      try {
+        const response = await fetch(GetItemRecords, {
+          method: "POST",
+          headers: {
+            "Accept": "text/plain",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          const options = data.data.map((item) => ({
+            value: item.itemId,
+            label: item.itemCode,
+            description: item.description,
+            itemUOMs: item.itemUOMs || []
+          }));
+          setItemOptions(options);
+        } else {
+          throw new Error(data.errorMessage || "Failed to fetch item records.");
+        }
+      } catch (error) {
+        setErrorModal({ title: "Fetch Error", message: error.message });
+      }
+    };
+
+    fetchItems();
+  }, []);
+
+  const handleItemChange = (index, newValue) => {
+    if (!newValue) return;
+  
+    let selectedItem = itemOptions.find(item => item.value === newValue.value);
+  
+    if (!selectedItem) {
+      selectedItem = {
+        value: newValue.value,
+        label: newValue.label,
+        description: "",
+        itemUOMs: [] 
+      };
+  
+      setItemOptions([...itemOptions, selectedItem]); 
+    }
+  
+    const description = selectedItem.description || "";
+    const uomOptions = selectedItem.itemUOMs.map(uom => ({
+      value: uom.itemUOMId,
+      label: uom.uom,
+      unitPrice: uom.unitPrice
+    }));
+  
     const updatedItems = [...invoiceItems];
-    updatedItems[index][field] = value;
-    calculateTotals(updatedItems);
+    updatedItems[index] = {
+      ...updatedItems[index],
+      itemId: selectedItem.value,
+      itemCode: selectedItem.label,
+      description: description,
+      uomOptions: uomOptions, 
+      uom: "",
+      unitPrice: 0
+    };
+  
     setInvoiceItems(updatedItems);
+    calculateTotals(updatedItems);
+  };  
+
+  const handleUomChange = (index, newValue) => {
+    if (!newValue) return;
+  
+    const updatedItems = [...invoiceItems];
+    const selectedItem = updatedItems[index];
+  
+    let selectedUOM = selectedItem.uomOptions.find(u => u.value === newValue.value);
+  
+    if (!selectedUOM) {
+      selectedUOM = {
+        value: newValue.value,
+        label: newValue.label,
+        unitPrice: 0 
+      };
+  
+      selectedItem.uomOptions = [...selectedItem.uomOptions, selectedUOM]; 
+    }
+  
+    updatedItems[index] = {
+      ...selectedItem,
+      uom: selectedUOM.label,
+      unitPrice: selectedUOM.unitPrice
+    };
+  
+    setInvoiceItems(updatedItems);
+    calculateTotals(updatedItems);
   };
 
-  // Add new row
   const addNewItem = () => {
     setInvoiceItems([
       ...invoiceItems,
-      { itemCode: "", description: "", uom: "", unitPrice: 0, quantity: 1, discountType: "Percentage", discount: 0, subtotal: 0 }
+      {
+        itemId: "",
+        itemCode: "",
+        description: "",
+        uom: "",
+        uomOptions: [],
+        unitPrice: 0,
+        quantity: 0,
+        discountType: "Percentage",
+        discount: 0,
+        subtotal: 0
+      }
     ]);
   };
 
-  // Remove an item
   const removeItem = (index) => {
     const updatedItems = invoiceItems.filter((_, i) => i !== index);
     calculateTotals(updatedItems);
     setInvoiceItems(updatedItems);
   };
 
+  const handleRowChange = (index, field, value) => {
+    const updatedItems = [...invoiceItems];
+    updatedItems[index][field] = value;
+  
+    updatedItems[index].unitPrice = parseFloat(updatedItems[index].unitPrice) || 0;
+    updatedItems[index].quantity = parseInt(updatedItems[index].quantity) || 0;
+    updatedItems[index].discount = parseFloat(updatedItems[index].discount) || 0;
+  
+    const discountAmount = updatedItems[index].discountType === "Percentage"
+      ? (updatedItems[index].unitPrice * updatedItems[index].quantity * updatedItems[index].discount) / 100
+      : updatedItems[index].discount;
+  
+    updatedItems[index].subtotal = (updatedItems[index].unitPrice * updatedItems[index].quantity) - discountAmount;
+  
+    setInvoiceItems(updatedItems);
+    calculateTotals(updatedItems); 
+  };
+
+  const calculateTotals = (items) => {
+    let newTotal = items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+    setTotal(newTotal);
+  };
+
+  const handlePaymentTypeChange = (option) => {
+    if (!isPaymentConfirmed) { 
+      setSelectedPaymentType(option);
+  
+      if (option.value === "Cash Payment") {
+        setIsPaymentModalOpen(true);
+      } else if (option.value === "Card Payment") {
+        setIsCardPaymentModalOpen(true);  
+      } else if (option.value === "Bank Transfer") {
+        setIsBankTransferModalOpen(true);  
+      } else if (option.value === "Multi Payment") {
+        setIsMultiPaymentModalOpen(true);
+      }
+    }
+  };
+
+  const handleAmountChange = (e) => {
+    const amount = parseFloat(e.target.value);
+    setEnteredAmount(amount);
+
+    if (amount < total) {
+      setIsOutstanding(true);
+      setOutstandingOrChange(total - amount);
+    } else {
+      setIsOutstanding(false);
+      setOutstandingOrChange(amount - total);
+    }
+  };
+
+  const confirmPayment = () => {
+    if (enteredAmount < 0) {
+      setErrorModal({ title: "Invalid Amount", message: "Amount cannot be negative. Please enter a valid amount." });
+      return;
+    }
+
+    setIsConfirmationModalOpen(true); 
+  };
+
+  const handleConfirmPayment = () => {
+    setIsPaymentConfirmed(true);
+    setIsCardPaymentModalOpen(false);
+    setIsConfirmationModalOpen(false);
+    setIsBankTransferModalOpen(false);
+    setIsPaymentModalOpen(false);
+    setEnteredAmount("");
+    setCardNumber("");
+    setCardReceiptRef("");
+    setApprovalCode("");
+    setBankReceiptRef("");
+    setBankRef("");
+  };
+
+
+  const closePayment = () => {
+    setIsPaymentModalOpen(false);
+    setSelectedPaymentType(null);
+    setEnteredAmount("");
+    setOutstandingOrChange(0);
+    setIsCardPaymentModalOpen(false)
+    setCardNumber("");
+    setCardReceiptRef("");
+    setApprovalCode("");
+    setIsBankTransferModalOpen(false);
+    setBankReceiptRef("");
+    setBankRef("");
+    setIsMultiPaymentModalOpen(false);
+    setMultiPaymentMethods([]);
+  }
+
+  const addPaymentMethod = () => {
+    setMultiPaymentMethods([
+      ...multiPaymentMethods,
+      { type: "", amount: "", cardReceiptRef: "", cardNumber: "", approvalCode: "", bankReceiptRef: "", bankRef: "" }
+    ]);
+  };
+  
+  const handleMultiPaymentTypeChange = (index, option) => {
+    const updatedPayments = [...multiPaymentMethods];
+    updatedPayments[index].type = option.value;
+    setMultiPaymentMethods(updatedPayments);
+  };
+  
+  const handleMultiPaymentFieldChange = (index, field, value) => {
+    const updatedPayments = [...multiPaymentMethods];
+    updatedPayments[index][field] = value;
+    setMultiPaymentMethods(updatedPayments);
+  };
+  
+  const handleMultiPaymentAmountChange = (index, value) => {
+    const updatedPayments = [...multiPaymentMethods];
+    updatedPayments[index].amount = parseFloat(value) || 0;
+    setMultiPaymentMethods(updatedPayments);
+  
+    const totalPaid = updatedPayments.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
+    const newOutstandingOrChange = totalPaid - total;
+  
+    setOutstandingOrChange(newOutstandingOrChange);
+    setIsOutstanding(newOutstandingOrChange < 0);
+  };
+  
+  const removePaymentMethod = (index) => {
+    const updatedPayments = multiPaymentMethods.filter((_, i) => i !== index);
+    setMultiPaymentMethods(updatedPayments);
+  
+    const totalPaid = updatedPayments.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
+    const newOutstandingOrChange = totalPaid - total;
+  
+    setOutstandingOrChange(newOutstandingOrChange);
+    setIsOutstanding(newOutstandingOrChange < 0);
+  };
+  
+  const confirmMultiPayment = () => {
+    const totalPaid = multiPaymentMethods.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
+    const newOutstandingOrChange = totalPaid - total;
+  
+    setOutstandingOrChange(newOutstandingOrChange);
+    setIsOutstanding(newOutstandingOrChange < 0);
+
+    setIsConfirmationModalOpen(true);
+  };
+
+  const handleConfirmMultiPayment = () => {
+    setIsPaymentConfirmed(true);
+    setIsConfirmationModalOpen(false);
+    setIsMultiPaymentModalOpen(false);
+    setMultiPaymentMethods([]);
+  };
+  
+
   const customStyles = {
-    control: (provided) => ({
+    control: (provided, state) => ({
       ...provided,
       border: "1px solid #ccc", 
       padding: "1px",
       fontSize: "0.875rem", 
       width: "100%", 
       minHeight: "2.5rem",
+      backgroundColor: state.isDisabled ? "#f9f9f9" : "white", 
+      cursor: state.isDisabled ? "not-allowed" : "pointer",
     }),
     input: (provided) => ({
       ...provided,
@@ -290,9 +517,9 @@ const SalesInvoice = () => {
     <div>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() =>setErrorModal({ title: "", message: "" })}/>
       <h2 className="text-xl font-bold text-secondary">Sales Invoice</h2>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-5 gap-2 mt-4">
         <div>
-          <label className="block text-xs font-semibold">Debtor Code</label>
+          <label className="block text-xs font-semibold text-secondary">Debtor</label>
           <Select
             options={debtorOptions}
             value={selectedDebtor}
@@ -302,7 +529,7 @@ const SalesInvoice = () => {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold">Company Name</label>
+          <label className="block text-xs font-semibold text-secondary">Company Name</label>
           <input 
             type="text" 
             className="border border-gray-300 rounded p-2 w-full text-sm text-secondary bg-white" 
@@ -312,7 +539,7 @@ const SalesInvoice = () => {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold">Location Code</label>
+          <label className="block text-xs font-semibold text-secondary">Location</label>
           <Select
             options={locationOptions}
             value={selectedLocation}
@@ -322,7 +549,7 @@ const SalesInvoice = () => {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold">Agent</label>
+          <label className="block text-xs font-semibold text-secondary">Agent</label>
           <Select
             options={agentOptions}
             value={selectedAgent}
@@ -332,13 +559,14 @@ const SalesInvoice = () => {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold">Payment Type</label>
-          <CreatableSelect
+          <label className="block text-xs font-semibold text-secondary">Payment Type</label>
+          <Select
             options={paymentTypeOptions}
             value={selectedPaymentType}
-            onChange={(option) => setSelectedPaymentType(option)}
+            onChange={handlePaymentTypeChange}
             placeholder="Select payment type"
             styles={customStyles}
+            isDisabled={isPaymentConfirmed}
           />
         </div>
       </div>
@@ -365,11 +593,12 @@ const SalesInvoice = () => {
                 <td>
                   <CreatableSelect
                     options={itemOptions}
-                    value={item.itemCode ? { value: item.itemCode, label: item.itemCode } : null}
-                    onChange={(option) => handleRowChange(index, "itemCode", option.value)}
+                    value={item.itemId ? { value: item.itemId, label: item.itemCode } : null}
+                    onChange={(option) => handleItemChange(index, option)}
                     placeholder="Select item"
                     styles={customStyles}
                     menuPortalTarget={document.body}
+                    isDisabled={isPaymentConfirmed}
                   />
                 </td>
                 <td>
@@ -377,33 +606,39 @@ const SalesInvoice = () => {
                     type="text" 
                     className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
                     value={item.description} 
-                    onChange={(e) => handleRowChange(index, "description", e.target.value)} 
+                    onChange={(e) => handleRowChange(index, "description", e.target.value)}
+                    disabled={isPaymentConfirmed}
                   />
                 </td>
                 <td>
                   <CreatableSelect
-                    options={uomOptions}
+                    options={item.uomOptions}
                     value={item.uom ? { value: item.uom, label: item.uom } : null}
-                    onChange={(option) => handleRowChange(index, "uom", option.value)}
+                    onChange={(option) => handleUomChange(index, option)}
                     placeholder="Select UOM"
                     styles={customStyles}
                     menuPortalTarget={document.body}
+                    isDisabled={isPaymentConfirmed}
                   />
                 </td>
                 <td>
                   <input 
                     type="number" 
+                    min={0}
                     className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
                     value={item.unitPrice} 
                     onChange={(e) => handleRowChange(index, "unitPrice", parseFloat(e.target.value) || 0)} 
+                    disabled={isPaymentConfirmed}
                   />
                 </td>
                 <td>
                   <input 
                     type="number" 
+                    min={0}
                     className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
                     value={item.quantity} 
-                    onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 1)} 
+                    onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 0)} 
+                    disabled={isPaymentConfirmed}
                   />
                 </td>
                 <td>
@@ -414,14 +649,17 @@ const SalesInvoice = () => {
                     placeholder="Select Discount Type"
                     styles={customStyles}
                     menuPortalTarget={document.body}
+                    isDisabled={isPaymentConfirmed}
                   />
                 </td>
                 <td>
                   <input 
                     type="number" 
+                    min={0}
                     className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
                     value={item.discount} 
                     onChange={(e) => handleRowChange(index, "discount", parseFloat(e.target.value) || 0)} 
+                    disabled={isPaymentConfirmed}
                   />
                 </td>
                 <td>
@@ -432,7 +670,7 @@ const SalesInvoice = () => {
                   />
                 </td>
                 <td className="p-2">
-                    <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} >
+                    <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} disabled={isPaymentConfirmed}>
                         <Trash2 size={16} strokeWidth={1} />
                     </button>                
                 </td>
@@ -442,9 +680,291 @@ const SalesInvoice = () => {
         </table>
       </div>
 
+      <ConfirmationModal 
+        isOpen={isConfirmationModalOpen}
+        title="Confirm Payment"
+        message="Are you sure you want to proceed with this payment?"
+        onConfirm={handleConfirmPayment}
+        onCancel={() => setIsConfirmationModalOpen(false)}
+      />
+
+      {isPaymentModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white p-6 rounded-lg shadow-md w-96">
+            <h2 className="text-lg font-semibold text-secondary">Cash Payment</h2>
+            <p className="text-sm mt-2 text-secondary">
+              <strong>Total:</strong> {total.toFixed(2)}
+            </p>
+            <p className="mt-2 text-sm font-semibold text-secondary">
+              {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
+            </p>
+            <input
+              type="number"
+              placeholder="Enter Amount"
+              className="w-full mt-2 p-2 border rounded-md bg-white text-secondary text-xs"
+              min={0}
+              value={enteredAmount}
+              onChange={handleAmountChange}
+            />  
+            <div className="flex justify-between mt-4">
+              <button onClick={confirmPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
+                Confirm Payment
+              </button>
+              <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isCardPaymentModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white p-6 rounded-lg shadow-md w-fit">
+            <h2 className="text-lg font-semibold text-secondary">Card Payment</h2>
+            
+            <p className="text-sm mt-2 text-secondary">
+              <strong>Total:</strong> {total.toFixed(2)}
+            </p>
+            <p className="mt-2 text-sm font-semibold text-secondary">
+              {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
+            </p>
+
+            <input
+              type="text"
+              placeholder="Enter Receipt Reference"
+              className="p-2 w-full border rounded-md bg-white text-secondary text-xs mt-2"
+              value={cardReceiptRef}
+              onChange={(e) => setCardReceiptRef(e.target.value)}
+            />
+           
+           <div className="grid grid-cols-3 gap-2 mt-2">
+              <input
+                type="text"
+                placeholder="Card Number"
+                className="p-2 border rounded-md bg-white text-secondary text-xs"
+                value={cardNumber}
+                onChange={(e) => setCardNumber(e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="Approval Code"
+                className="p-2 border rounded-md bg-white text-secondary text-xs"
+                value={approvalCode}
+                onChange={(e) => setApprovalCode(e.target.value)}
+              />
+
+              <input
+                type="number"
+                placeholder="Enter Amount"
+                min={0}
+                className="p-2 border rounded-md bg-white text-secondary text-xs"
+                value={enteredAmount}
+                onChange={handleAmountChange}
+              />
+            </div>
+
+            <div className="flex justify-between mt-4">
+              <button onClick={confirmPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
+                Confirm Payment
+              </button>
+              <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isBankTransferModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white p-6 rounded-lg shadow-md w-fit">
+            <h2 className="text-lg font-semibold text-secondary">Bank Transfer</h2>
+            
+            <p className="text-sm mt-2 text-secondary">
+              <strong>Total:</strong> {total.toFixed(2)}
+            </p>
+            <p className="mt-2 text-sm font-semibold text-secondary">
+              {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
+            </p>
+
+            <input
+              type="text"
+              placeholder="Enter Receipt Reference"
+              className="p-2 mt-2 w-full border rounded-md bg-white text-secondary text-xs"
+              value={bankReceiptRef}
+              onChange={(e) => setBankReceiptRef(e.target.value)}
+            />
+            
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <input
+                type="text"
+                placeholder="Bank Reference No"
+                className="p-2 border rounded-md bg-white text-secondary text-xs"
+                value={bankRef}
+                onChange={(e) => setBankRef(e.target.value)}
+              />
+
+              <input
+                type="number"
+                placeholder="Enter Amount"
+                className="p-2 border rounded-md bg-white text-secondary text-xs"
+                min={0}
+                value={enteredAmount}
+                onChange={handleAmountChange}
+              />
+            </div>
+
+            <div className="flex justify-between mt-4">
+              <button onClick={confirmPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
+                Confirm Payment
+              </button>
+              <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isMultiPaymentModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white p-6 rounded-lg shadow-md w-1/2">
+            <h2 className="text-lg font-semibold text-secondary">Multi Payment</h2>
+            
+            <p className="text-sm mt-2 text-secondary">
+              <strong>Total:</strong> {total.toFixed(2)}
+            </p>
+            <p className="mt-2 text-sm font-semibold text-secondary">
+              {isOutstanding ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
+            </p>
+
+            <div className="text-right">
+              <button 
+                onClick={addPaymentMethod} 
+                className="p-1 bg-primary text-white rounded-md text-xs w-1/4 mt-1"
+              >
+                Add Payment
+              </button>
+            </div>
+
+            <ConfirmationModal 
+              isOpen={isConfirmationModalOpen}
+              title="Confirm Payment"
+              message="Are you sure you want to proceed with this payment?"
+              onConfirm={handleConfirmMultiPayment}
+              onCancel={() => setIsConfirmationModalOpen(false)}
+            />
+
+            {multiPaymentMethods.map((payment, index) => (
+              <div key={index} className="border p-1 mt-2 rounded-md">
+                <Select
+                  options={paymentTypeOptions.filter(opt => opt.value !== "Multi Payment")}
+                  value={payment.type ? { value: payment.type, label: payment.type } : null}
+                  onChange={(option) => handleMultiPaymentTypeChange(index, option)}
+                  placeholder="Select Payment Method"
+                  styles={customStyles}
+                />
+
+                {payment.type === "Cash Payment" && (
+                  <input
+                    type="number"
+                    placeholder="Enter Amount"
+                    className="w-full mt-2 p-2 border rounded-md bg-white text-secondary text-xs"
+                    min={0}
+                    value={payment.amount}
+                    onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
+                  />
+                )}
+
+                {payment.type === "Card Payment" && (
+                  <div className="grid grid-cols-4 gap-2 mt-2">
+                    <input
+                      type="text"
+                      placeholder="Enter Receipt Reference"
+                      className="p-2 border rounded-md bg-white text-secondary text-xs"
+                      value={payment.cardReceiptRef}
+                      onChange={(e) => handleMultiPaymentFieldChange(index, "cardReceiptRef", e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Card Number"
+                      className="p-2 border rounded-md bg-white text-secondary text-xs"
+                      value={payment.cardNumber}
+                      onChange={(e) => handleMultiPaymentFieldChange(index, "cardNumber", e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Approval Code"
+                      className="p-2 border rounded-md bg-white text-secondary text-xs"
+                      value={payment.approvalCode}
+                      onChange={(e) => handleMultiPaymentFieldChange(index, "approvalCode", e.target.value)}
+                    />
+                    
+                    <input
+                      type="number"
+                      placeholder="Enter Amount"
+                      className="p-2 border rounded-md bg-white text-secondary text-xs"
+                      min={0}
+                      value={payment.amount}
+                      onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {payment.type === "Bank Transfer" && (
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    <input
+                      type="text"
+                      placeholder="Receipt Reference"
+                      className="p-2 border rounded-md bg-white text-secondary text-xs"
+                      value={payment.bankReceiptRef}
+                      onChange={(e) => handleMultiPaymentFieldChange(index, "bankReceiptRef", e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Bank Reference No"
+                      className="p-2 border rounded-md bg-white text-secondary text-xs"
+                      value={payment.bankRef}
+                      onChange={(e) => handleMultiPaymentFieldChange(index, "bankRef", e.target.value)}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Enter Amount"
+                      className="p-2 border rounded-md bg-white text-secondary text-xs"
+                      min={0}
+                      value={payment.amount}
+                      onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <button 
+                  onClick={() => removePaymentMethod(index)} 
+                  className="px-3 py-1 bg-red-500 text-white rounded-md text-xs mt-2"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+
+            <div className="flex justify-between mt-4">
+              <button onClick={confirmMultiPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
+                Confirm Payment
+              </button>
+              <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2 mt-2">
-        <p className="text-sm font-bold">Total: {total.toFixed(2)}</p>
-        <p className="text-sm font-bold">Changes: {changes.toFixed(2)}</p>
+        <p className="text-sm font-bold text-secondary">Total: {total.toFixed(2)}</p>
+        <p className="text-sm font-bold text-secondary">
+          {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
+        </p>
       </div>
       
       <div className="flex justify-between mt-4">
