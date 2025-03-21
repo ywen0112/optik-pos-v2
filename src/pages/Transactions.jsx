@@ -5,7 +5,7 @@ import ErrorModal from "../modals/ErrorModal";
 import NotificationModal from "../modals/NotificationModal";
 import SalesInvoice from "./SalesInvoice";
 import PurchasesInvoice from "./PurchasesInvoice";
-import CreditNote from "./CreditNote";
+// import CreditNote from "./CreditNote";
 
 const Transactions = () => {
   const location = useLocation();
@@ -23,12 +23,8 @@ const Transactions = () => {
   const [transactionDescription, setTransactionDescription] = useState("");
   const [salesId, setSalesId] = useState(null);
   const [docNo, setDocNo] = useState(null);
-  const [salesLocationId, setSalesLocationId] = useState(null);
   const [purchasesId, setPurchasesId] = useState(null);
-  const [purchasesLocationId, setPurchasesLocationId] = useState(null);
-  const [creditNoteId, setCreditNoteId] = useState(null);
-  const [creditNoteLocationId, setCreditNoteLocationId] = useState(null);
-  // const [counterSession, setCounterSession] = useState({ isExist: true }); 
+  // const [creditNoteId, setCreditNoteId] = useState(null);
   const [closingBalanceModal, setClosingBalanceModal] = useState(false);
   const [sessionDetailsModal, setSessionDetailsModal] = useState(false);
   const [sessionDetails, setSessionDetails] = useState({});
@@ -57,16 +53,10 @@ const Transactions = () => {
     else if (activeTab === "Purchases Invoice") {
       fetchNewPurchasesInvoice();
     }
-    else if (activeTab === "Credit Note") {
-      fetchNewCreditNote();
-    }
+    // else if (activeTab === "Credit Note") {
+    //   fetchNewCreditNote();
+    // }
   }, [activeTab]);
-
-  useEffect(() => {
-    if (closingBalanceModal == true) {
-      setClosingBalance("");
-    }
-  }, [closingBalanceModal]);
 
   const openCounter = async () => {
     if (!openingBalance) {
@@ -218,7 +208,6 @@ const Transactions = () => {
       if (data.success) {
         setSalesId(data.data.salesId);
         setDocNo(data.data.docNo);
-        setSalesLocationId(data.data.locationId);
       } else {
         throw new Error(data.errorMessage || "Failed to create new sales invoice.");
       }
@@ -249,7 +238,6 @@ const Transactions = () => {
       if (data.success) {
         setPurchasesId(data.data.purchasesId);
         setDocNo(data.data.docNo);
-        setPurchasesLocationId(data.data.locationId);
       } else {
         throw new Error(data.errorMessage || "Failed to create new purchases invoice.");
       }
@@ -260,36 +248,35 @@ const Transactions = () => {
     }
   };
 
-  const fetchNewCreditNote = async () => {
-    setLoading(true);
-    try {
-      const requestBody = {
-        customerId: Number(customerId),
-        userId,
-        locationId,
-        id: ""
-      };
+  // const fetchNewCreditNote = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const requestBody = {
+  //       customerId: Number(customerId),
+  //       userId,
+  //       locationId,
+  //       id: ""
+  //     };
 
-      const response = await fetch(NewCreditNote, {
-        method: "POST",
-        headers: { "Accept": "text/plain", "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
+  //     const response = await fetch(NewCreditNote, {
+  //       method: "POST",
+  //       headers: { "Accept": "text/plain", "Content-Type": "application/json" },
+  //       body: JSON.stringify(requestBody),
+  //     });
 
-      const data = await response.json();
-      if (data.success) {
-        setCreditNoteId(data.data.creditNoteId);
-        setDocNo(data.data.docNo);
-        setCreditNoteLocationId(data.data.locationId);
-      } else {
-        throw new Error(data.errorMessage || "Failed to create new credi note.");
-      }
-    } catch (error) {
-      setErrorModal({ title: "Credit Note Error", message: error.message });
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     const data = await response.json();
+  //     if (data.success) {
+  //       setCreditNoteId(data.data.creditNoteId);
+  //       setDocNo(data.data.docNo);
+  //     } else {
+  //       throw new Error(data.errorMessage || "Failed to create new credi note.");
+  //     }
+  //   } catch (error) {
+  //     setErrorModal({ title: "Credit Note Error", message: error.message });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const closeCounter = async () => {
     if (!closingBalance) {
@@ -302,7 +289,6 @@ const Transactions = () => {
       return;
     }
 
-    setLoading(true); 
     try {
       const requestBody = {
         actionData: {
@@ -364,16 +350,32 @@ const Transactions = () => {
     }
   };
 
+  const handleCloseClosingModal = () => {
+    setClosingBalanceModal(false);
+    setClosingBalance("");
+  }
+
   const closeSessionDetails = () => {
     setSessionDetailsModal(false);
     setClosingBalanceModal(false)
     setCounterSession(null);
+    setClosingBalance("");
   }
 
   return (
     <div>
-      <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => { if (errorModal.onClose) { errorModal.onClose(); } setErrorModal({ title: "", message: "", onClose: null }); }} />
-      <NotificationModal isOpen={notificationModal.isOpen} title={notificationModal.title} message={notificationModal.message} onClose={notificationModal.onClose || (() => setNotificationModal({ isOpen: false }))} />
+    <ErrorModal
+      title={errorModal.title}
+      message={errorModal.message}
+      onClose={() => {
+        if (typeof errorModal.onClose === "function") {
+          errorModal.onClose();
+        } else {
+          setErrorModal({ title: "", message: "", onClose: null });
+        }
+      }}
+    /> 
+     <NotificationModal isOpen={notificationModal.isOpen} title={notificationModal.title} message={notificationModal.message} onClose={notificationModal.onClose || (() => setNotificationModal({ isOpen: false }))} />
 
       <style>
         {`
@@ -397,10 +399,9 @@ const Transactions = () => {
           />
           <button
               onClick={() => setClosingBalanceModal(true)}
-              disabled={loading}
-              className={`text-xs p-2 rounded-md ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 text-white"}`}
+              className="text-xs p-2 rounded-md bg-red-500 text-white"
             >
-              {loading ? "Closing..." : "Closing Counter"}
+              Close Counter
             </button>
         </div>
       ) : (
@@ -427,7 +428,9 @@ const Transactions = () => {
       {counterSession?.isExist && (
         <div className="mt-4">
           <nav className="flex">
-            {["Cash In", "Cash Out", "Sales Invoice", "Purchases Invoice", "Credit Note"].map((tab) => (
+            {["Cash In", "Cash Out", "Sales Invoice", "Purchases Invoice"
+            // , "Credit Note"
+          ].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -474,16 +477,16 @@ const Transactions = () => {
               </div>
             ) : activeTab === "Sales Invoice" ? (
               <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
-               <SalesInvoice salesId={salesId} docNo={docNo} salesLocationId={salesLocationId}/>
+               <SalesInvoice salesId={salesId} docNo={docNo} counterSession={counterSession} setCounterSession={setCounterSession}/>
               </div>
             ) : activeTab === "Purchases Invoice" ? (
               <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
-               <PurchasesInvoice purchasesId={purchasesId} docNo={docNo} purchasesLocationId={purchasesLocationId}/>
+               <PurchasesInvoice purchasesId={purchasesId} docNo={docNo} counterSession={counterSession} setCounterSession={setCounterSession}/>
               </div>
-            ) : activeTab === "Credit Note" ? (
-              <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
-               <CreditNote creditNoteId={creditNoteId} docNo={docNo} creditNoteLocationId={creditNoteLocationId}/>
-              </div>
+            // ) : activeTab === "Credit Note" ? (
+            //   <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
+            //    <CreditNote creditNoteId={creditNoteId} docNo={docNo} counterSession={counterSession} setCounterSession={setCounterSession}/>
+            //   </div>
             ) : (
               <p className="text-gray-500">Content for "{activeTab}" will be displayed here.</p>
             )}
@@ -507,7 +510,7 @@ const Transactions = () => {
               <button onClick={closeCounter} className="p-2 text-sm bg-green-500 text-white rounded-md mr-2">
                 Confirm
               </button>
-              <button onClick={() => setClosingBalanceModal(false)} className="p-2 bg-red-500 text-white rounded-md text-sm">
+              <button onClick={handleCloseClosingModal} className="p-2 bg-red-500 text-white rounded-md text-sm">
                 Cancel
               </button>
             </div>

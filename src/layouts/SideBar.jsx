@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Clock, Briefcase, FileText, UserCheck, Building, BarChart2, Wrench } from "lucide-react"; 
 import ErrorModal from "../modals/ErrorModal";
 import { CheckCounterSession } from "../apiconfig";
+import ClipLoader from "react-spinners/ClipLoader";
+
 
 const SideBar = ({ onSelectCompany = () => {} }) => {
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
   const [companyOptions, setCompanyOptions] = useState([]);
   const [activeMenu, setActiveMenu] = useState(location.pathname); 
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const storedCompanies = JSON.parse(localStorage.getItem("companies")) || [];
@@ -53,6 +56,8 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
   };
 
   const handleTransactionsClick = async () => {
+    setIsLoading(true);
+
     const customerId = localStorage.getItem("customerId");
     const userId = localStorage.getItem("userId");
     const locationId = localStorage.getItem("locationId");
@@ -82,6 +87,8 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
       }
     } catch (error) {
       setErrorModal({ title: "Counter Session Error", message: error.message });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -98,6 +105,13 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
   return (
     <div className="w-60 bg-secondary text-white h-screen flex flex-col p-4">
      <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
+     {isLoading && (
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center z-50">
+          <ClipLoader color="#ffffff" size={35} />
+          <p className="mt-2 text-sm text-white">Loading Transactions...</p>
+        </div>
+      )}
+      
       <div className="items-center justify-center mb-4">
         <span className="text-yellow-500 font-bold text-lg mt-2">OPTIK</span>
         <span className="text-white font-bold text-lg">POS</span>

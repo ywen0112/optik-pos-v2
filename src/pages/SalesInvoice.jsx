@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
-import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales } from "../apiconfig";
+import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales, SaveSalesPayment } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
+import NotificationModal from "../modals/NotificationModal";
 
-const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
+const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => {
   const customerId = localStorage.getItem("customerId");
+  const userId = localStorage.getItem("userId");
+  const locationId = localStorage.getItem("locationId");
   const [debtorOptions, setDebtorOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [agentOptions, setAgentOptions] = useState([]);
@@ -61,7 +64,9 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
-  
+  const [isSavingPayment, setIsSavingPayment] = useState(false);
+  const [notificationModal, setNotificationModal] = useState({ isOpen: false, title: "", message: "", onClose: null });
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
 
   useEffect(() => {
     const fetchDebtors = async () => {
@@ -135,8 +140,8 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
             label: `${location.locationCode} - ${location.description}`
           }));
           setLocationOptions(options);
-          if (salesLocationId) {
-            const matchedLocation = options.find(loc => loc.value === salesLocationId);
+          if (locationId) {
+            const matchedLocation = options.find(loc => loc.value === locationId);
             if (matchedLocation) {
               setSelectedLocation(matchedLocation);
             }
@@ -150,7 +155,7 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
     };
 
     fetchLocations();
-  }, [salesLocationId]);
+  }, []);
 
   useEffect(() => {
     const fetchAgents = async () => {
@@ -178,6 +183,12 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
             label: agent.userName
           }));
           setAgentOptions(options);
+          if (userId) {
+            const matchedAgent = options.find(agent => agent.value === userId);
+            if (matchedAgent) {
+              setSelectedAgent(matchedAgent);
+            }
+          }
         } else {
           throw new Error(data.errorMessage || "Failed to fetch agent records.");
         }
@@ -273,27 +284,31 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
     const updatedItems = [...invoiceItems];
     const selectedItem = updatedItems[index];
   
-    let selectedUOM = selectedItem.uomOptions.find(u => u.value === newValue.value);
+    let label = typeof newValue === "string" ? newValue : newValue.label;
+    let value = typeof newValue === "string" ? newValue : newValue.value;
+  
+    let selectedUOM = selectedItem.uomOptions.find(u => u.value === value);
   
     if (!selectedUOM) {
       selectedUOM = {
-        value: newValue.value,
-        label: newValue.label,
-        unitPrice: 0 
+        value,
+        label,
+        unitPrice: 0,
       };
   
-      selectedItem.uomOptions = [...selectedItem.uomOptions, selectedUOM]; 
+      selectedItem.uomOptions = [...selectedItem.uomOptions, selectedUOM];
     }
   
     updatedItems[index] = {
       ...selectedItem,
       uom: selectedUOM.label,
-      unitPrice: selectedUOM.unitPrice
+      unitPrice: selectedUOM.unitPrice,
     };
   
     setInvoiceItems(updatedItems);
     calculateTotals(updatedItems);
   };
+  
 
   const addNewItem = () => {
     setInvoiceItems([
@@ -321,20 +336,29 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
 
   const handleRowChange = (index, field, value) => {
     const updatedItems = [...invoiceItems];
-    updatedItems[index][field] = value;
   
-    updatedItems[index].unitPrice = parseFloat(updatedItems[index].unitPrice) || 0;
-    updatedItems[index].quantity = parseInt(updatedItems[index].quantity) || 0;
-    updatedItems[index].discount = parseFloat(updatedItems[index].discount) || 0;
+    if ((field === "unitPrice" || field === "quantity" || field === "discount") && parseFloat(value) < 0) {
+      return;
+    }
   
-    const discountAmount = updatedItems[index].discountType === "Percentage"
-      ? (updatedItems[index].unitPrice * updatedItems[index].quantity * updatedItems[index].discount) / 100
-      : updatedItems[index].discount;
+    if (field === "unitPrice" || field === "discount") {
+      updatedItems[index][field] = parseFloat(value) || 0;
+    } else if (field === "quantity") {
+      updatedItems[index][field] = parseInt(value) || 0;
+    } else {
+      updatedItems[index][field] = value;
+    }
   
-    updatedItems[index].subtotal = (updatedItems[index].unitPrice * updatedItems[index].quantity) - discountAmount;
+    const item = updatedItems[index];
+    const discountAmount =
+      item.discountType === "Percentage"
+        ? (item.unitPrice * item.quantity * item.discount) / 100
+        : item.discount;
+  
+    item.subtotal = item.unitPrice * item.quantity - discountAmount;
   
     setInvoiceItems(updatedItems);
-    calculateTotals(updatedItems); 
+    calculateTotals(updatedItems);
   };
 
   const calculateTotals = (items) => {
@@ -380,20 +404,116 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
     setIsConfirmationModalOpen(true); 
   };
 
-  const handleConfirmPayment = () => {
-    setIsPaymentConfirmed(true);
-    setIsCardPaymentModalOpen(false);
-    setIsConfirmationModalOpen(false);
-    setIsBankTransferModalOpen(false);
-    setIsPaymentModalOpen(false);
-    setEnteredAmount("");
-    setCardNumber("");
-    setCardReceiptRef("");
-    setApprovalCode("");
-    setBankReceiptRef("");
-    setBankRef("");
-  };
+  const handleConfirmPayment = async () => {
+    setIsSavingPayment(true); 
 
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(now - offset).toISOString().slice(0, 19);
+  
+    let payments = [];
+  
+    if (selectedPaymentType?.value === "Multi Payment") {
+      payments = multiPaymentMethods.map((method) => {
+        let reference = "";
+        let remark = method.type;
+  
+        if (method.type === "Bank Transfer") {
+          reference = `bank reference no： ${method.bankRef || ""} ｜ receipt reference： ${method.bankReceiptRef || ""}`;
+        } else if (method.type === "Card Payment") {
+          const cardEnding = method.cardNumber?.slice(-4) || "";
+          remark = `Card Payment ****${cardEnding}`;
+          reference = `approval code： ${method.approvalCode || ""} ｜ receipt reference： ${method.cardReceiptRef || ""}`;
+        }
+  
+        return {
+          remark: remark,
+          reference: reference,
+          amount: parseFloat(method.amount),
+        };
+      });
+    } else {
+      let reference = "";
+      let remark = selectedPaymentType?.value;
+  
+      if (selectedPaymentType?.value === "Bank Transfer") {
+        reference = `bank reference no： ${bankRef || ""} ｜ receipt reference： ${bankReceiptRef || ""}`;
+      } else if (selectedPaymentType?.value === "Card Payment") {
+        const cardEnding = cardNumber?.slice(-4) || "";
+        remark = `Card Payment ****${cardEnding}`;
+        reference = `approval code： ${approvalCode || ""} ｜ receipt reference： ${cardReceiptRef || ""}`;
+      }
+  
+      payments.push({
+        remark: remark,
+        reference: reference,
+        amount: parseFloat(enteredAmount),
+      });
+    }
+  
+    const payload = {
+      actionData: {
+        customerId: Number(customerId),
+        userId: userId,
+        locationId: locationId,
+        id: ""
+      },
+      isFirstPayment: true,
+      docDate: localISOTime,
+      targetDocId: salesId,
+      payment: payments
+    };
+  
+    try {
+      const response = await fetch(SaveSalesPayment, {
+        method: "POST",
+        headers: {
+          "Accept": "text/plain",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+  
+      const data = await response.json();
+  
+      if (!data.success) {
+        if (data.errorMessage === "There is currently no active counter session.") {
+          setErrorModal({
+            title: "Session Error",
+            message: data.errorMessage,
+            onClose: () => {
+              setCounterSession(null); 
+              setErrorModal({ title: "", message: "", onClose: null }); 
+            }
+          });          
+        } else {
+          throw new Error(data.errorMessage || "Payment failed.");
+        }
+        return;
+      }
+  
+      setIsPaymentConfirmed(true);
+      setIsConfirmationModalOpen(false);
+      setIsCardPaymentModalOpen(false);
+      setIsBankTransferModalOpen(false);
+      setIsPaymentModalOpen(false);
+      setIsMultiPaymentModalOpen(false);
+      setEnteredAmount("");
+      setCardNumber("");
+      setCardReceiptRef("");
+      setApprovalCode("");
+      setBankReceiptRef("");
+      setBankRef("");
+      setMultiPaymentMethods([]);
+    } catch (error) {
+      setErrorModal({
+        title: "Payment Error",
+        message: error.message
+      });
+    } finally {
+      setIsSavingPayment(false); 
+    }
+  };   
 
   const closePayment = () => {
     setIsPaymentModalOpen(false);
@@ -454,6 +574,18 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
   };
   
   const confirmMultiPayment = () => {
+    const hasNegativeAmount = multiPaymentMethods.some(
+      (payment) => parseFloat(payment.amount) < 0
+    );
+  
+    if (hasNegativeAmount) {
+      setErrorModal({
+        title: "Invalid Amount",
+        message: "Each payment amount cannot be negative. Please enter a valid amount.",
+      });
+      return;
+    }
+
     const totalPaid = multiPaymentMethods.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
     const newOutstandingOrChange = totalPaid - total;
   
@@ -463,13 +595,138 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
     setIsConfirmationModalOpen(true);
   };
 
-  const handleConfirmMultiPayment = () => {
-    setIsPaymentConfirmed(true);
-    setIsConfirmationModalOpen(false);
-    setIsMultiPaymentModalOpen(false);
-    setMultiPaymentMethods([]);
-  };
+  const confirmSave = () => {
+    for (const item of invoiceItems) {
+      const hasItemCode = item.itemCode && item.itemCode.trim() !== "";
+      const hasDesc = item.description && item.description.trim() !== "";
+      const hasUom = item.uom && item.uom.trim() !== "";
+      const hasUnitPrice = item.unitPrice > 0;
+      const hasQty = item.quantity > 0;
   
+      if (!hasItemCode && (!hasDesc || !hasUom || !hasUnitPrice || !hasQty)) {
+        setErrorModal({
+          title: "Validation Error",
+          message: "If Item Code is empty, Description, UOM, Unit Price, and Quantity must all be filled in."
+        });
+        return;
+      }
+    }
+
+    setIsConfirmationModalOpen(true);
+  };
+
+  const handleConfirmSave = async () => {
+    setIsSaveLoading(true);
+    setIsConfirmationModalOpen(false);
+  
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(now - offset).toISOString().slice(0, 19);
+  
+    const requestBody = {
+      actionData: {
+        customerId: Number(customerId),
+        userId: selectedAgent?.value || userId,
+        locationId: selectedLocation?.value || locationId,
+        id: ""
+      },
+      salesId,
+      docNo,
+      debtorId: selectedDebtor?.value || "",
+      debtorName: companyName,
+      docDate: localISOTime,
+      locationId: selectedLocation?.value || locationId,
+      remark: "",
+      total,
+      details: invoiceItems.map((item) => ({
+        itemId: item.itemId || "",
+        itemUOMId: item.uomOptions?.find((u) => u.label === item.uom)?.value || "",
+        description: item.description || "",
+        desc2: "",
+        itemBatchId: "",
+        qty: item.quantity,
+        unitPrice: item.unitPrice,
+        discount: `${item.discount}`,
+        discountAmount:
+          item.discountType === "Percentage"
+            ? (item.unitPrice * item.quantity * item.discount) / 100
+            : item.discount,
+        subTotal: item.subtotal
+      }))
+    };
+  
+    try {
+      const response = await fetch(SaveSales, {
+        method: "POST",
+        headers: {
+          Accept: "text/plain",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+      });
+  
+      const data = await response.json();
+  
+      if (!data.success) {
+        if (data.errorMessage === "There is currently no active counter session.") {
+          setErrorModal({
+            title: "Session Error",
+            message: data.errorMessage,
+            onClose: () => {
+              setCounterSession(null);
+              setErrorModal({ title: "", message: "", onClose: null });
+            }
+          });
+        } else {
+          throw new Error(data.errorMessage || "Failed to save sales invoice.");
+        }
+        return;
+      }
+  
+      setNotificationModal({
+        isOpen: true,
+        title: "Success",
+        message: "Sales invoice saved successfully.",
+        onClose: () => {
+          setNotificationModal({ isOpen: false });
+          setSelectedDebtor(null);
+          setCompanyName("");
+          setSelectedLocation(null);
+          setSelectedAgent(null);
+          setSelectedPaymentType(null);
+          setInvoiceItems([
+            {
+              itemId: "",
+              itemCode: "",
+              description: "",
+              uom: "",
+              uomOptions: [],
+              unitPrice: 0,
+              quantity: 0,
+              discountType: "Percentage",
+              discount: 0,
+              subtotal: 0
+            }
+          ]);
+          setTotal(0);
+          setIsPaymentConfirmed(false);
+          setEnteredAmount("");
+          setCardNumber("");
+          setCardReceiptRef("");
+          setApprovalCode("");
+          setBankReceiptRef("");
+          setBankRef("");
+          setMultiPaymentMethods([]);
+          setOutstandingOrChange(0);
+          setIsOutstanding(false);
+        }
+      });
+    } catch (error) {
+      setErrorModal({ title: "Save Error", message: error.message });
+    } finally {
+      setIsSaveLoading(false);
+    }
+  };  
 
   const customStyles = {
     control: (provided, state) => ({
@@ -511,11 +768,18 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
       },
     }),
   };
-  
 
   return (
     <div>
-      <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() =>setErrorModal({ title: "", message: "" })}/>
+      <ErrorModal
+        title={errorModal.title}
+        message={errorModal.message}
+        onClose={
+          typeof errorModal.onClose === "function"
+            ? errorModal.onClose
+            : () => setErrorModal({ title: "", message: "" })
+        }
+      />      
       <h2 className="text-xl font-bold text-secondary">Sales Invoice</h2>
       <div className="grid grid-cols-5 gap-2 mt-4">
         <div>
@@ -686,6 +950,8 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
         message="Are you sure you want to proceed with this payment?"
         onConfirm={handleConfirmPayment}
         onCancel={() => setIsConfirmationModalOpen(false)}
+        confirmButtonDisabled={isSavingPayment}
+        confirmButtonText={isSavingPayment ? "Processing..." : "Yes"}
       />
 
       {isPaymentModalOpen && (
@@ -848,14 +1114,6 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
               </button>
             </div>
 
-            <ConfirmationModal 
-              isOpen={isConfirmationModalOpen}
-              title="Confirm Payment"
-              message="Are you sure you want to proceed with this payment?"
-              onConfirm={handleConfirmMultiPayment}
-              onCancel={() => setIsConfirmationModalOpen(false)}
-            />
-
             {multiPaymentMethods.map((payment, index) => (
               <div key={index} className="border p-1 mt-2 rounded-md">
                 <Select
@@ -916,7 +1174,7 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     <input
                       type="text"
-                      placeholder="Receipt Reference"
+                      placeholder="Enter Receipt Reference"
                       className="p-2 border rounded-md bg-white text-secondary text-xs"
                       value={payment.bankReceiptRef}
                       onChange={(e) => handleMultiPaymentFieldChange(index, "bankReceiptRef", e.target.value)}
@@ -963,12 +1221,31 @@ const SalesInvoice = ({ salesId, docNo, salesLocationId }) => {
       <div className="flex gap-2 mt-2">
         <p className="text-sm font-bold text-secondary">Total: {total.toFixed(2)}</p>
         <p className="text-sm font-bold text-secondary">
-          {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
+          {isOutstanding
+            ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}`
+            : `Change: ${outstandingOrChange.toFixed(2)}`}
         </p>
       </div>
-      
+
+      <ConfirmationModal 
+        isOpen={isConfirmationModalOpen}
+        title="Confirm Save"
+        message="Are you sure you want to proceed with saving this invoice?"
+        onConfirm={handleConfirmSave}
+        onCancel={() => setIsConfirmationModalOpen(false)}
+        confirmButtonDisabled={isSaveLoading}
+        confirmButtonText={isSaveLoading ? "Saving..." : "Yes"}
+      />
+
+        <NotificationModal
+          isOpen={notificationModal.isOpen}
+          title={notificationModal.title}
+          message={notificationModal.message}
+          onClose={notificationModal.onClose}
+        />
+
       <div className="flex justify-between mt-4">
-        <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">Save</button>
+        <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
         <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
       </div>
     </div>

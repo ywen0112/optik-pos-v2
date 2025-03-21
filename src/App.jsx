@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./login/Login";
+import Login from "./Login/Login";
 import CompanySelection from "./login/CompanySelection";
 import MainLayout from "./layouts/MainLayout"; 
 

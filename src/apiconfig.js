@@ -5,6 +5,8 @@ export const UsersApi = `${ApiBaseUrl}Users/`;
 export const GetUserLogins = `${UsersApi}GetUserLogins`;
 export const GetSpecificUser = `${UsersApi}GetSpecificUser`;
 export const GetUsers = `${UsersApi}GetUsers`;
+export const UpdateUser = `${UsersApi}UpdateUser`;
+export const ChangePassword = `${UsersApi}ChangePassword`;
 
 //Cash Counter
 export const CashCounterApi = `${ApiBaseUrl}CashCounter/`;
@@ -16,7 +18,6 @@ export const VoidCashTransaction = `${CashCounterApi}VoidCashTransaction`;
 export const OpenCounterSession = `${CashCounterApi}OpenCounterSession`;
 export const NewCashTransaction = `${CashCounterApi}NewCashTransaction`;
 export const CloseCounterSession = `${CashCounterApi}CloseCounterSession`;
-
 
 //Debtor
 export const DebtorApi = `${ApiBaseUrl}Debtor/`;
@@ -34,11 +35,13 @@ export const GetLocationRecords = `${LocationApi}GetRecords`;
 export const SalesApi = `${ApiBaseUrl}Sales/`;
 export const NewSales = `${SalesApi}New`;
 export const SaveSales = `${SalesApi}Save`;
+export const SaveSalesPayment = `${SalesApi}SaveSalesPayment`
 
 //Purchases
 export const PurchasesApi = `${ApiBaseUrl}Purchases/`;
 export const NewPurchases = `${PurchasesApi}New`;
 export const SavePurchases = `${PurchasesApi}Save`;
+export const SavePurchasePayment = `${PurchasesApi}SavePurchasePayment`
 
 //Credit Note
 export const CreditNoteApi = `${ApiBaseUrl}CreditNote/`;
@@ -47,3 +50,7 @@ export const NewCreditNote = `${CreditNoteApi}New`;
 //Item
 export const ItemApi = `${ApiBaseUrl}Item/`;
 export const GetItemRecords = `${ItemApi}GetRecords`;
+
+//Access Rights
+export const AccessRightApi = `${ApiBaseUrl}AccessRight/`;
+export const GetAccessRightRecords = `${AccessRightApi}GetRecords`; 

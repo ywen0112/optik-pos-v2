@@ -6,8 +6,10 @@ import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords } from "
 import ErrorModal from "../modals/ErrorModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
 
-const CreditNote = ({ creditNoteId, docNo, creditNoteLocationId }) => {
+const CreditNote = ({ creditNoteId, docNo, counterSession, setCounterSession }) => {
   const customerId = localStorage.getItem("customerId");
+  const userId = localStorage.getItem("userId");
+  const locationId = localStorage.getItem("locationId");
   const [debtorOptions, setDebtorOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [agentOptions, setAgentOptions] = useState([]);
@@ -108,8 +110,8 @@ const CreditNote = ({ creditNoteId, docNo, creditNoteLocationId }) => {
             label: `${location.locationCode} - ${location.description}`
           }));
           setLocationOptions(options);
-          if (creditNoteLocationId) {
-            const matchedLocation = options.find(loc => loc.value === creditNoteLocationId);
+          if (locationId) {
+            const matchedLocation = options.find(loc => loc.value === locationId);
             if (matchedLocation) {
               setSelectedLocation(matchedLocation);
             }
@@ -123,7 +125,7 @@ const CreditNote = ({ creditNoteId, docNo, creditNoteLocationId }) => {
     };
 
     fetchLocations();
-  }, [creditNoteLocationId]);
+  }, []);
 
   useEffect(() => {
     const fetchAgents = async () => {
@@ -151,6 +153,12 @@ const CreditNote = ({ creditNoteId, docNo, creditNoteLocationId }) => {
             label: agent.userName
           }));
           setAgentOptions(options);
+          if (userId) {
+            const matchedAgent = options.find(agent => agent.value === userId);
+            if (matchedAgent) {
+              setSelectedAgent(matchedAgent);
+            }
+          }
         } else {
           throw new Error(data.errorMessage || "Failed to fetch agent records.");
         }
@@ -294,20 +302,29 @@ const CreditNote = ({ creditNoteId, docNo, creditNoteLocationId }) => {
 
   const handleRowChange = (index, field, value) => {
     const updatedItems = [...invoiceItems];
-    updatedItems[index][field] = value;
   
-    updatedItems[index].unitPrice = parseFloat(updatedItems[index].unitPrice) || 0;
-    updatedItems[index].quantity = parseInt(updatedItems[index].quantity) || 0;
-    updatedItems[index].discount = parseFloat(updatedItems[index].discount) || 0;
+    if ((field === "unitPrice" || field === "quantity" || field === "discount") && parseFloat(value) < 0) {
+      return;
+    }
   
-    const discountAmount = updatedItems[index].discountType === "Percentage"
-      ? (updatedItems[index].unitPrice * updatedItems[index].quantity * updatedItems[index].discount) / 100
-      : updatedItems[index].discount;
+    if (field === "unitPrice" || field === "discount") {
+      updatedItems[index][field] = parseFloat(value) || 0;
+    } else if (field === "quantity") {
+      updatedItems[index][field] = parseInt(value) || 0;
+    } else {
+      updatedItems[index][field] = value;
+    }
   
-    updatedItems[index].subtotal = (updatedItems[index].unitPrice * updatedItems[index].quantity) - discountAmount;
+    const item = updatedItems[index];
+    const discountAmount =
+      item.discountType === "Percentage"
+        ? (item.unitPrice * item.quantity * item.discount) / 100
+        : item.discount;
+  
+    item.subtotal = item.unitPrice * item.quantity - discountAmount;
   
     setInvoiceItems(updatedItems);
-    calculateTotals(updatedItems); 
+    calculateTotals(updatedItems);
   };
 
   const calculateTotals = (items) => {

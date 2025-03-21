@@ -2,8 +2,8 @@ const NotificationModal = ({ isOpen, title, message, onClose }) => {
     if (!isOpen) return null;
   
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-30">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-96 z-30">
           <h2 className="text-xl font-bold text-gray-900 text-center">{title || "Notification"}</h2>
           <p className="mt-2 text-gray-700 text-center">{message}</p>
           <div className="mt-4 flex justify-center">
