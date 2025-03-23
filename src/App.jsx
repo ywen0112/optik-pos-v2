@@ -44,7 +44,7 @@ const App = () => {
         <Route path="/maintenances/item" element={isAuthenticated ? <MainLayout title="Item Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/maintenances/location" element={isAuthenticated ? <MainLayout title="Location Maintenance" /> : <Navigate to="/login" />} />
 
-        <Route path="/invite?" element={<UserRegistrationPage />} />
+        <Route path="/invite" element={<UserRegistrationPage /> } />
 
         {/* Catch-all Redirect */}
         <Route path="*" element={<Navigate to="/login" />} />
