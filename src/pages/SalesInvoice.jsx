@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
-import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales, SaveSalesPayment } from "../apiconfig";
+import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales, SaveSalesPayment, GetDebtorPreviousEyeProfile, NewEyePower, SaveEyePower } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
 import NotificationModal from "../modals/NotificationModal";
 
-const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => {
+const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
   const customerId = localStorage.getItem("customerId");
   const userId = localStorage.getItem("userId");
   const locationId = localStorage.getItem("locationId");
@@ -67,6 +67,14 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
   const [isSavingPayment, setIsSavingPayment] = useState(false);
   const [notificationModal, setNotificationModal] = useState({ isOpen: false, title: "", message: "", onClose: null });
   const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const [isSaveConfirmationModalOpen, setIsSaveConfirmationModalOpen] = useState(false)
+
+  const [activeTab, setActiveTab] = useState("Sales Invoice");
+  const [eyePower, setEyePower] = useState(null);
+  const [newEyePower, setNewEyePower] = useState(null);
+  const [isPreviousEyePowerLoading, setIsPreviousEyePowerLoading] = useState(false);
+  const [isNewEyePowerLoading, setIsNewEyePowerLoading] = useState(false);
+  const [isSaveEyePowerConfirmModalOpen, setIsSaveEyePowerConfirmModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchDebtors = async () => {
@@ -309,7 +317,6 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
     calculateTotals(updatedItems);
   };
   
-
   const addNewItem = () => {
     setInvoiceItems([
       ...invoiceItems,
@@ -337,12 +344,11 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
   const handleRowChange = (index, field, value) => {
     const updatedItems = [...invoiceItems];
   
-    if ((field === "unitPrice" || field === "quantity" || field === "discount") && parseFloat(value) < 0) {
-      return;
-    }
-  
+    if ((field === "unitPrice" || field === "discount") && parseFloat(value) < 0) return;
+    if (field === "quantity" && parseInt(value) < 0) return;
+
     if (field === "unitPrice" || field === "discount") {
-      updatedItems[index][field] = parseFloat(value) || 0;
+      updatedItems[index][field] = parseFloat(parseFloat(value).toFixed(2)) || 0;
     } else if (field === "quantity") {
       updatedItems[index][field] = parseInt(value) || 0;
     } else {
@@ -383,15 +389,25 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
   };
 
   const handleAmountChange = (e) => {
-    const amount = parseFloat(e.target.value);
-    setEnteredAmount(amount);
-
-    if (amount < total) {
-      setIsOutstanding(true);
-      setOutstandingOrChange(total - amount);
-    } else {
-      setIsOutstanding(false);
-      setOutstandingOrChange(amount - total);
+    let value = e.target.value;
+  
+    if (value === "") {
+      setEnteredAmount("");
+      return;
+    }
+  
+    const floatValue = parseFloat(value);
+    if (!isNaN(floatValue)) {
+      const fixedValue = parseFloat(floatValue.toFixed(2));
+      setEnteredAmount(fixedValue);
+  
+      if (fixedValue < total) {
+        setIsOutstanding(true);
+        setOutstandingOrChange(total - fixedValue);
+      } else {
+        setIsOutstanding(false);
+        setOutstandingOrChange(fixedValue - total);
+      }
     }
   };
 
@@ -416,38 +432,44 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
     if (selectedPaymentType?.value === "Multi Payment") {
       payments = multiPaymentMethods.map((method) => {
         let reference = "";
-        let remark = method.type;
+        let remark = "";
   
         if (method.type === "Bank Transfer") {
+          remark = "Method: Bank Transfer";
           reference = `bank reference no： ${method.bankRef || ""} ｜ receipt reference： ${method.bankReceiptRef || ""}`;
         } else if (method.type === "Card Payment") {
           const cardEnding = method.cardNumber?.slice(-4) || "";
-          remark = `Card Payment ****${cardEnding}`;
+          remark = `Method: Card ****${cardEnding}`;
           reference = `approval code： ${method.approvalCode || ""} ｜ receipt reference： ${method.cardReceiptRef || ""}`;
+        } else {
+          remark = `Method: ${method.type}`;
         }
   
         return {
-          remark: remark,
-          reference: reference,
-          amount: parseFloat(method.amount),
+          remark,
+          reference,
+          amount: parseFloat(parseFloat(method.amount).toFixed(2)),
         };
       });
     } else {
       let reference = "";
-      let remark = selectedPaymentType?.value;
+      let remark = "";
   
       if (selectedPaymentType?.value === "Bank Transfer") {
+        remark = "Method: Bank Transfer";
         reference = `bank reference no： ${bankRef || ""} ｜ receipt reference： ${bankReceiptRef || ""}`;
       } else if (selectedPaymentType?.value === "Card Payment") {
         const cardEnding = cardNumber?.slice(-4) || "";
-        remark = `Card Payment ****${cardEnding}`;
+        remark = `Method: Card ****${cardEnding}`;
         reference = `approval code： ${approvalCode || ""} ｜ receipt reference： ${cardReceiptRef || ""}`;
-      }
+      } else {
+        remark = `Method: ${selectedPaymentType?.value}`;
+      }  
   
       payments.push({
         remark: remark,
         reference: reference,
-        amount: parseFloat(enteredAmount),
+        amount: parseFloat(parseFloat(enteredAmount).toFixed(2)),
       });
     }
   
@@ -551,16 +573,22 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
   };
   
   const handleMultiPaymentAmountChange = (index, value) => {
+    const floatValue = parseFloat(value);
+    const fixedAmount = !isNaN(floatValue) ? parseFloat(floatValue.toFixed(2)) : 0;
+  
     const updatedPayments = [...multiPaymentMethods];
-    updatedPayments[index].amount = parseFloat(value) || 0;
+    updatedPayments[index].amount = fixedAmount;
     setMultiPaymentMethods(updatedPayments);
   
-    const totalPaid = updatedPayments.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
+    const totalPaid = updatedPayments.reduce(
+      (sum, payment) => sum + (parseFloat(payment.amount) || 0),
+      0
+    );
     const newOutstandingOrChange = totalPaid - total;
   
     setOutstandingOrChange(newOutstandingOrChange);
     setIsOutstanding(newOutstandingOrChange < 0);
-  };
+  };;
   
   const removePaymentMethod = (index) => {
     const updatedPayments = multiPaymentMethods.filter((_, i) => i !== index);
@@ -612,12 +640,12 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
       }
     }
 
-    setIsConfirmationModalOpen(true);
+    setIsSaveConfirmationModalOpen(true);
   };
 
   const handleConfirmSave = async () => {
     setIsSaveLoading(true);
-    setIsConfirmationModalOpen(false);
+    setIsSaveConfirmationModalOpen(false);
   
     const now = new Date();
     const offset = now.getTimezoneOffset() * 60000;
@@ -637,22 +665,26 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
       docDate: localISOTime,
       locationId: selectedLocation?.value || locationId,
       remark: "",
-      total,
-      details: invoiceItems.map((item) => ({
-        itemId: item.itemId || "",
-        itemUOMId: item.uomOptions?.find((u) => u.label === item.uom)?.value || "",
-        description: item.description || "",
-        desc2: "",
-        itemBatchId: "",
-        qty: item.quantity,
-        unitPrice: item.unitPrice,
-        discount: `${item.discount}`,
-        discountAmount:
+      total: parseFloat(total.toFixed(2)),
+      details: invoiceItems.map((item) => {
+        const discountAmount =
           item.discountType === "Percentage"
             ? (item.unitPrice * item.quantity * item.discount) / 100
-            : item.discount,
-        subTotal: item.subtotal
-      }))
+            : item.discount;
+  
+        return {
+          itemId: item.itemId || "",
+          itemUOMId: item.uomOptions?.find((u) => u.label === item.uom)?.value || "",
+          description: item.description || "",
+          desc2: "",
+          itemBatchId: "",
+          qty: item.quantity,
+          unitPrice: parseFloat(item.unitPrice.toFixed(2)),
+          discount: `${item.discount}`,
+          discountAmount: parseFloat(discountAmount.toFixed(2)), 
+          subTotal: parseFloat(item.subtotal.toFixed(2))
+        };
+      })
     };
   
     try {
@@ -726,6 +758,158 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
     } finally {
       setIsSaveLoading(false);
     }
+  }; 
+  
+  useEffect(() => {
+    const fetchEyeProfile = async () => {
+      if (activeTab === "Eye Powers" && selectedDebtor?.value) {
+        setIsPreviousEyePowerLoading(true);
+        try {
+          const payload = {
+            customerId: Number(customerId),
+            userId,
+            locationId,
+            id: selectedDebtor.value.toString()
+          };
+  
+          const response = await fetch(GetDebtorPreviousEyeProfile, {
+            method: "POST",
+            headers: {
+              "Accept": "text/plain",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+  
+          const data = await response.json();
+          if (data.success) {
+            setEyePower(data.data);
+          } else {
+            throw new Error(data.errorMessage || "Failed to fetch eye power");
+          }
+        } catch (error) {
+          setEyePower(null);
+          setErrorModal({ title: "Eye Profile Error", message: error.message });
+        } finally {
+          setIsPreviousEyePowerLoading(false);
+
+        }
+      }
+    };
+  
+    fetchEyeProfile();
+  }, [activeTab, selectedDebtor]);
+
+  const handleEyeInput = (fieldPath, value) => {
+    setNewEyePower(prev => {
+      const updated = { ...prev };
+      const keys = fieldPath.split(".");
+  
+      let current = updated;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = current[keys[i]] || {};
+        current = current[keys[i]];
+      }
+  
+      current[keys[keys.length - 1]] = value;
+      return updated;
+    });
+  };
+
+  const fetchNewEyePower = async () => {
+    if (activeTab === "Eye Powers" && selectedDebtor?.value) {
+      setIsNewEyePowerLoading(true);
+      try {
+        const payload = {
+          customerId: Number(customerId),
+          userId,
+          locationId,
+          id: ""
+        };
+  
+        const response = await fetch(NewEyePower, {
+          method: "POST",
+          headers: {
+            "Accept": "text/plain",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+  
+        const data = await response.json();
+        if (data.success) {
+          setNewEyePower(data.data);
+        } else {
+          throw new Error(data.errorMessage || "Failed to fetch new eye power data");
+        }
+      } catch (error) {
+        setNewEyePower(null);
+        setErrorModal({ title: "New Eye Power Error", message: error.message });
+      } finally {
+        setIsNewEyePowerLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchNewEyePower();
+  }, [activeTab, selectedDebtor]);  
+
+  const handleConfirmSaveEyePower = async () => {
+    setIsSaveEyePowerConfirmModalOpen(false);
+  
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(now - offset).toISOString().slice(0, 19);
+  
+    const payload = {
+      actionData: {
+        customerId: Number(customerId),
+        userId,
+        locationId,
+        id: newEyePower?.id ?? "" 
+      },
+      eyePowerId: newEyePower?.eyePowerId ?? "",
+      debtorId: selectedDebtor?.value ?? "",
+      salesId: salesId ?? "",
+      opticalHeight: Number(newEyePower?.opticalHeight) || null,
+      segmentHeight: Number(newEyePower?.segmentHeight) || null,
+      lensProfile: newEyePower.lensProfile ?? {},
+      latestGlassProfile: newEyePower.latestGlassProfile ?? {},
+      actualGlassProfile: newEyePower.actualGlassProfile ?? {},
+      userDefinedTime: localISOTime
+    };
+  
+    try {
+      const response = await fetch(SaveEyePower, {
+        method: "POST",
+        headers: {
+          "Accept": "text/plain",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        setNotificationModal({
+          isOpen: true,
+          title: "Success",
+          message: "Eye power saved successfully.",
+          onClose: () => {
+            setNotificationModal({ isOpen: false });
+            fetchNewEyePower(); 
+          }
+        });
+      } else {
+        throw new Error(data.errorMessage || "Failed to save eye power.");
+      }
+    } catch (error) {
+      setErrorModal({
+        title: "Save Eye Power Error",
+        message: error.message
+      });
+    }
   };  
 
   const customStyles = {
@@ -779,170 +963,233 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
             ? errorModal.onClose
             : () => setErrorModal({ title: "", message: "" })
         }
-      />      
-      <h2 className="text-xl font-bold text-secondary">Sales Invoice</h2>
-      <div className="grid grid-cols-5 gap-2 mt-4">
-        <div>
-          <label className="block text-xs font-semibold text-secondary">Debtor</label>
-          <Select
-            options={debtorOptions}
-            value={selectedDebtor}
-            onChange={handleDebtorChange}
-            placeholder="Select debtor"
-            styles={customStyles}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-secondary">Company Name</label>
-          <input 
-            type="text" 
-            className="border border-gray-300 rounded p-2 w-full text-sm text-secondary bg-white" 
-            placeholder="Company Name" 
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-secondary">Location</label>
-          <Select
-            options={locationOptions}
-            value={selectedLocation}
-            onChange={(option) => setSelectedLocation(option)}
-            placeholder="Select location"
-            styles={customStyles}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-secondary">Agent</label>
-          <Select
-            options={agentOptions}
-            value={selectedAgent}
-            onChange={(option) => setSelectedAgent(option)}
-            placeholder="Select agent"
-            styles={customStyles}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-secondary">Payment Type</label>
-          <Select
-            options={paymentTypeOptions}
-            value={selectedPaymentType}
-            onChange={handlePaymentTypeChange}
-            placeholder="Select payment type"
-            styles={customStyles}
-            isDisabled={isPaymentConfirmed}
-          />
-        </div>
+      /> 
+        <ConfirmationModal 
+        isOpen={isSaveConfirmationModalOpen}
+        title="Confirm Save"
+        message="Are you sure you want to proceed with saving this invoice?"
+        onConfirm={handleConfirmSave}
+        onCancel={() => setIsSaveConfirmationModalOpen(false)}
+        confirmButtonDisabled={isSaveLoading}
+        confirmButtonText={isSaveLoading ? "Saving..." : "Yes"}
+      />
+
+        <NotificationModal
+          isOpen={notificationModal.isOpen}
+          title={notificationModal.title}
+          message={notificationModal.message}
+          onClose={notificationModal.onClose}
+        />
+
+       <style>
+        {`
+          button:hover {
+            border-color: transparent !important;
+          }
+          button:focus, button:focus-visible {
+            outline: none !important;
+          }
+        `}
+      </style>  
+      
+      <h2 className="text-xl font-bold text-secondary">Sales Invoice</h2>    
+      <div className="flex border-b mb-4">
+        {["Sales Invoice", "Eye Powers"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`relative text-sm font-medium bg-transparent border-none ${
+              activeTab === tab ? "text-secondary font-semibold after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-primary" : "text-gray-500 hover:text-secondary"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
-      <div className="mt-6 overflow-x-auto relative">
-      <div className="text-right mb-2"><button className="px-6 py-1 bg-secondary text-white rounded-md text-xs" onClick={addNewItem}>Add Item</button></div>
-        <table className="w-full border-collapse border">
-          <thead className="bg-gray-900 text-white text-left text-xs">
-            <tr>
-              <th className="p-2 w-48">Item Code</th>
-              <th className="p-2 w-48">Description</th>
-              <th className="p-2 w-48">UOM</th>
-              <th className="p-2 w-24">Unit Price</th>
-              <th className="p-2 w-24">Quantity</th>
-              <th className="p-2 w-32">Discount</th>
-              <th className="p-2 w-32">Discount Amount</th>
-              <th className="p-2 w-24">Subtotal</th>
-              <th className="p-2 w-12">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoiceItems.map((item, index) => (
-              <tr key={index} className="text-sm">
-                <td>
-                  <CreatableSelect
-                    options={itemOptions}
-                    value={item.itemId ? { value: item.itemId, label: item.itemCode } : null}
-                    onChange={(option) => handleItemChange(index, option)}
-                    placeholder="Select item"
-                    styles={customStyles}
-                    menuPortalTarget={document.body}
-                    isDisabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <input 
-                    type="text" 
-                    className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                    value={item.description} 
-                    onChange={(e) => handleRowChange(index, "description", e.target.value)}
-                    disabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <CreatableSelect
-                    options={item.uomOptions}
-                    value={item.uom ? { value: item.uom, label: item.uom } : null}
-                    onChange={(option) => handleUomChange(index, option)}
-                    placeholder="Select UOM"
-                    styles={customStyles}
-                    menuPortalTarget={document.body}
-                    isDisabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <input 
-                    type="number" 
-                    min={0}
-                    className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                    value={item.unitPrice} 
-                    onChange={(e) => handleRowChange(index, "unitPrice", parseFloat(e.target.value) || 0)} 
-                    disabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <input 
-                    type="number" 
-                    min={0}
-                    className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                    value={item.quantity} 
-                    onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 0)} 
-                    disabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <CreatableSelect
-                    options={discountTypeOptions}
-                    value={item.discountType ? { value: item.discountType, label: item.discountType } : null}
-                    onChange={(option) => handleRowChange(index, "discountType", option.value)}
-                    placeholder="Select Discount Type"
-                    styles={customStyles}
-                    menuPortalTarget={document.body}
-                    isDisabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <input 
-                    type="number" 
-                    min={0}
-                    className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                    value={item.discount} 
-                    onChange={(e) => handleRowChange(index, "discount", parseFloat(e.target.value) || 0)} 
-                    disabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                <input 
-                    className="bg-gray-100 border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                    value={item.subtotal.toFixed(2)}
-                    disabled
-                  />
-                </td>
-                <td className="p-2">
-                    <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} disabled={isPaymentConfirmed}>
-                        <Trash2 size={16} strokeWidth={1} />
-                    </button>                
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {activeTab === "Sales Invoice" && (
+        <div>   
+          <div className="grid grid-cols-5 gap-2 mt-4">
+            <div>
+              <label className="block text-xs font-semibold text-secondary">Debtor</label>
+              <Select
+                options={debtorOptions}
+                value={selectedDebtor}
+                onChange={handleDebtorChange}
+                placeholder="Select debtor"
+                styles={customStyles}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-secondary">Company Name</label>
+              <input 
+                type="text" 
+                className="border border-gray-300 rounded p-2 w-full text-sm text-secondary bg-white" 
+                placeholder="Company Name" 
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-secondary">Location</label>
+              <Select
+                options={locationOptions}
+                value={selectedLocation}
+                onChange={(option) => setSelectedLocation(option)}
+                placeholder="Select location"
+                styles={customStyles}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-secondary">Agent</label>
+              <Select
+                options={agentOptions}
+                value={selectedAgent}
+                onChange={(option) => setSelectedAgent(option)}
+                placeholder="Select agent"
+                styles={customStyles}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-secondary">Payment Type</label>
+              <Select
+                options={paymentTypeOptions}
+                value={selectedPaymentType}
+                onChange={handlePaymentTypeChange}
+                placeholder="Select payment type"
+                styles={customStyles}
+                isDisabled={isPaymentConfirmed}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 overflow-x-auto relative">
+          <div className="text-right mb-2"><button className="px-6 py-1 bg-secondary text-white rounded-md text-xs" onClick={addNewItem}>Add Item</button></div>
+            <table className="w-full border-collapse border">
+              <thead className="bg-gray-900 text-white text-left text-xs">
+                <tr>
+                  <th className="p-2 w-48">Item Code</th>
+                  <th className="p-2 w-48">Description</th>
+                  <th className="p-2 w-48">UOM</th>
+                  <th className="p-2 w-24">Unit Price</th>
+                  <th className="p-2 w-24">Quantity</th>
+                  <th className="p-2 w-32">Discount</th>
+                  <th className="p-2 w-32">Discount Amount</th>
+                  <th className="p-2 w-24">Subtotal</th>
+                  <th className="p-2 w-12">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoiceItems.map((item, index) => (
+                  <tr key={index} className="text-sm">
+                    <td>
+                      <CreatableSelect
+                        options={itemOptions}
+                        value={item.itemId ? { value: item.itemId, label: item.itemCode } : null}
+                        onChange={(option) => handleItemChange(index, option)}
+                        placeholder="Select item"
+                        styles={customStyles}
+                        menuPortalTarget={document.body}
+                        isDisabled={isPaymentConfirmed}
+                      />
+                    </td>
+                    <td>
+                      <input 
+                        type="text" 
+                        className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                        value={item.description} 
+                        onChange={(e) => handleRowChange(index, "description", e.target.value)}
+                        disabled={isPaymentConfirmed}
+                      />
+                    </td>
+                    <td>
+                      <CreatableSelect
+                        options={item.uomOptions}
+                        value={item.uom ? { value: item.uom, label: item.uom } : null}
+                        onChange={(option) => handleUomChange(index, option)}
+                        placeholder="Select UOM"
+                        styles={customStyles}
+                        menuPortalTarget={document.body}
+                        isDisabled={isPaymentConfirmed}
+                      />
+                    </td>
+                    <td>
+                      <input 
+                        type="number" 
+                        min={0}
+                        step="0.01"
+                        className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                        value={item.unitPrice} 
+                        onChange={(e) => handleRowChange(index, "unitPrice", parseFloat(e.target.value) || 0)} 
+                        disabled={isPaymentConfirmed}
+                      />
+                    </td>
+                    <td>
+                      <input 
+                        type="number" 
+                        min={0}
+                        step="1"
+                        className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                        value={item.quantity} 
+                        onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 0)} 
+                        disabled={isPaymentConfirmed}
+                      />
+                    </td>
+                    <td>
+                      <Select
+                        options={discountTypeOptions}
+                        value={item.discountType ? { value: item.discountType, label: item.discountType } : null}
+                        onChange={(option) => handleRowChange(index, "discountType", option.value)}
+                        placeholder="Select Discount Type"
+                        styles={customStyles}
+                        menuPortalTarget={document.body}
+                        isDisabled={isPaymentConfirmed}
+                      />
+                    </td>
+                    <td>
+                      <input 
+                        type="number" 
+                        min={0}
+                        step="0.01"
+                        className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                        value={item.discount} 
+                        onChange={(e) => handleRowChange(index, "discount", parseFloat(e.target.value) || 0)} 
+                        disabled={isPaymentConfirmed}
+                      />
+                    </td>
+                    <td>
+                    <input 
+                        className="bg-gray-100 border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                        value={item.subtotal.toFixed(2)}
+                        disabled
+                      />
+                    </td>
+                    <td className="p-2">
+                        <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} disabled={isPaymentConfirmed}>
+                            <Trash2 size={16} strokeWidth={1} />
+                        </button>                
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex gap-2 mt-2">
+            <p className="text-sm font-bold text-secondary">Total: {total.toFixed(2)}</p>
+            <p className="text-sm font-bold text-secondary">
+              {isOutstanding
+                ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}`
+                : `Change: ${outstandingOrChange.toFixed(2)}`}
+            </p>
+          </div>
+
+          <div className="flex justify-between mt-4">
+            <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
+            <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
+          </div>
+        </div>
+      )}
 
       <ConfirmationModal 
         isOpen={isConfirmationModalOpen}
@@ -969,6 +1216,7 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
               placeholder="Enter Amount"
               className="w-full mt-2 p-2 border rounded-md bg-white text-secondary text-xs"
               min={0}
+              step="0.01"
               value={enteredAmount}
               onChange={handleAmountChange}
             />  
@@ -1024,6 +1272,7 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
                 type="number"
                 placeholder="Enter Amount"
                 min={0}
+                step="0.01"
                 className="p-2 border rounded-md bg-white text-secondary text-xs"
                 value={enteredAmount}
                 onChange={handleAmountChange}
@@ -1076,6 +1325,7 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
                 placeholder="Enter Amount"
                 className="p-2 border rounded-md bg-white text-secondary text-xs"
                 min={0}
+                step="0.01"
                 value={enteredAmount}
                 onChange={handleAmountChange}
               />
@@ -1130,6 +1380,7 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
                     placeholder="Enter Amount"
                     className="w-full mt-2 p-2 border rounded-md bg-white text-secondary text-xs"
                     min={0}
+                    step="0.01"
                     value={payment.amount}
                     onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
                   />
@@ -1164,6 +1415,7 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
                       placeholder="Enter Amount"
                       className="p-2 border rounded-md bg-white text-secondary text-xs"
                       min={0}
+                      step="0.01"
                       value={payment.amount}
                       onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
                     />
@@ -1191,6 +1443,7 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
                       placeholder="Enter Amount"
                       className="p-2 border rounded-md bg-white text-secondary text-xs"
                       min={0}
+                      step="0.01"
                       value={payment.amount}
                       onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
                     />
@@ -1218,36 +1471,238 @@ const SalesInvoice = ({ salesId, docNo, counterSession, setCounterSession }) => 
         </div>
       )}
 
-      <div className="flex gap-2 mt-2">
-        <p className="text-sm font-bold text-secondary">Total: {total.toFixed(2)}</p>
-        <p className="text-sm font-bold text-secondary">
-          {isOutstanding
-            ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}`
-            : `Change: ${outstandingOrChange.toFixed(2)}`}
-        </p>
-      </div>
+      {activeTab === "Eye Powers" && (
+        <div className="text-sm text-secondary mt-4">
+          <h4 className="text-secondary">Previous Eye Power Profile</h4>
+          {isPreviousEyePowerLoading ? (
+            <p className="text-sm text-gray-500 italic">Loading eye power data...</p>
+          ) : selectedDebtor ? (
+            <table className="border-collapse border w-full text-xs text-secondary text-left">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="border p-2">Param</th>
+                  <th className="border p-2">SPH</th>
+                  <th className="border p-2">CYL</th>
+                  <th className="border p-2">AXIS</th>
+                  <th className="border p-2">PRISM</th>
+                  <th className="border p-2">VA</th>
+                  <th className="border p-2">ADD</th>
+                  <th className="border p-2">PD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border p-2 font-semibold">Right</td>
+                  <td className="border p-2">{eyePower?.r_SPH ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.r_CYL ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.r_AXIS ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.r_PRISM ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.r_VA ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.r_ADD ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.r_PD ?? "-"}</td>
+                </tr>
+                <tr>
+                  <td className="border p-2 font-semibold">Left</td>
+                  <td className="border p-2">{eyePower?.l_SPH ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.l_CYL ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.l_AXIS ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.l_PRISM ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.l_VA ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.l_ADD ?? "-"}</td>
+                  <td className="border p-2">{eyePower?.l_PD ?? "-"}</td>
+                </tr>
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-gray-500">Please select a debtor first.</p>
+          )}
 
-      <ConfirmationModal 
-        isOpen={isConfirmationModalOpen}
-        title="Confirm Save"
-        message="Are you sure you want to proceed with saving this invoice?"
-        onConfirm={handleConfirmSave}
-        onCancel={() => setIsConfirmationModalOpen(false)}
-        confirmButtonDisabled={isSaveLoading}
-        confirmButtonText={isSaveLoading ? "Saving..." : "Yes"}
-      />
+          {isNewEyePowerLoading ? (
+            <p className="text-sm text-gray-500 italic mt-4">Loading new eye power...</p>
+          ) : newEyePower && (
+            <div className="text-xs mt-4">
+              <h4 className="text-sm text-secondary">New Eye Power</h4>
+              <div className="grid grid-cols-2 gap-4 text-secondary mt-2">
+                <div>
+                  <label className="block text-xs font-semibold">Optical Height</label>
+                  <input
+                    type="text"
+                    className="w-full p-2 border rounded-md bg-white"
+                    value={newEyePower.opticalHeight ?? ""}
+                    onChange={(e) => handleEyeInput("opticalHeight", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold">Segment Height</label>
+                  <input
+                    type="text"
+                    className="w-full p-2 border rounded-md bg-white"
+                    value={newEyePower.segmentHeight ?? ""}
+                    onChange={(e) => handleEyeInput("segmentHeight", e.target.value)}
+                  />
+                </div>
+              </div>
 
-        <NotificationModal
-          isOpen={notificationModal.isOpen}
-          title={notificationModal.title}
-          message={notificationModal.message}
-          onClose={notificationModal.onClose}
-        />
+              <h5 className="font-medium mt-4 text-secondary">Lens Profile</h5>
+              <table className="border-collapse border w-full text-xs text-secondary text-left">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="border p-2">Param</th>
+                    <th className="border p-2">SPH</th>
+                    <th className="border p-2">CYL</th>
+                    <th className="border p-2">AXIS</th>
+                    <th className="border p-2">BC</th>
+                    <th className="border p-2">DIA</th>
+                    <th className="border p-2">K READING</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {["R", "L"].map((side) => (
+                    <tr key={side}>
+                      <td className="border p-2 font-semibold">{side === "R" ? "Right" : "Left"}</td>
+                      <td className="border p-2">
+                        <input
+                          className="w-full p-1 border rounded text-xs bg-white"
+                          value={newEyePower.lensProfile?.[`lens_${side}_SPH`] ?? ""}
+                          onChange={(e) => handleEyeInput(`lensProfile.lens_${side}_SPH`, e.target.value)}
+                        />
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          className="w-full p-1 border rounded text-xs bg-white"
+                          value={newEyePower.lensProfile?.[`lens_${side}_CYL`] ?? ""}
+                          onChange={(e) => handleEyeInput(`lensProfile.lens_${side}_CYL`, e.target.value)}
+                        />
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          className="w-full p-1 border rounded text-xs bg-white"
+                          value={newEyePower.lensProfile?.[`lens_${side}_AXIS`] ?? ""}
+                          onChange={(e) => handleEyeInput(`lensProfile.lens_${side}_AXIS`, e.target.value)}
+                        />
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          className="w-full p-1 border rounded text-xs bg-white"
+                          value={newEyePower.lensProfile?.[`lens_${side}_BC`] ?? ""}
+                          onChange={(e) => handleEyeInput(`lensProfile.lens_${side}_BC`, e.target.value)}
+                        />
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          className="w-full p-1 border rounded text-xs bg-white"
+                          value={newEyePower.lensProfile?.[`lens_${side}_DIA`] ?? ""}
+                          onChange={(e) => handleEyeInput(`lensProfile.lens_${side}_DIA`, e.target.value)}
+                        />
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          className="w-full p-1 border rounded text-xs bg-white"
+                          value={newEyePower.lensProfile?.[`lens_${side}_K_READING`] ?? ""}
+                          onChange={(e) => handleEyeInput(`lensProfile.lens_${side}_K_READING`, e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-      <div className="flex justify-between mt-4">
-        <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
-        <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
-      </div>
+              <h5 className="font-medium mt-6 text-secondary">Latest Glass Profile</h5>
+              <table className="border-collapse border w-full text-xs text-secondary text-left">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="border p-2">Param</th>
+                    <th className="border p-2">SPH</th>
+                    <th className="border p-2">CYL</th>
+                    <th className="border p-2">AXIS</th>
+                    <th className="border p-2">PRISM</th>
+                    <th className="border p-2">VA</th>
+                    <th className="border p-2">ADD</th>
+                    <th className="border p-2">PD</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {["R", "L"].map((side) => (
+                    <tr key={side}>
+                      <td className="border p-2 font-semibold">{side === "R" ? "Right" : "Left"}</td>
+                      {["SPH", "CYL", "AXIS", "PRISM", "VA", "ADD", "PD"].map((field) => (
+                        <td className="border p-2" key={field}>
+                          <input
+                            className="w-full p-1 border rounded text-xs bg-white"
+                            value={newEyePower.latestGlassProfile?.[`latest_Glass_${side}_${field}`] ?? ""}
+                            onChange={(e) =>
+                              handleEyeInput(`latestGlassProfile.latest_Glass_${side}_${field}`, e.target.value)
+                            }
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <h5 className="font-medium mt-6 text-secondary">Actual Glass Profile</h5>
+              <table className="border-collapse border w-full text-xs text-secondary text-left">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="border p-2">Param</th>
+                    <th className="border p-2">SPH</th>
+                    <th className="border p-2">CYL</th>
+                    <th className="border p-2">AXIS</th>
+                    <th className="border p-2">PRISM</th>
+                    <th className="border p-2">VA</th>
+                    <th className="border p-2">ADD</th>
+                    <th className="border p-2">PD</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {["R", "L"].map((side) => (
+                    <tr key={side}>
+                      <td className="border p-2 font-semibold">{side === "R" ? "Right" : "Left"}</td>
+                      {["SPH", "CYL", "AXIS", "PRISM", "VA", "ADD", "PD"].map((field) => (
+                        <td className="border p-2" key={field}>
+                          <input
+                            className="w-full p-1 border rounded text-xs bg-white"
+                            value={newEyePower.actualGlassProfile?.[`actual_Glass_${side}_${field}`] ?? ""}
+                            onChange={(e) =>
+                              handleEyeInput(`actualGlassProfile.actual_Glass_${side}_${field}`, e.target.value)
+                            }
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <ConfirmationModal 
+                isOpen={isSaveEyePowerConfirmModalOpen}
+                title="Confirm Save"
+                message="Are you sure you want to save this eye power data?"
+                onConfirm={handleConfirmSaveEyePower}
+                onCancel={() => setIsSaveEyePowerConfirmModalOpen(false)}
+                confirmButtonText="Yes"
+                confirmButtonDisabled={false}
+              />
+
+              <div className="flex justify-between mt-4">
+                <button 
+                  className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" 
+                  onClick={() => setIsSaveEyePowerConfirmModalOpen(true)}
+                >
+                  Save
+                </button>
+                <button 
+                  className="px-4 py-2 bg-red-500 text-white rounded-md text-sm" 
+                  onClick={fetchNewEyePower}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

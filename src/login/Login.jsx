@@ -36,6 +36,16 @@ const Login = ({ onLoginSuccess }) => {
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-secondary">
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() =>setErrorModal({ title: "", message: "" })}/>
+      <style>
+        {`
+          button:hover {
+            border-color: transparent !important;
+          }
+          button:focus, button:focus-visible {
+            outline: none !important;
+          }
+        `}
+      </style>
 
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
         <div className="flex justify-center mb-6">
@@ -49,7 +59,7 @@ const Login = ({ onLoginSuccess }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter email"
-              className="w-full mt-3 px-3 py-2 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm text-secondary"
+              className="w-full mt-3 px-3 py-2 bg-gray-100 border rounded-md text-sm text-secondary"
             />
           </div>
 
@@ -61,7 +71,7 @@ const Login = ({ onLoginSuccess }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className="w-full mt-3 px-3 py-2 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm text-secondary"
+                className="w-full mt-3 px-3 py-2 bg-gray-100 border rounded-md text-sm text-secondary"
               />
               <button
                 type="button"

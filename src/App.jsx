@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Login from "./Login/Login";
 import CompanySelection from "./login/CompanySelection";
 import MainLayout from "./layouts/MainLayout"; 
+import UserRegistrationPage from "./Registration";
 
 const App = () => {
   const [companies, setCompanies] = useState(() => {
@@ -32,10 +33,18 @@ const App = () => {
         <Route path="/dashboard" element={isAuthenticated ? <MainLayout title="Dashboard" /> : <Navigate to="/login" />} />
         <Route path="/transactions" element={isAuthenticated ? <MainLayout title="Transactions" /> : <Navigate to="/login" />} />
         <Route path="/transactions-inquiry" element={isAuthenticated ? <MainLayout title="Transactions Inquiry" /> : <Navigate to="/login" />} />
-        <Route path="/maintenances" element={isAuthenticated ? <MainLayout title="Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/audit-logs" element={isAuthenticated ? <MainLayout title="Audit Logs" /> : <Navigate to="/login" />} />
         <Route path="/company-profile" element={isAuthenticated ? <MainLayout title="Company Profile" /> : <Navigate to="/login" />} />
         <Route path="/reports" element={isAuthenticated ? <MainLayout title="Reports" /> : <Navigate to="/login" />} />
+
+        <Route path="/maintenances/user" element={isAuthenticated ? <MainLayout title="User Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/maintenances/access-right" element={isAuthenticated ? <MainLayout title="Access Right Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/maintenances/debtor" element={isAuthenticated ? <MainLayout title="Debtor Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/maintenances/creditor" element={isAuthenticated ? <MainLayout title="Creditor Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/maintenances/item" element={isAuthenticated ? <MainLayout title="Item Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/maintenances/location" element={isAuthenticated ? <MainLayout title="Location Maintenance" /> : <Navigate to="/login" />} />
+
+        <Route path="/invite?" element={<UserRegistrationPage />} />
 
         {/* Catch-all Redirect */}
         <Route path="*" element={<Navigate to="/login" />} />

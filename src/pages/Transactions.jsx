@@ -1,8 +1,9 @@
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { OpenCounterSession, NewCashTransaction, NewSales, NewPurchases, NewCreditNote, CloseCounterSession } from "../apiconfig";
+import { OpenCounterSession, NewCashTransaction, NewSales, NewPurchases, NewCreditNote, NewCloseCounterSession, SaveCloseCounterSession } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import NotificationModal from "../modals/NotificationModal";
+import ConfirmationModal from "../modals/ConfirmationModal";
 import SalesInvoice from "./SalesInvoice";
 import PurchasesInvoice from "./PurchasesInvoice";
 // import CreditNote from "./CreditNote";
@@ -29,6 +30,9 @@ const Transactions = () => {
   const [sessionDetailsModal, setSessionDetailsModal] = useState(false);
   const [sessionDetails, setSessionDetails] = useState({});
   const [closingBalance, setClosingBalance] = useState("");
+  const [newCounterSessionData, setNewCounterSessionData] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   
   useEffect(() => {
     if (!counterSession?.isExist) {
@@ -236,7 +240,7 @@ const Transactions = () => {
 
       const data = await response.json();
       if (data.success) {
-        setPurchasesId(data.data.purchasesId);
+        setPurchasesId(data.data.purchaseId);
         setDocNo(data.data.docNo);
       } else {
         throw new Error(data.errorMessage || "Failed to create new purchases invoice.");
@@ -278,77 +282,96 @@ const Transactions = () => {
   //   }
   // };
 
-  const closeCounter = async () => {
-    if (!closingBalance) {
-      setErrorModal({ title: "Input Error", message: "Please enter an closing balance." });
-      return;
-    }
-  
-    if (Number(closingBalance) < 0) {
-      setErrorModal({ title: "Invalid Amount", message: "Closing balance cannot be negative. Please enter a valid amount." });
-      return;
-    }
+  const fetchCloseCounterSessionData = async () => {
+  try {
+    const requestBody = {
+      customerId: Number(customerId),
+      userId,
+      locationId,
+      id: ""
+    };
 
-    try {
-      const requestBody = {
-        actionData: {
-          customerId: Number(customerId),
-          userId,
-          locationId,
-          id: ""
-        },
-        closingBalance: Number(closingBalance)
-      };
+    const response = await fetch(NewCloseCounterSession, {
+      method: "POST",
+      headers: { "Accept": "text/plain", "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+    });
 
-      const response = await fetch(CloseCounterSession, {
-        method: "POST",
-        headers: {
-          "Accept": "text/plain",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setSessionDetails({
-          initialBalance: data.data.initialBalance,
-          salesAmt: data.data.salesAmt,
-          purchaseAmt: data.data.purchaseAmt,
-          salesPaymentAmt: data.data.salesPaymentAmt,
-          purchasePaymentAmt: data.data.purchasePaymentAmt,
-          cashInAmt: data.data.cashInAmt,
-          cashOutAmt: data.data.cashOutAmt,
-          closingBalance: data.data.closingBalance,
-          salesAmtToBeReceived: data.data.salesAmtToBeReceived,
-          salesAmtChanged: data.data.salesAmtChanged,
-          purchaseAmtToBePaid: data.data.purchaseAmtToBePaid,
-          purchaseAmtChangeReceived: data.data.purchaseAmtChangeReceived,
-          expectedClosingBalance: data.data.expectedClosingBalance,
-          balanceDifference: data.data.balanceDifference,
+    const data = await response.json();
+    if (data.success) {
+      setNewCounterSessionData(data.data);
+      setClosingBalanceModal(true);
+    } else {
+      if (data.errorMessage === "There is currently no active counter session.") {
+        setErrorModal({
+          title: "Session Error",
+          message: data.errorMessage,
+          onClose: () => {
+            setCounterSession(null); 
+            setErrorModal({ title: "", message: "" });
+          }
         });
-        setSessionDetailsModal(true);
       } else {
-        if (data.errorMessage === "There is currently no active counter session.") {
-          setErrorModal({
-            title: "Session Error",
-            message: data.errorMessage,
-            onClose: () => {
-              setCounterSession(null);
-              setErrorModal({ title: "", message: "" });
-              setClosingBalanceModal(false);
-            },
-          });
-        } else {
-          throw new Error(data.errorMessage || "Failed to close counter.");
-        }
+        throw new Error(data.errorMessage || "Failed to close counter.");
       }
-    } catch (error) {
-      setErrorModal({ title: "Close Counter Error", message: error.message });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    setErrorModal({ title: "Close Counter Session Error", message: error.message });
+  }
+};
+
+const handleConfirmCloseCounter = async () => {
+  setConfirmLoading(true);
+  try {
+    const requestBody = {
+      actionData: {
+        customerId: Number(customerId),
+        userId,
+        locationId,
+        id: ""
+      },
+      systemCashAmount: newCounterSessionData.systemCashAmount || 0,
+      systemCardAmount: newCounterSessionData.systemCardAmount || 0,
+      systemEWalletAmount: newCounterSessionData.systemEWalletAmount || 0,
+      systemCashInAmount: newCounterSessionData.systemCashInAmount || 0,
+      systemCashOutAmount: newCounterSessionData.systemCashOutAmount || 0,
+      userInputCashAmount: Number(newCounterSessionData.userInputCashAmount || 0),
+      userInputCardAmount: Number(newCounterSessionData.userInputCardAmount || 0),
+      userInputEWalletAmount: Number(newCounterSessionData.userInputEWalletAmount || 0),
+    };
+
+    const response = await fetch(SaveCloseCounterSession, {
+      method: "POST",
+      headers: { "Accept": "text/plain", "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      setSessionDetails(data.data);
+      setSessionDetailsModal(true);
+      setClosingBalanceModal(false);
+    } else {
+      if (data.errorMessage === "There is currently no active counter session.") {
+        setErrorModal({
+          title: "Session Error",
+          message: data.errorMessage,
+          onClose: () => {
+            setCounterSession(null); 
+            setErrorModal({ title: "", message: "" });
+          }
+        });
+      } else {
+        throw new Error(data.errorMessage || "Failed to close counter.");
+      }
+    }
+  } catch (error) {
+    setErrorModal({ title: "Close Counter Error", message: error.message });
+  } finally {
+    setConfirmModal(false);
+    setConfirmLoading(false);
+  }
+};
 
   const handleCloseClosingModal = () => {
     setClosingBalanceModal(false);
@@ -397,12 +420,12 @@ const Transactions = () => {
             disabled
             className="w-1/3 p-1 text-secondary border rounded bg-gray-200 cursor-not-alloweds text-left"
           />
-          <button
-              onClick={() => setClosingBalanceModal(true)}
-              className="text-xs p-2 rounded-md bg-red-500 text-white"
-            >
-              Close Counter
-            </button>
+         <button
+          onClick={fetchCloseCounterSessionData}
+          className="text-xs p-2 rounded-md bg-red-500 text-white"
+        >
+          Close Counter
+        </button>
         </div>
       ) : (
         <div className="w-1/3 bg-white shadow-md p-4 rounded-md mt-6">
@@ -476,7 +499,7 @@ const Transactions = () => {
                 </div>
               </div>
             ) : activeTab === "Sales Invoice" ? (
-              <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
+              <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto mb-4">
                <SalesInvoice salesId={salesId} docNo={docNo} counterSession={counterSession} setCounterSession={setCounterSession}/>
               </div>
             ) : activeTab === "Purchases Invoice" ? (
@@ -494,20 +517,68 @@ const Transactions = () => {
         </div>
       )}
 
-      {closingBalanceModal && (
+      {closingBalanceModal && newCounterSessionData && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded-md shadow-lg w-96">
+          <div className="bg-white p-6 rounded-md shadow-lg w-fut">
             <h2 className="text-lg font-semibold mb-4 text-secondary">Close Counter</h2>
-            <input
-              type="number"
-              min={0}
-              placeholder="Enter Closing Balance"
-              value={closingBalance}
-              onChange={(e) => setClosingBalance(e.target.value)}
-              className="w-full p-2 border rounded mb-3 text-secondary bg-white"
-            />
-            <div className="flex justify-between">
-              <button onClick={closeCounter} className="p-2 text-sm bg-green-500 text-white rounded-md mr-2">
+
+            <div className="mb-4 text-secondary">
+              <p><strong>System Cash In Amount:</strong> {newCounterSessionData.systemCashInAmount}</p>
+              <p><strong>System Cash Out Amount:</strong> {newCounterSessionData.systemCashOutAmount}</p>
+            </div>
+
+            <table className="w-full text-sm text-left text-secondary">
+              <thead>
+                <tr>
+                  <th className="px-4"></th>
+                  <th className="px-4">Collected</th>
+                  <th className="px-4">System Amount</th>
+                  <th className="px-4">Variance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {["Cash", "Card", "EWallet"].map((method) => {
+                  const systemKey = `system${method}Amount`;
+                  const userKey = `userInput${method}Amount`;
+
+                  const systemValue = newCounterSessionData[systemKey] || 0;
+                  const userValue = newCounterSessionData[userKey] ?? 0;
+                  const variance = userValue !== "" ? Number(userValue) - Number(systemValue) : "";
+
+                  return (
+                    <tr key={method}>
+                      <td className="py-1 px-4">{method} Amount</td>
+                      <td className="py-1 px-4">
+                        <input
+                          type="number"
+                          className="w-full p-1 border rounded bg-white text-secondary"
+                          value={userValue}
+                          onChange={(e) => {
+                            const formatted = e.target.value;
+                            const limitedDecimal = formatted.includes(".")
+                              ? formatted.slice(0, formatted.indexOf(".") + 3)
+                              : formatted;
+                        
+                            setNewCounterSessionData(prev => ({
+                              ...prev,
+                              [userKey]: limitedDecimal
+                            }));
+                          }}
+                        />
+                      </td>
+                      <td className="py-1 px-4">{systemValue}</td>
+                      <td className="py-1 px-4">{Number(variance).toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div className="flex mt-4 justify-between">
+            <button
+                onClick={() => setConfirmModal(true)}
+                className="p-2 text-sm bg-green-500 text-white rounded-md mr-2"
+              >
                 Confirm
               </button>
               <button onClick={handleCloseClosingModal} className="p-2 bg-red-500 text-white rounded-md text-sm">
@@ -518,18 +589,62 @@ const Transactions = () => {
         </div>
       )}
 
+      <ConfirmationModal
+        isOpen={confirmModal}
+        title="Confirm Close Counter"
+        message="Are you sure you want to close this counter session?"
+        loading={confirmLoading}
+        confirmButtonText="Yes"
+        onCancel={() => setConfirmModal(false)}
+        onConfirm={handleConfirmCloseCounter}
+      />
+
       {sessionDetailsModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded-md shadow-lg w-96">
+          <div className="bg-white p-6 rounded-md shadow-lg w-[500px]">
             <h2 className="text-lg font-semibold mb-4 text-secondary">Counter Session Closed</h2>
-            <ul className="text-sm text-gray-700">
-              {Object.entries(sessionDetails).map(([key, value]) => (
-                <li key={key} className="mb-1">
-                  <strong>{key}:</strong> {value}
-                </li>
-              ))}
-            </ul>
-            <div className="flex justify-end">
+            <table className="w-full text-sm text-gray-700">
+              <tbody>
+                {[
+                  "sessionOpenedBy",
+                  "sessionOpenTime",
+                  "sessionClosedBy",
+                  "sessionCloseTime",
+                  "initialBalance",
+                  "cashCollected",
+                  "systemCash",
+                  "cashVariance",
+                  "cardCollected",
+                  "systemCard",
+                  "cardVariance",
+                  "ewalletCollected",
+                  "systemEwallet",
+                  "ewalletVariance",
+                  "sales",
+                  "purchase",
+                  "cashIn",
+                  "cashOut",
+                  "arPayment",
+                  "apPayment",
+                  "outstanding_SO",
+                  "outstanding_PO"
+                ].map((key) => (
+                  <tr key={key} className="align-top">
+                    <td className="py-1 pr-2 font-semibold text-secondary whitespace-nowrap">
+                      {key
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase())}:
+                    </td>
+                    <td className="py-1 text-gray-700">
+                      {key.includes("Time") && sessionDetails[key]
+                        ? new Date(sessionDetails[key]).toLocaleString()
+                        : sessionDetails[key]}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex justify-end mt-4">
               <button onClick={closeSessionDetails} className="px-4 py-2 bg-blue-500 text-white rounded-md">
                 Close
               </button>

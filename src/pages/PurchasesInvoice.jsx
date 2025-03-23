@@ -5,8 +5,9 @@ import { Trash2 } from "lucide-react";
 import { GetCreditorRecords, GetLocationRecords, GetUsers, GetItemRecords, SavePurchases, SavePurchasePayment } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
+import NotificationModal from "../modals/NotificationModal";
 
-const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSession   }) => {
+const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
   const customerId = localStorage.getItem("customerId");
   const userId = localStorage.getItem("userId");
   const locationId = localStorage.getItem("locationId");
@@ -64,6 +65,9 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
   const [isSavingPayment, setIsSavingPayment] = useState(false);
+  const [notificationModal, setNotificationModal] = useState({ isOpen: false, title: "", message: "", onClose: null });
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const [isSaveConfirmationModalOpen, setIsSaveConfirmationModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchCreditors = async () => {
@@ -281,22 +285,25 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
     const updatedItems = [...invoiceItems];
     const selectedItem = updatedItems[index];
   
-    let selectedUOM = selectedItem.uomOptions.find(u => u.value === newValue.value);
+    let label = typeof newValue === "string" ? newValue : newValue.label;
+    let value = typeof newValue === "string" ? newValue : newValue.value;
+  
+    let selectedUOM = selectedItem.uomOptions.find(u => u.value === value);
   
     if (!selectedUOM) {
       selectedUOM = {
-        value: newValue.value,
-        label: newValue.label,
-        unitPrice: 0 
+        value,
+        label,
+        unitPrice: 0,
       };
   
-      selectedItem.uomOptions = [...selectedItem.uomOptions, selectedUOM]; 
+      selectedItem.uomOptions = [...selectedItem.uomOptions, selectedUOM];
     }
   
     updatedItems[index] = {
       ...selectedItem,
       uom: selectedUOM.label,
-      unitPrice: selectedUOM.unitPrice
+      unitPrice: selectedUOM.unitPrice,
     };
   
     setInvoiceItems(updatedItems);
@@ -330,12 +337,11 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
   const handleRowChange = (index, field, value) => {
     const updatedItems = [...invoiceItems];
   
-    if ((field === "unitPrice" || field === "quantity" || field === "discount") && parseFloat(value) < 0) {
-      return;
-    }
-  
+    if ((field === "unitPrice" || field === "discount") && parseFloat(value) < 0) return;
+    if (field === "quantity" && parseInt(value) < 0) return;
+
     if (field === "unitPrice" || field === "discount") {
-      updatedItems[index][field] = parseFloat(value) || 0;
+      updatedItems[index][field] = parseFloat(parseFloat(value).toFixed(2)) || 0;
     } else if (field === "quantity") {
       updatedItems[index][field] = parseInt(value) || 0;
     } else {
@@ -376,15 +382,25 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
   };
 
   const handleAmountChange = (e) => {
-    const amount = parseFloat(e.target.value);
-    setEnteredAmount(amount);
-
-    if (amount < total) {
-      setIsOutstanding(true);
-      setOutstandingOrChange(total - amount);
-    } else {
-      setIsOutstanding(false);
-      setOutstandingOrChange(amount - total);
+    let value = e.target.value;
+  
+    if (value === "") {
+      setEnteredAmount("");
+      return;
+    }
+  
+    const floatValue = parseFloat(value);
+    if (!isNaN(floatValue)) {
+      const fixedValue = parseFloat(floatValue.toFixed(2));
+      setEnteredAmount(fixedValue);
+  
+      if (fixedValue < total) {
+        setIsOutstanding(true);
+        setOutstandingOrChange(total - fixedValue);
+      } else {
+        setIsOutstanding(false);
+        setOutstandingOrChange(fixedValue - total);
+      }
     }
   };
 
@@ -398,115 +414,121 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
   };
 
   const handleConfirmPayment = async () => {
-      setIsSavingPayment(true); 
+    setIsSavingPayment(true); 
+
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(now - offset).toISOString().slice(0, 19);
   
-      const now = new Date();
-      const offset = now.getTimezoneOffset() * 60000;
-      const localISOTime = new Date(now - offset).toISOString().slice(0, 19);
-    
-      let payments = [];
-    
-      if (selectedPaymentType?.value === "Multi Payment") {
-        payments = multiPaymentMethods.map((method) => {
-          let reference = "";
-          let remark = method.type;
-    
-          if (method.type === "Bank Transfer") {
-            reference = `bank reference no： ${method.bankRef || ""} ｜ receipt reference： ${method.bankReceiptRef || ""}`;
-          } else if (method.type === "Card Payment") {
-            const cardEnding = method.cardNumber?.slice(-4) || "";
-            remark = `Card Payment ****${cardEnding}`;
-            reference = `approval code： ${method.approvalCode || ""} ｜ receipt reference： ${method.cardReceiptRef || ""}`;
-          }
-    
-          return {
-            remark: remark,
-            reference: reference,
-            amount: parseFloat(method.amount),
-          };
-        });
-      } else {
+    let payments = [];
+  
+    if (selectedPaymentType?.value === "Multi Payment") {
+      payments = multiPaymentMethods.map((method) => {
         let reference = "";
-        let remark = selectedPaymentType?.value;
-    
-        if (selectedPaymentType?.value === "Bank Transfer") {
-          reference = `bank reference no： ${bankRef || ""} ｜ receipt reference： ${bankReceiptRef || ""}`;
-        } else if (selectedPaymentType?.value === "Card Payment") {
-          const cardEnding = cardNumber?.slice(-4) || "";
-          remark = `Card Payment ****${cardEnding}`;
-          reference = `approval code： ${approvalCode || ""} ｜ receipt reference： ${cardReceiptRef || ""}`;
+        let remark = "";
+  
+        if (method.type === "Bank Transfer") {
+          remark = "Method: Bank Transfer";
+          reference = `bank reference no： ${method.bankRef || ""} ｜ receipt reference： ${method.bankReceiptRef || ""}`;
+        } else if (method.type === "Card Payment") {
+          const cardEnding = method.cardNumber?.slice(-4) || "";
+          remark = `Method: Card ****${cardEnding}`;
+          reference = `approval code： ${method.approvalCode || ""} ｜ receipt reference： ${method.cardReceiptRef || ""}`;
+        } else {
+          remark = `Method: ${method.type}`;
         }
-    
-        payments.push({
-          remark: remark,
-          reference: reference,
-          amount: parseFloat(enteredAmount),
-        });
-      }
-    
-      const payload = {
-        actionData: {
-          customerId: Number(customerId),
-          userId: userId,
-          locationId: locationId,
-          id: ""
+  
+        return {
+          remark,
+          reference,
+          amount: parseFloat(parseFloat(method.amount).toFixed(2)),
+        };
+      });
+    } else {
+      let reference = "";
+      let remark = "";
+  
+      if (selectedPaymentType?.value === "Bank Transfer") {
+        remark = "Method: Bank Transfer";
+        reference = `bank reference no： ${bankRef || ""} ｜ receipt reference： ${bankReceiptRef || ""}`;
+      } else if (selectedPaymentType?.value === "Card Payment") {
+        const cardEnding = cardNumber?.slice(-4) || "";
+        remark = `Method: Card ****${cardEnding}`;
+        reference = `approval code： ${approvalCode || ""} ｜ receipt reference： ${cardReceiptRef || ""}`;
+      } else {
+        remark = `Method: ${selectedPaymentType?.value}`;
+      }  
+  
+      payments.push({
+        remark: remark,
+        reference: reference,
+        amount: parseFloat(parseFloat(enteredAmount).toFixed(2)),
+      });
+    }
+  
+    const payload = {
+      actionData: {
+        customerId: Number(customerId),
+        userId: userId,
+        locationId: locationId,
+        id: ""
+      },
+      isFirstPayment: true,
+      docDate: localISOTime,
+      targetDocId: purchasesId,
+      payment: payments
+    };
+  
+    try {
+      const response = await fetch(SavePurchasePayment, {
+        method: "POST",
+        headers: {
+          "Accept": "text/plain",
+          "Content-Type": "application/json"
         },
-        isFirstPayment: true,
-        docDate: localISOTime,
-        targetDocId: purchasesId,
-        payment: payments
-      };
-    
-      try {
-        const response = await fetch(SavePurchasePayment, {
-          method: "POST",
-          headers: {
-            "Accept": "text/plain",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-    
-        const data = await response.json();
-    
-        if (!data.success) {
-          if (data.errorMessage === "There is currently no active counter session.") {
-            setErrorModal({
-              title: "Session Error",
-              message: data.errorMessage,
-              onClose: () => {
-                setCounterSession(null); 
-                setErrorModal({ title: "", message: "", onClose: null }); 
-              }
-            });
-          } else {
-            throw new Error(data.errorMessage || "Payment failed.");
-          }
-          return;
+        body: JSON.stringify(payload)
+      });
+  
+      const data = await response.json();
+  
+      if (!data.success) {
+        if (data.errorMessage === "There is currently no active counter session.") {
+          setErrorModal({
+            title: "Session Error",
+            message: data.errorMessage,
+            onClose: () => {
+              setCounterSession(null); 
+              setErrorModal({ title: "", message: "", onClose: null }); 
+            }
+          });
+        } else {
+          throw new Error(data.errorMessage || "Payment failed.");
         }
-    
-        setIsPaymentConfirmed(true);
-        setIsConfirmationModalOpen(false);
-        setIsCardPaymentModalOpen(false);
-        setIsBankTransferModalOpen(false);
-        setIsPaymentModalOpen(false);
-        setIsMultiPaymentModalOpen(false);
-        setEnteredAmount("");
-        setCardNumber("");
-        setCardReceiptRef("");
-        setApprovalCode("");
-        setBankReceiptRef("");
-        setBankRef("");
-        setMultiPaymentMethods([]);
-      } catch (error) {
-        setErrorModal({
-          title: "Payment Error",
-          message: error.message
-        });
-      } finally {
-        setIsSavingPayment(false); 
+        return;
       }
-    }; 
+  
+      setIsPaymentConfirmed(true);
+      setIsConfirmationModalOpen(false);
+      setIsCardPaymentModalOpen(false);
+      setIsBankTransferModalOpen(false);
+      setIsPaymentModalOpen(false);
+      setIsMultiPaymentModalOpen(false);
+      setEnteredAmount("");
+      setCardNumber("");
+      setCardReceiptRef("");
+      setApprovalCode("");
+      setBankReceiptRef("");
+      setBankRef("");
+      setMultiPaymentMethods([]);
+    } catch (error) {
+      setErrorModal({
+        title: "Payment Error",
+        message: error.message
+      });
+    } finally {
+      setIsSavingPayment(false); 
+    }
+  }; 
 
   const closePayment = () => {
     setIsPaymentModalOpen(false);
@@ -544,11 +566,17 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
   };
   
   const handleMultiPaymentAmountChange = (index, value) => {
+    const floatValue = parseFloat(value);
+    const fixedAmount = !isNaN(floatValue) ? parseFloat(floatValue.toFixed(2)) : 0;
+  
     const updatedPayments = [...multiPaymentMethods];
-    updatedPayments[index].amount = parseFloat(value) || 0;
+    updatedPayments[index].amount = fixedAmount;
     setMultiPaymentMethods(updatedPayments);
   
-    const totalPaid = updatedPayments.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
+    const totalPaid = updatedPayments.reduce(
+      (sum, payment) => sum + (parseFloat(payment.amount) || 0),
+      0
+    );
     const newOutstandingOrChange = totalPaid - total;
   
     setOutstandingOrChange(newOutstandingOrChange);
@@ -588,133 +616,142 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
     setIsConfirmationModalOpen(true);
   };
   
-  const handleSave = async () => {
-    // Validation
-    for (const item of invoiceItems) {
-      const hasItemCode = item.itemCode && item.itemCode.trim() !== "";
-      const hasDesc = item.description && item.description.trim() !== "";
-      const hasUom = item.uom && item.uom.trim() !== "";
-      const hasUnitPrice = item.unitPrice > 0;
-      const hasQty = item.quantity > 0;
-  
-      if (!hasItemCode && (!hasDesc || !hasUom || !hasUnitPrice || !hasQty)) {
-        setErrorModal({
-          title: "Validation Error",
-          message: "If Item Code is empty, Description, UOM, Unit Price, and Quantity must all be filled in."
-        });
-        return;
+  const confirmSave = () => {
+      for (const item of invoiceItems) {
+        const hasItemCode = item.itemCode && item.itemCode.trim() !== "";
+        const hasDesc = item.description && item.description.trim() !== "";
+        const hasUom = item.uom && item.uom.trim() !== "";
+        const hasUnitPrice = item.unitPrice > 0;
+        const hasQty = item.quantity > 0;
+    
+        if (!hasItemCode && (!hasDesc || !hasUom || !hasUnitPrice || !hasQty)) {
+          setErrorModal({
+            title: "Validation Error",
+            message: "If Item Code is empty, Description, UOM, Unit Price, and Quantity must all be filled in."
+          });
+          return;
+        }
       }
-    }
   
-    if (!selectedAgent || !selectedLocation) {
-      setErrorModal({
-        title: "Missing Info",
-        message: "Please select both Agent and Location before saving."
-      });
-      return;
-    }
-  
-    const now = new Date();
-    const offset = now.getTimezoneOffset() * 60000;
-    const localISOTime = new Date(now - offset).toISOString().slice(0, 19);
-  
-    const requestBody = {
-      actionData: {
-        customerId: Number(customerId),
-        userId: selectedAgent.value,
-        locationId: selectedLocation.value,
-        id: ""
-      },
-      salesId: salesId,
-      docNo: docNo,
-      debtorId: selectedDebtor?.value || "",
-      debtorName: companyName,
-      docDate: localISOTime,
-      locationId: selectedLocation.value,
-      remark: "",
-      total: total,
-      details: invoiceItems.map(item => ({
-        itemId: item.itemId || "",
-        itemUOMId: item.uomOptions?.find(u => u.label === item.uom)?.value || "",
-        description: item.description || "",
-        desc2: "",
-        itemBatchId: "",
-        qty: item.quantity,
-        unitPrice: item.unitPrice,
-        discount: `${item.discount}`,
-        discountAmount: item.discountType === "Percentage"
-          ? (item.unitPrice * item.quantity * item.discount) / 100
-          : item.discount,
-        subTotal: item.subtotal
-      }))
+      setIsSaveConfirmationModalOpen(true);
     };
   
-    try {
-      const response = await fetch(SaveSales, {
-        method: "POST",
-        headers: {
-          "Accept": "text/plain",
-          "Content-Type": "application/json"
+    const handleConfirmSave = async () => {
+      setIsSaveLoading(true);
+      setIsSaveConfirmationModalOpen(false);
+    
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      const localISOTime = new Date(now - offset).toISOString().slice(0, 19);
+    
+      const requestBody = {
+        actionData: {
+          customerId: Number(customerId),
+          userId: selectedAgent?.value || userId,
+          locationId: selectedLocation?.value || locationId,
+          id: ""
         },
-        body: JSON.stringify(requestBody)
-      });
-  
-      const data = await response.json();
-  
-      if (!data.success) {
-        if (data.errorMessage === "There is currently no active counter session.") {
-          setErrorModal({
-            title: "Session Error",
-            message: data.errorMessage,
-            onClose: () => {
-              setCounterSession(null);
-              setErrorModal({ title: "", message: "", onClose: null });
-            }
-          });
-        } else {
-          throw new Error(data.errorMessage || "Failed to save sales invoice.");
+        purchaseId: purchasesId,
+        docNo,
+        creditorId: selectedCreditor?.value || "",
+        creditorName: companyName,
+        docDate: localISOTime,
+        locationId: selectedLocation?.value || locationId,
+        remark: "",
+        total: parseFloat(total.toFixed(2)),
+        details: invoiceItems.map((item) => {
+          const discountAmount =
+            item.discountType === "Percentage"
+              ? (item.unitPrice * item.quantity * item.discount) / 100
+              : item.discount;
+    
+          return {
+            itemId: item.itemId || "",
+            itemUOMId: item.uomOptions?.find((u) => u.label === item.uom)?.value || "",
+            description: item.description || "",
+            desc2: "",
+            itemBatchId: "",
+            qty: item.quantity,
+            unitPrice: parseFloat(item.unitPrice.toFixed(2)),
+            discount: `${item.discount}`,
+            discountAmount: parseFloat(discountAmount.toFixed(2)), 
+            subTotal: parseFloat(item.subtotal.toFixed(2))
+          };
+        })
+      };
+    
+      try {
+        const response = await fetch(SavePurchases, {
+          method: "POST",
+          headers: {
+            Accept: "text/plain",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestBody)
+        });
+    
+        const data = await response.json();
+    
+        if (!data.success) {
+          if (data.errorMessage === "There is currently no active counter session.") {
+            setErrorModal({
+              title: "Session Error",
+              message: data.errorMessage,
+              onClose: () => {
+                setCounterSession(null);
+                setErrorModal({ title: "", message: "", onClose: null });
+              }
+            });
+          } else {
+            throw new Error(data.errorMessage || "Failed to save sales invoice.");
+          }
+          return;
         }
-        return;
+    
+        setNotificationModal({
+          isOpen: true,
+          title: "Success",
+          message: "Sales invoice saved successfully.",
+          onClose: () => {
+            setNotificationModal({ isOpen: false });
+            setSelectedCreditor(null);
+            setCompanyName("");
+            setSelectedLocation(null);
+            setSelectedAgent(null);
+            setSelectedPaymentType(null);
+            setInvoiceItems([
+              {
+                itemId: "",
+                itemCode: "",
+                description: "",
+                uom: "",
+                uomOptions: [],
+                unitPrice: 0,
+                quantity: 0,
+                discountType: "Percentage",
+                discount: 0,
+                subtotal: 0
+              }
+            ]);
+            setTotal(0);
+            setIsPaymentConfirmed(false);
+            setEnteredAmount("");
+            setCardNumber("");
+            setCardReceiptRef("");
+            setApprovalCode("");
+            setBankReceiptRef("");
+            setBankRef("");
+            setMultiPaymentMethods([]);
+            setOutstandingOrChange(0);
+            setIsOutstanding(false);
+          }
+        });
+      } catch (error) {
+        setErrorModal({ title: "Save Error", message: error.message });
+      } finally {
+        setIsSaveLoading(false);
       }
-  
-      // ✅ Reset all UI after successful save
-      setSelectedDebtor(null);
-      setCompanyName("");
-      setSelectedLocation(null);
-      setSelectedAgent(null);
-      setSelectedPaymentType(null);
-      setInvoiceItems([
-        {
-          itemId: "",
-          itemCode: "",
-          description: "",
-          uom: "",
-          uomOptions: [],
-          unitPrice: 0,
-          quantity: 0,
-          discountType: "Percentage",
-          discount: 0,
-          subtotal: 0
-        }
-      ]);
-      setTotal(0);
-      setIsPaymentConfirmed(false);
-      setEnteredAmount("");
-      setCardNumber("");
-      setCardReceiptRef("");
-      setApprovalCode("");
-      setBankReceiptRef("");
-      setBankRef("");
-      setMultiPaymentMethods([]);
-      setOutstandingOrChange(0);
-      setIsOutstanding(false);
-  
-      alert("Sales invoice saved successfully.");
-    } catch (error) {
-      setErrorModal({ title: "Save Error", message: error.message });
-    }
-  };
-  
+    };  
 
   const customStyles = {
     control: (provided, state) => ({
@@ -878,6 +915,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
                   <input 
                     type="number" 
                     min={0}
+                    step="0.01"
                     className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
                     value={item.unitPrice} 
                     onChange={(e) => handleRowChange(index, "unitPrice", parseFloat(e.target.value) || 0)} 
@@ -888,6 +926,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
                   <input 
                     type="number" 
                     min={0}
+                    step="1"
                     className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
                     value={item.quantity} 
                     onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 0)} 
@@ -895,7 +934,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
                   />
                 </td>
                 <td>
-                  <CreatableSelect
+                  <Select
                     options={discountTypeOptions}
                     value={item.discountType ? { value: item.discountType, label: item.discountType } : null}
                     onChange={(option) => handleRowChange(index, "discountType", option.value)}
@@ -909,6 +948,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
                   <input 
                     type="number" 
                     min={0}
+                    step="0.01"
                     className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
                     value={item.discount} 
                     onChange={(e) => handleRowChange(index, "discount", parseFloat(e.target.value) || 0)} 
@@ -958,6 +998,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
               placeholder="Enter Amount"
               className="w-full mt-2 p-2 border rounded-md bg-white text-secondary text-xs"
               min={0}
+              step="0.01"
               value={enteredAmount}
               onChange={handleAmountChange}
             />  
@@ -1013,6 +1054,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
                 type="number"
                 placeholder="Enter Amount"
                 min={0}
+                step="0.01"
                 className="p-2 border rounded-md bg-white text-secondary text-xs"
                 value={enteredAmount}
                 onChange={handleAmountChange}
@@ -1065,6 +1107,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
                 placeholder="Enter Amount"
                 className="p-2 border rounded-md bg-white text-secondary text-xs"
                 min={0}
+                step="0.01"
                 value={enteredAmount}
                 onChange={handleAmountChange}
               />
@@ -1119,6 +1162,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
                     placeholder="Enter Amount"
                     className="w-full mt-2 p-2 border rounded-md bg-white text-secondary text-xs"
                     min={0}
+                    step="0.01"
                     value={payment.amount}
                     onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
                   />
@@ -1153,6 +1197,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
                       placeholder="Enter Amount"
                       className="p-2 border rounded-md bg-white text-secondary text-xs"
                       min={0}
+                      step="0.01"
                       value={payment.amount}
                       onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
                     />
@@ -1180,6 +1225,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
                       placeholder="Enter Amount"
                       className="p-2 border rounded-md bg-white text-secondary text-xs"
                       min={0}
+                      step="0.01"
                       value={payment.amount}
                       onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
                     />
@@ -1216,8 +1262,25 @@ const PurchasesInvoice = ({ purchasesId, docNo, counterSession, setCounterSessio
         </p>
       </div>
       
+      <ConfirmationModal 
+        isOpen={isSaveConfirmationModalOpen}
+        title="Confirm Save"
+        message="Are you sure you want to proceed with saving this invoice?"
+        onConfirm={handleConfirmSave}
+        onCancel={() => setIsSaveConfirmationModalOpen(false)}
+        confirmButtonDisabled={isSaveLoading}
+        confirmButtonText={isSaveLoading ? "Saving..." : "Yes"}
+      />
+
+        <NotificationModal
+          isOpen={notificationModal.isOpen}
+          title={notificationModal.title}
+          message={notificationModal.message}
+          onClose={notificationModal.onClose}
+        />
+
       <div className="flex justify-between mt-4">
-        <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">Save</button>
+        <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
         <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
       </div>
     </div>
