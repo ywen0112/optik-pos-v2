@@ -332,7 +332,7 @@ const UserMaintenance = () => {
             </thead>
             <tbody>
               {users.map((user, index) => (
-                <tr key={user.userId} className="text-xs border-b-2 border-gray-100 font-medium text-secondary">
+                <tr key={user.userId} className="text-xs border-b-2 border-gray-100 text-secondary">
                 <td className="pl-4 p-2">{index + 1}</td>
                 <td className="p-2">{user.userName || "-"}</td>
                 <td className="p-2">{user.userEmail || "-"}</td>
