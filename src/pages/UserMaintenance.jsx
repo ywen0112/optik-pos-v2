@@ -128,101 +128,101 @@ const UserMaintenance = () => {
     }
   };
 
-const handleSave = () => setConfirmModal({ isOpen: true, type: "update", targetUser: editUser });
+  const handleSave = () => setConfirmModal({ isOpen: true, type: "update", targetUser: editUser });
 
-const handleDelete = (user) => {
-  setConfirmModal({ isOpen: true, type: "delete", targetUser: user });
-};
+  const handleDelete = (user) => {
+    setConfirmModal({ isOpen: true, type: "delete", targetUser: user });
+  };
 
-const handleInvite = () => {
-  setConfirmModal({ isOpen: true, type: "invite", targetUser: null });
-};
+  const handleInvite = () => {
+    setConfirmModal({ isOpen: true, type: "invite", targetUser: null });
+  };
 
-const confirmAction = async () => {
-  setLoading(true);
-  const user = confirmModal.targetUser;
-  setConfirmModal({ isOpen: false, type: "", targetUser: null });
+  const confirmAction = async () => {
+    setLoading(true);
+    const user = confirmModal.targetUser;
+    setConfirmModal({ isOpen: false, type: "", targetUser: null });
 
-  try {
-    if (confirmModal.type === "update") {
-      const payload = {
-        customerId: Number(customerId),
-        userId: user.userId,
-        editorUserId: user.userId,
-        accessRightId: selectedAccess?.accessRightId || null,
-        locationId: selectedLocation?.locationId || null,
-      };
-      const response = await fetch(UpdateUser, {
-        method: "POST",
-        headers: {
-          Accept: "text/plain",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      if (result.success) {
-        setNotifyModal({ isOpen: true, message: "User updated successfully!" });
-        setEditUser(null);
-        fetchUsers();
-      } else {
-        throw new Error(result.errorMessage || "Failed to update user.");
+    try {
+      if (confirmModal.type === "update") {
+        const payload = {
+          customerId: Number(customerId),
+          userId: user.userId,
+          editorUserId: user.userId,
+          accessRightId: selectedAccess?.accessRightId || null,
+          locationId: selectedLocation?.locationId || null,
+        };
+        const response = await fetch(UpdateUser, {
+          method: "POST",
+          headers: {
+            Accept: "text/plain",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        if (result.success) {
+          setNotifyModal({ isOpen: true, message: "User updated successfully!" });
+          setEditUser(null);
+          fetchUsers();
+        } else {
+          throw new Error(result.errorMessage || "Failed to update user.");
+        }
+      } else if (confirmModal.type === "delete") {
+        const payload = {
+          customerId: Number(customerId),
+          userId: user.userId,
+          id: user.userId,
+          locationId: selectedLocation?.locationId || null,
+        };
+        const response = await fetch(DeleteUser, {
+          method: "POST",
+          headers: {
+            Accept: "text/plain",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        if (result.success) {
+          setNotifyModal({ isOpen: true, message: "User deleted successfully!" });
+          fetchUsers();
+        } else {
+          throw new Error(result.errorMessage || "Failed to delete user.");
+        }
       }
-    } else if (confirmModal.type === "delete") {
-      const payload = {
-        customerId: Number(customerId),
-        userId: user.userId,
-        id: user.userId,
-        locationId: selectedLocation?.locationId || null,
-      };
-      const response = await fetch(DeleteUser, {
-        method: "POST",
-        headers: {
-          Accept: "text/plain",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      if (result.success) {
-        setNotifyModal({ isOpen: true, message: "User deleted successfully!" });
-        fetchUsers();
-      } else {
-        throw new Error(result.errorMessage || "Failed to delete user.");
+      if (confirmModal.type === "invite") {
+        const payload = {
+          customerId: Number(customerId),
+          editorUserId: userId,
+          companyName: "",
+          userName: "",
+          userEmail: inviteEmail,
+          userPassword: "",
+          accessRightId: inviteAccess.accessRightId,
+          isOwner: false,
+        };
+        const response = await fetch(InviteUser, {
+          method: "POST",
+          headers: { Accept: "text/plain", "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.text();
+        if (response.ok) {
+          setNotifyModal({ isOpen: true, message: `Invitation link: ${result}` });
+          setShowInviteModal(false);
+          setInviteEmail("");
+          setInviteAccess(null);
+        } else {
+          throw new Error(result.errorMessage || "Failed to send invitation.");
+        }
       }
-    }
-    if (confirmModal.type === "invite") {
-      const payload = {
-        customerId: Number(customerId),
-        editorUserId: userId,
-        companyName: "",
-        userName: "",
-        userEmail: inviteEmail,
-        userPassword: "",
-        accessRightId: inviteAccess.accessRightId,
-        isOwner: false,
-      };
-      const response = await fetch(InviteUser, {
-        method: "POST",
-        headers: { Accept: "text/plain", "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await response.text();
-      if (response.ok) {
-        setNotifyModal({ isOpen: true, message: `Invitation link: ${result}` });
-        setShowInviteModal(false);
-        setInviteEmail("");
-        setInviteAccess(null);
-      } else {
-        throw new Error(result.errorMessage || "Failed to send invitation.");
-      }
-    }
-  } catch (error) {
-    setErrorModal({ title: "Error", message: error.message });
-  } finally {
-    setLoading(false);
-  } 
-};
+    } catch (error) {
+      setErrorModal({ title: "Error", message: error.message });
+    } finally {
+      setLoading(false);
+    } 
+  };
 
   const getAccessRightLabel = (id) => accessRights.find((r) => r.accessRightId === id)?.description || "-";
   const getLocationLabel = (id) => locations.find((l) => l.locationId === id)?.locationCode || "-";
@@ -252,7 +252,7 @@ const confirmAction = async () => {
       ...provided,
       border: "1px solid #ccc",
       padding: "1px",
-      fontSize: "0.875rem",
+      fontSize: "0.75rem",
       width: "100%",
       minHeight: "2.5rem",
       backgroundColor: state.isDisabled ? "#f9f9f9" : "white",
@@ -260,15 +260,15 @@ const confirmAction = async () => {
     }),
     input: (provided) => ({
       ...provided,
-      fontSize: "0.875rem",
+      fontSize: "0.75rem",
     }),
     placeholder: (provided) => ({
       ...provided,
-      fontSize: "0.875rem",
+      fontSize: "0.75rem",
     }),
     menu: (provided) => ({
       ...provided,
-      fontSize: "0.875rem",
+      fontSize: "0.75rem",
       zIndex: 9999,
       position: "absolute",
     }),
@@ -278,7 +278,7 @@ const confirmAction = async () => {
     }),
     option: (provided, state) => ({
       ...provided,
-      fontSize: "0.875rem",
+      fontSize: "0.75rem",
       padding: "4px 8px",
       backgroundColor: state.isSelected ? "#f0f0f0" : "#fff",
       color: state.isSelected ? "#333" : "#000",
@@ -314,7 +314,7 @@ const confirmAction = async () => {
             >
             Add User
         </button>
-    </div>
+     </div>
       <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
         {loading ? (
           <p className="text-center py-4 text-gray-500">Loading...</p>
@@ -350,7 +350,7 @@ const confirmAction = async () => {
                     </button>
                 </td>
                 </tr>
-      ))}
+              ))}
             </tbody>
           </table>
         )}
@@ -382,15 +382,15 @@ const confirmAction = async () => {
 
       {editUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-[500px] max-w-full text-secondary">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-[500px] max-w-full text-secondary text-xs">
             <h2 className="text-lg font-semibold mb-4">{viewMode ? "View User" : "Edit User"}</h2>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-gray-600 text-xs">Username</label>
+                <label>Username</label>
                 <div className="mt-1 p-2 bg-gray-100 rounded">{editUser.userName}</div>
               </div>
               <div>
-                <label className="text-gray-600 text-xs">Email</label>
+                <label>Email</label>
                 {viewMode ? (
                   <div className="mt-1 p-2 bg-gray-100 rounded">{editUser.userEmail}</div>
                 ) : (
@@ -398,7 +398,7 @@ const confirmAction = async () => {
                 )}
               </div>
               <div>
-                <label className="text-gray-600 text-xs">User Role</label>
+                <label>User Role</label>
                 {viewMode ? (
                   <div className="mt-1 p-2 bg-gray-100 rounded">{getAccessRightLabel(editUser.accessRightId)}</div>
                 ) : (
@@ -406,7 +406,7 @@ const confirmAction = async () => {
                 )}
               </div>
               <div>
-                <label className="text-gray-600 text-xs">Location Code</label>
+                <label>Location Code</label>
                 {viewMode ? (
                   <div className="mt-1 p-2 bg-gray-100 rounded">{getLocationLabel(editUser.locationId)}</div>
                 ) : (
@@ -426,15 +426,15 @@ const confirmAction = async () => {
 
       {showInviteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-[400px] max-w-full text-secondary">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-[400px] max-w-full text-secondary text-xs">
             <h2 className="text-lg font-semibold mb-4">Invite New User</h2>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <label className="text-gray-600 text-xs">Email</label>
+                <label>Email</label>
                 <input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="mt-1 p-2 border border-gray-300 rounded w-full bg-white" />
               </div>
               <div>
-                <label className="text-gray-600 text-xs">User Role</label>
+                <label>User Role</label>
                 <Select value={inviteAccess} onChange={setInviteAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} />
               </div>
             </div>

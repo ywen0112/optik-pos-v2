@@ -157,6 +157,8 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
         { name: "Creditor Maintenance", path: "/maintenances/creditor" },
         { name: "Item Maintenance", path: "/maintenances/item" },
         { name: "Location Maintenance", path: "/maintenances/location" },
+        { name: "Member Maintenance", path: "/maintenances/member" },
+        { name: "PWP Maintenance", path: "/maintenances/pwp" },
       ],
     },
     { name: "Audit Logs", icon: <UserCheck size={20} />, path: "/audit-logs" },

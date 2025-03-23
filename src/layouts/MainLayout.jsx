@@ -8,6 +8,7 @@ import AuditLogs from "../pages/AuditLogs";
 import CompanyProfile from "../pages/CompanyProfile";
 import Reports from "../pages/Reports";
 import UserMaintenance from "../pages/UserMaintenance";
+import AccessRightMaintenance from "../pages/AccessRightMaintenance";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -29,7 +30,7 @@ const MainLayout = ({ title }) => {
       case "/maintenances/user":
         return <UserMaintenance />;
       case "/maintenances/access-right":
-        return <div>Access Right Maintenance Page</div>;
+        return <AccessRightMaintenance />;
       case "/maintenances/debtor":
         return <div>Debtor Maintenance Page</div>;
       case "/maintenances/creditor":
@@ -38,6 +39,10 @@ const MainLayout = ({ title }) => {
         return <div>Item Maintenance Page</div>;
       case "/maintenances/location":
         return <div>Location Maintenance Page</div>;
+      case "/maintenances/member":
+        return <div>Member Maintenance Page</div>;
+      case "/maintenances/pwp":
+        return <div>PWP Maintenance Page</div>;
       default:
         return <Dashboard />;
     }
