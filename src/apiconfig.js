@@ -27,14 +27,26 @@ export const SaveCloseCounterSession = `${CashCounterApi}SaveCloseCounterSession
 //Debtor
 export const DebtorApi = `${ApiBaseUrl}Debtor/`;
 export const GetDebtorRecords = `${DebtorApi}GetRecords`;
+export const NewDebtor = `${DebtorApi}New`;
+export const EditDebtor = `${DebtorApi}Edit`;
+export const SaveDebtor = `${DebtorApi}Save`;
+export const DeleteDebtor = `${DebtorApi}Delete`;
 
 //Creditor
 export const CreditorApi = `${ApiBaseUrl}Creditor/`
 export const GetCreditorRecords = `${CreditorApi}GetRecords`;
+export const NewCreditor = `${CreditorApi}New`;
+export const EditCreditor = `${CreditorApi}Edit`;
+export const SaveCreditor = `${CreditorApi}Save`;
+export const DeleteCreditor = `${CreditorApi}Delete`;
 
 //Location
 export const LocationApi = `${ApiBaseUrl}Location/`;
 export const GetLocationRecords = `${LocationApi}GetRecords`;
+export const NewLocation = `${LocationApi}New`;
+export const EditLocation = `${LocationApi}Edit`;
+export const SaveLocation = `${LocationApi}Save`;
+export const DeleteLocation = `${LocationApi}Delete`;
 
 //Sales
 export const SalesApi = `${ApiBaseUrl}Sales/`;
@@ -55,10 +67,19 @@ export const NewCreditNote = `${CreditNoteApi}New`;
 //Item
 export const ItemApi = `${ApiBaseUrl}Item/`;
 export const GetItemRecords = `${ItemApi}GetRecords`;
+export const NewItem = `${ItemApi}New`;
+export const NewItemDetail = `${ItemApi}NewDetail`;
+export const EditItem = `${ItemApi}Edit`;
+export const SaveItem = `${ItemApi}Save`;
+export const DeleteItem = `${ItemApi}Delete`;
 
 //Access Rights
 export const AccessRightApi = `${ApiBaseUrl}AccessRight/`;
 export const GetAccessRightRecords = `${AccessRightApi}GetRecords`; 
+export const EditAccessRight = `${AccessRightApi}Edit`;
+export const SaveAccessRight = `${AccessRightApi}Save`;
+export const NewAccessRight = `${AccessRightApi}New`;
+export const DeleteAccessRight = `${AccessRightApi}Delete`;
 
 //Company
 export const CompanyApi = `${ApiBaseUrl}Company/`;

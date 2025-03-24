@@ -291,10 +291,7 @@ const UserMaintenance = () => {
   return (
     <div>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })}/>
-      <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.type] || "Confirm Action"} message={confirmationMessageMap[confirmModal.type] || "Are you sure?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} 
-        confirmButtonDisabled={loading}
-        confirmButtonText={loading ? "Saving..." : "Yes"}
-      />
+      <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.type] || "Confirm Action"} message={confirmationMessageMap[confirmModal.type] || "Are you sure?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
       <div className="text-right">
         <button
@@ -311,11 +308,11 @@ const UserMaintenance = () => {
             <thead className="bg-gray-200 border-b-2 border-gray-100 font-bold">
               <tr className="text-left text-xs text-secondary">
                 <th className="px-4 py-3">NO</th>
-                <th className="px-2 py-3">USERNAME</th>
-                <th className="px-2 py-3">EMAIL</th>
-                <th className="px-2 py-3">USER ROLE</th>
-                <th className="px-2 py-3">LOCATION CODE</th>
-                <th className="px-2 py-3">ACTIONS</th>
+                <th className="py-3">USERNAME</th>
+                <th className="py-3">EMAIL</th>
+                <th className="py-3">USER ROLE</th>
+                <th className="py-3">LOCATION CODE</th>
+                <th className="py-3">ACTIONS</th>
               </tr>
             </thead>
             <tbody>
@@ -371,7 +368,7 @@ const UserMaintenance = () => {
       {editUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white rounded-lg shadow-lg p-6 w-[500px] max-w-full text-secondary text-xs">
-            <h2 className="text-lg font-semibold mb-4">{viewMode ? "View User" : "Edit User"}</h2>
+            <h3 className="text-lg font-semibold mb-4">{viewMode ? "View User" : "Edit User"}</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label>Username</label>
@@ -415,7 +412,7 @@ const UserMaintenance = () => {
       {showInviteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white rounded-lg shadow-lg p-6 w-[400px] max-w-full text-secondary text-xs">
-            <h2 className="text-lg font-semibold mb-4">Invite New User</h2>
+            <h3 className="text-lg font-semibold mb-4">Invite New User</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <label>Email</label>
@@ -432,6 +429,10 @@ const UserMaintenance = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {users.length === 0 && !loading && (
+        <tr><td colSpan="3" className="text-center py-4 text-gray-500">No users found.</td></tr>
       )}
     </div>
   );

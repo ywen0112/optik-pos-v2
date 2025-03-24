@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
 import { Pencil, Trash2, Eye } from "lucide-react";
-import { GetAccessRightRecords } from "../apiconfig";
+import { GetAccessRightRecords, NewAccessRight, EditAccessRight, SaveAccessRight, DeleteAccessRight } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import NotificationModal from "../modals/NotificationModal";
+import ConfirmationModal from "../modals/ConfirmationModal";
 
 const AccessRightMaintenance = () => {
   const customerId = localStorage.getItem("customerId");
+  const userId = localStorage.getItem("userId");
+  const locationId = localStorage.getItem("locationId");
   const [loading, setLoading] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
   const [accessRights, setAccessRights] = useState([]);
   const [selectedAccessRight, setSelectedAccessRight] = useState(null);
   const [viewMode, setViewMode] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget ] = useState(null);
+  const [formAction, setFormAction] = useState(null);
   const [pagination, setPagination] = useState({
       currentPage: 1,
       itemsPerPage: 10,
@@ -27,12 +34,13 @@ const AccessRightMaintenance = () => {
   const fetchAccessRights = async () => {
     setLoading(true);
     const offset = (pagination.currentPage - 1) * pagination.itemsPerPage;
+    const limit = pagination.itemsPerPage;
 
     const requestBody = {
       customerId: Number(customerId),
       keyword: "",
       offset,
-      limit: pagination.itemsPerPage,
+      limit,
     };
 
     try {
@@ -66,26 +74,184 @@ const AccessRightMaintenance = () => {
     }
   };
 
-  const handleOpenModal = (accessRight, mode) => {
-    setSelectedAccessRight({ ...accessRight });
-    setViewMode(mode === "view");
+  const handleAddNew = async () => {
+    try {
+      const res = await fetch(NewAccessRight, {
+        method: "POST",
+        headers: { Accept: "text/plain", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId: Number(customerId),
+          userId,
+          locationId,
+          id: ""
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        const filledData = {
+          ...data.data,
+          description: "",
+          accessRightActions: [
+            "Dashboard",
+            "Audit Logs",
+            "Transaction Inquiry",
+            "Report",
+            "Transaction Cash In/Out",
+            "Transaction Sales Invoice",
+            "Transaction Purchase Invoice",
+            "Transaction Credit Note",
+            "User Maintenance",
+            "Access Right Maintenance",
+            "Debtor Maintenance",
+            "Creditor Maintenance",
+            "Item Maintenance",
+            "Member Maintenance",
+            "Location Maintenance",
+            "PWP Maintenance"
+          ].map(module => ({ module, allow: false, view: false, add: false, edit: false, delete: false }))
+        };
+        console.log(data.data);
+        setSelectedAccessRight(filledData);
+        setViewMode(false);
+        setFormAction("add");
+      } else {
+        throw new Error(data.errorMessage || "Failed to create new access right.");
+      }
+    } catch (error) {
+      setErrorModal({ title: "Add Error", message: error.message });
+    }
+  };
+
+  const handleOpenModal = async (accessRight, mode) => {
+    if (mode === "edit") {
+      try {
+        const res = await fetch(EditAccessRight, {
+          method: "POST",
+          headers: {
+            Accept: "text/plain",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            customerId: Number(customerId),
+            userId,
+            locationId,
+            id: accessRight.accessRightId
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setSelectedAccessRight(data.data);
+          setViewMode(false);
+          setFormAction("edit");
+        } else {
+          throw new Error(data.errorMessage || "Failed to fetch access right data");
+        }
+      } catch (error) {
+        setErrorModal({ title: "Edit Error", message: error.message });
+      }
+    } else {
+      setSelectedAccessRight(accessRight);
+      setViewMode(true);
+    }
   };
 
   const handleCheckboxChange = (idx, actionType) => {
     const updated = { ...selectedAccessRight };
     updated.accessRightActions[idx][actionType] = !updated.accessRightActions[idx][actionType];
+    const { view, add, edit, delete: del } = updated.accessRightActions[idx];
+    updated.accessRightActions[idx].allow = view || add || edit || del;
     setSelectedAccessRight(updated);
   };
 
+  const handleInputChange = (e) => {
+    setSelectedAccessRight({ ...selectedAccessRight, description: e.target.value });
+  };
+
+  const handleDeleteClick = (id) => {
+    setDeleteTarget(id);
+    setConfirmModal({ isOpen: true, action: "delete" });
+  };
+  
+
+  const confirmAction = async () => {
+    setSaving(true);
+    const action = confirmModal.action;
+    setConfirmModal({ isOpen: false, action: null });
+
+    try {
+      if (action === "delete") {
+        const res = await fetch(DeleteAccessRight, {
+          method: "POST",
+          headers: { Accept: "text/plain", "Content-Type": "application/json" },
+          body: JSON.stringify({ customerId: Number(customerId), userId, locationId, id: deleteTarget })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setNotifyModal({ isOpen: true, message: "Access Right deleted successfully!" });
+          fetchAccessRights();
+        } else {
+          throw new Error(data.errorMessage || "Failed to delete access right.");
+        }
+      } else {
+        const res = await fetch(SaveAccessRight, {
+          method: "POST",
+          headers: { Accept: "text/plain", "Content-Type": "application/json" },
+          body: JSON.stringify({
+            actionData: {
+              customerId: Number(customerId),
+              userId,
+              locationId,
+              id: selectedAccessRight.accessRightId || "",
+            },
+            accessRightId: selectedAccessRight.accessRightId || "",
+            description: selectedAccessRight.description,
+            accessRightActions: selectedAccessRight.accessRightActions
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setNotifyModal({ isOpen: true, message: "Access Right saved successfully!" });
+          setSelectedAccessRight(null);
+          fetchAccessRights();
+        } else {
+          throw new Error(data.errorMessage || "Failed to save access right.");
+        }
+      }
+    } catch (error) {
+      setErrorModal({ title: `${action === "delete" ? "Delete" : "Save"} Error`, message: error.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const confirmationTitleMap = {
+    add: "Confirm Add",
+    edit: "Confirm Edit",
+    delete: "Confirm Delete"
+  };
+  
+  const confirmationMessageMap = {
+    add: "Are you sure you want to add this user role?",
+    edit: "Are you sure you want to edit this user role?",
+    delete: "Are you sure you want to delete this user role?"
+  };
 
   return (
     <div>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmationTitleMap[confirmModal.action]}
+        message={confirmationMessageMap[confirmModal.action]}
+        loading={saving}
+        onConfirm={confirmAction}
+        onCancel={() => setConfirmModal({ isOpen: false, action: null })}
+      />
 
       <div className="text-right">
         <button
-            className="bg-secondary text-white px-4 py-1 rounded text-xs hover:bg-secondary/90 transition"
+            className="bg-secondary text-white px-4 py-1 rounded text-xs hover:bg-secondary/90 transition" onClick={handleAddNew}
             >
             Add User Role
         </button>
@@ -98,15 +264,15 @@ const AccessRightMaintenance = () => {
             <thead className="bg-gray-200 border-b-2 border-gray-100 font-bold text-xs text-secondary text-left">
               <tr>
                 <th className="px-4 py-3">NO</th>
-                <th className="px-4 py-3">USER ROLE</th>
-                <th className="px-4 py-3">ACTIONS</th>
+                <th className="py-3">USER ROLE</th>
+                <th className="py-3">ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               {accessRights.map((accessRight, index) => (
                 <tr key={accessRight.accessRightId} className="text-xs font-medium text-secondary border-gray-100 text-secondary">
                   <td className="pl-4 p-2">{index + 1}</td>
-                  <td className="p-1">{accessRight.description}</td>
+                  <td className="p-1">{accessRight.description === "" ? "-" : accessRight.description }</td>
                   <td className="p-1 flex space-x-1">
                     <button className="text-blue-600 bg-transparent pl-0" onClick={() => handleOpenModal(accessRight, "view")}>
                       <Eye size={14} /> 
@@ -114,7 +280,7 @@ const AccessRightMaintenance = () => {
                     <button className="text-yellow-500 bg-transparent pl-0" onClick={() => handleOpenModal(accessRight, "edit")}> 
                       <Pencil size={14} /> 
                     </button>
-                    <button className="bg-transparent text-red-500 pl-0">
+                    <button className="bg-transparent text-red-500 pl-0" onClick={() => handleDeleteClick(accessRight.accessRightId)}>
                       <Trash2 size={14} />
                     </button>
                   </td>
@@ -152,14 +318,22 @@ const AccessRightMaintenance = () => {
       {selectedAccessRight && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[600px] max-h-[90vh] overflow-y-auto text-secondary text-xs">
-            <h2 className="text-lg font-semibold mb-4">{viewMode ? "View" : "Edit"} Access Right</h2>
+          <h3 className="text-lg font-semibold mb-4">
+            {viewMode
+              ? "View User Role"
+              : formAction === "edit"
+              ? "Edit User Role"
+              : "Add User Role"}
+          </h3>         
             <div className="mb-4">
               <label className="block mb-1">User Role</label>
-              {viewMode ? (
-                <div className="p-2 bg-gray-100 rounded">{selectedAccessRight.description}</div>
-              ) : (
-                <input type="text" value={selectedAccessRight.description} className="w-full p-2 border rounded bg-transparent" />
-              )}
+              <input
+                type="text"
+                value={selectedAccessRight.description}
+                readOnly={viewMode}
+                onChange={handleInputChange}
+                className={`mt-1 w-full p-2 border rounded ${viewMode ? "bg-gray-100" : "bg-white"}`}
+              />
             </div>
             <div className="mb-2 font-semibold">Access Rights</div>
             <div className="overflow-x-auto">
@@ -174,22 +348,37 @@ const AccessRightMaintenance = () => {
                   </tr>
                 </thead>
                 <tbody>
-                {selectedAccessRight.accessRightActions.map((action, idx) => (
+                  {selectedAccessRight.accessRightActions.map((action, idx) => (
                     <tr key={idx} className="border-t">
                       <td className="p-2">{action.module}</td>
-                      {['view', 'add', 'edit', 'delete'].map((type) => (
+                      {["view", "add", "edit", "delete"].map((type) => (
                         <td key={type} className="p-2 text-center">
-                          <input
-                            type="checkbox"
-                            checked={action[type]}
-                            disabled={viewMode}
-                            onChange={() => handleCheckboxChange(idx, type)}
-                            className={`appearance-none h-4 w-4 border border-gray-300 rounded bg-white checked:bg-secondary checked:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer disabled:cursor-not-allowed`}
-                            style={{
-                              display: 'inline-block',
-                              verticalAlign: 'middle',
-                            }}
-                          />
+                          <label className="inline-block relative w-4 h-4">
+                            <input
+                              type="checkbox"
+                              checked={action[type]}
+                              disabled={viewMode}
+                              onChange={() => handleCheckboxChange(idx, type)}
+                              className="peer sr-only"
+                            />
+                            <div
+                              className={`w-4 h-4 rounded border flex items-center justify-center 
+                                ${viewMode ? "cursor-default" : "cursor-pointer"} 
+                                ${action[type] ? "bg-secondary border-secondary" : "bg-white border-gray-300"}`}
+                            >
+                              {action[type] && (
+                                <svg
+                                  className="w-3 h-3 text-white"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+                          </label>
                         </td>
                       ))}
                     </tr>
@@ -197,11 +386,29 @@ const AccessRightMaintenance = () => {
                 </tbody>
               </table>
             </div>
-            <div className="mt-6 flex justify-end space-x-2">
-              <button className="px-4 py-1 bg-red-500 text-white text-sm rounded" onClick={() => setSelectedAccessRight(null)}>Close</button>
+             <div className="mt-6 flex justify-end space-x-2">
+              {!viewMode && (
+                <button 
+                className="px-4 py-1 rounded text-sm bg-green-500 text-white" 
+                onClick={() => {
+                  if (!selectedAccessRight.description.trim()) {
+                    setErrorModal({
+                      title: "Validation Error",
+                      message: "User Role is required.",
+                    });
+                    return;
+                  }
+                  setConfirmModal({ isOpen: true, action: formAction });
+                }}
+                >Save</button>
+              )}
+              <button className="px-4 py-1 rounded text-sm bg-red-500 text-white" onClick={() => setSelectedAccessRight(null)}>Close</button>
             </div>
           </div>
         </div>
+      )}
+      {accessRights.length === 0 && !loading && (
+        <tr><td colSpan="3" className="text-center py-4 text-gray-500">No access rights found.</td></tr>
       )}
     </div>
   );

@@ -9,6 +9,9 @@ import CompanyProfile from "../pages/CompanyProfile";
 import Reports from "../pages/Reports";
 import UserMaintenance from "../pages/UserMaintenance";
 import AccessRightMaintenance from "../pages/AccessRightMaintenance";
+import DebtorMaintenance from "../pages/DebtorMaintenance";
+import CreditorMaintenance from "../pages/CreditorMaintenance";
+import LocationMaintenance from "../pages/LocationMaintenance";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -32,17 +35,17 @@ const MainLayout = ({ title }) => {
       case "/maintenances/access-right":
         return <AccessRightMaintenance />;
       case "/maintenances/debtor":
-        return <div>Debtor Maintenance Page</div>;
+        return <DebtorMaintenance />;
       case "/maintenances/creditor":
-        return <div>Creditor Maintenance Page</div>;
+        return <CreditorMaintenance />;
       case "/maintenances/item":
-        return <div>Item Maintenance Page</div>;
+        return <div className="text-secondary">Item Maintenance Page in Maintenance ...</div>;
       case "/maintenances/location":
-        return <div>Location Maintenance Page</div>;
+        return <LocationMaintenance />;
       case "/maintenances/member":
-        return <div>Member Maintenance Page</div>;
+        return <div className="text-secondary">Member Maintenance Page in Maintenance ...</div>;
       case "/maintenances/pwp":
-        return <div>PWP Maintenance Page</div>;
+        return <div className="text-secondary">PWP Maintenance Page in Maintenance</div>;
       default:
         return <Dashboard />;
     }
