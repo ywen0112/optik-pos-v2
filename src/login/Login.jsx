@@ -36,16 +36,6 @@ const Login = ({ onLoginSuccess }) => {
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-secondary">
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() =>setErrorModal({ title: "", message: "" })}/>
-      <style>
-        {`
-          button:hover {
-            border-color: transparent !important;
-          }
-          button:focus, button:focus-visible {
-            outline: none !important;
-          }
-        `}
-      </style>
 
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
         <div className="flex justify-center mb-6">

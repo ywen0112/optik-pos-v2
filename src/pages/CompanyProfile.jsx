@@ -94,16 +94,6 @@ const CompanyProfile = () => {
 
   return (
     <div className="flex justify-center h-fit w-full bg-gray-100 p-6">
-      <style>
-        {`
-          button:hover {
-            border-color: transparent !important;
-          }
-          button:focus, button:focus-visible {
-            outline: none !important;
-          }
-        `}
-      </style>
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-2xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm text-secondary">
           {[

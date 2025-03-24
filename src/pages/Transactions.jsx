@@ -400,17 +400,6 @@ const handleConfirmCloseCounter = async () => {
     /> 
      <NotificationModal isOpen={notificationModal.isOpen} title={notificationModal.title} message={notificationModal.message} onClose={notificationModal.onClose || (() => setNotificationModal({ isOpen: false }))} />
 
-      <style>
-        {`
-          button:hover {
-            border-color: transparent !important;
-          }
-          button:focus, button:focus-visible {
-            outline: none !important;
-          }
-        `}
-      </style>
-
       {counterSession?.isExist ? (
         <div className="flex items-center gap-2 w-full mt-2">
           <label className="text-sm text-secondary font-semibold whitespace-nowrap">Opening Balance:</label>

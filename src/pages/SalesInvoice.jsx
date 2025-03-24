@@ -974,23 +974,12 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         confirmButtonText={isSaveLoading ? "Saving..." : "Yes"}
       />
 
-        <NotificationModal
-          isOpen={notificationModal.isOpen}
-          title={notificationModal.title}
-          message={notificationModal.message}
-          onClose={notificationModal.onClose}
-        />
-
-       <style>
-        {`
-          button:hover {
-            border-color: transparent !important;
-          }
-          button:focus, button:focus-visible {
-            outline: none !important;
-          }
-        `}
-      </style>  
+      <NotificationModal
+        isOpen={notificationModal.isOpen}
+        title={notificationModal.title}
+        message={notificationModal.message}
+        onClose={notificationModal.onClose}
+      />
       
       <h2 className="text-xl font-bold text-secondary">Sales Invoice</h2>    
       <div className="flex border-b mb-4">

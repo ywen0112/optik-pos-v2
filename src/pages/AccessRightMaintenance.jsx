@@ -82,16 +82,6 @@ const AccessRightMaintenance = () => {
     <div>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
-      <style>
-        {`
-          button:hover {
-            border-color: transparent !important;
-          }
-          button:focus, button:focus-visible {
-            outline: none !important;
-          }
-        `}
-      </style>
 
       <div className="text-right">
         <button
@@ -114,13 +104,17 @@ const AccessRightMaintenance = () => {
             </thead>
             <tbody>
               {accessRights.map((accessRight, index) => (
-                <tr key={accessRight.accessRightId} className="text-xs text-secondary border-gray-100 text-secondary">
+                <tr key={accessRight.accessRightId} className="text-xs font-medium text-secondary border-gray-100 text-secondary">
                   <td className="pl-4 p-2">{index + 1}</td>
-                  <td className="px-4 py-2">{accessRight.description}</td>
-                  <td className="px-4 py-2 flex gap-2 justify-center">
-                  <button className="text-blue-600 bg-transparent" onClick={() => handleOpenModal(accessRight, "view")}> <Eye size={16} /> </button>
-                  <button className="text-yellow-500 bg-transparent" onClick={() => handleOpenModal(accessRight, "edit")}> <Pencil size={16} /> </button>
-                    <button className="bg-transparent text-red-500">
+                  <td className="p-1">{accessRight.description}</td>
+                  <td className="p-1 flex space-x-1">
+                    <button className="text-blue-600 bg-transparent pl-0" onClick={() => handleOpenModal(accessRight, "view")}>
+                      <Eye size={14} /> 
+                    </button>
+                    <button className="text-yellow-500 bg-transparent pl-0" onClick={() => handleOpenModal(accessRight, "edit")}> 
+                      <Pencil size={14} /> 
+                    </button>
+                    <button className="bg-transparent text-red-500 pl-0">
                       <Trash2 size={14} />
                     </button>
                   </td>
@@ -190,7 +184,11 @@ const AccessRightMaintenance = () => {
                             checked={action[type]}
                             disabled={viewMode}
                             onChange={() => handleCheckboxChange(idx, type)}
-                            className="form-checkbox h-4 w-4 bg-white text-secondary border-gray-300 rounded focus:ring-secondary"
+                            className={`appearance-none h-4 w-4 border border-gray-300 rounded bg-white checked:bg-secondary checked:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer disabled:cursor-not-allowed`}
+                            style={{
+                              display: 'inline-block',
+                              verticalAlign: 'middle',
+                            }}
                           />
                         </td>
                       ))}

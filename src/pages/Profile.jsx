@@ -361,12 +361,12 @@ const ProfileModal = ({ open, onClose }) => {
 
           <div className="mt-6 flex justify-between">
             <button
-              className="text-sm text-white bg-green-500"
+              className="text-sm text-white bg-green-500 py-1"
               onClick={() => setShowPasswordModal(true)}
             >
               Change Password
             </button>
-            <button className="text-sm text-white bg-red-500" onClick={() => setShowLogoutConfirm(true)}>Logout</button>
+            <button className="text-sm text-white bg-red-500 py-1" onClick={() => setShowLogoutConfirm(true)}>Logout</button>
           </div>
         </div>
         <ConfirmationModal

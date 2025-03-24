@@ -296,18 +296,6 @@ const UserMaintenance = () => {
         confirmButtonText={loading ? "Saving..." : "Yes"}
       />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
-
-      <style>
-        {`
-          button:hover {
-            border-color: transparent !important;
-          }
-          button:focus, button:focus-visible {
-            outline: none !important;
-          }
-        `}
-      </style>
-
       <div className="text-right">
         <button
             className="bg-secondary text-white px-4 py-1 rounded text-xs hover:bg-secondary/90 transition" onClick={() => setShowInviteModal(true)}
@@ -332,21 +320,21 @@ const UserMaintenance = () => {
             </thead>
             <tbody>
               {users.map((user, index) => (
-                <tr key={user.userId} className="text-xs border-b-2 border-gray-100 text-secondary">
+                <tr key={user.userId} className="text-xs font-medium border-b-2 border-gray-100 text-secondary">
                 <td className="pl-4 p-2">{index + 1}</td>
-                <td className="p-2">{user.userName || "-"}</td>
-                <td className="p-2">{user.userEmail || "-"}</td>
-                <td className="p-2">{getAccessRightLabel(user.accessRightId)}</td>
-                <td className="p-2">{getLocationLabel(user.locationId)}</td>
-                <td className="p-2 flex space-x-2">
-                    <button className="text-blue-500 bg-transparent" onClick={() => openEditModal(user, true)}>
-                    <Eye size={14} />
+                <td className="p-1">{user.userName || "-"}</td>
+                <td className="p-1">{user.userEmail || "-"}</td>
+                <td className="p-1">{getAccessRightLabel(user.accessRightId)}</td>
+                <td className="p-1">{getLocationLabel(user.locationId)}</td>
+                <td className="p-1 flex space-x-1">
+                    <button className="text-blue-500 bg-transparent pl-0" onClick={() => openEditModal(user, true)}>
+                      <Eye size={14} />
                     </button>
-                    <button className="text-yellow-500 bg-transparent" onClick={() => openEditModal(user, false)}>
-                    <Pencil size={14} />
+                    <button className="text-yellow-500 bg-transparent pl-0" onClick={() => openEditModal(user, false)}>
+                      <Pencil size={14} />
                     </button>
-                    <button className="text-red-500 bg-transparent" onClick={handleDelete}>
-                    <Trash2 size={14} />
+                    <button className="text-red-500 bg-transparent pl-0" onClick={handleDelete}>
+                      <Trash2 size={14} />
                     </button>
                 </td>
                 </tr>

@@ -234,16 +234,6 @@ const TransactionsInquiry = () => {
         onConfirm={voidTransaction}
         onCancel={() => setConfirmationModal({ isOpen: false, transactionId: null })}
       />
-      <style>
-        {`
-          button:hover {
-            border-color: transparent !important;
-          }
-          button:focus, button:focus-visible {
-            outline: none !important;
-          }
-        `}
-      </style>
 
       <nav className="flex">
         {["Counter Session", "Cash Transactions", "Sales Invoice", "Purchase Invoice", "Credit Note"].map((tab) => ( 
@@ -334,7 +324,7 @@ const CounterSessionTable = ({ tableData, expandedRows, toggleExpandRow, exportR
               </tr>
               {expandedRows[index] && (
                 <tr>
-                  <td colSpan={6} className="p-2 bg-gray-50 text-xs">
+                  <td colSpan={6} className="p-2 bg-transparent text-left text-xs text-secondary">
                     <table className="w-full border-collapse border">
                       <thead className="bg-gray-100 border-b">
                         <tr>

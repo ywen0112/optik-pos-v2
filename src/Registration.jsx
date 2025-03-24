@@ -72,16 +72,6 @@ const UserRegistrationPage = () => {
           navigate("/login");
         }}
       />
-      <style>
-        {`
-          button:hover {
-            border-color: transparent !important;
-          }
-          button:focus, button:focus-visible {
-            outline: none !important;
-          }
-        `}
-      </style>
 
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <div className="flex justify-center mb-6">
