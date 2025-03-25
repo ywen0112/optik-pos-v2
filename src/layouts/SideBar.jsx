@@ -1,21 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Clock,
-  Briefcase,
-  FileText,
-  UserCheck,
-  Building,
-  BarChart2,
-  Wrench,
-  ChevronDown,
-  ChevronRight,
+import { Clock, Briefcase, FileText, UserCheck, Building, BarChart2, Wrench, ChevronDown, ChevronRight, 
+  Users, KeyRound, User2, Landmark, Package, MapPin, BadgePercent, UserCog
 } from "lucide-react";
 import ErrorModal from "../modals/ErrorModal";
 import { CheckCounterSession, GetCompany } from "../apiconfig";
 import ClipLoader from "react-spinners/ClipLoader";
 
-const SideBar = ({ onSelectCompany = () => {} }) => {
+const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
   const customerId = localStorage.getItem("customerId");
   const userId = localStorage.getItem("userId");
   const locationId = localStorage.getItem("locationId");
@@ -33,7 +25,7 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const storedCompanies = JSON.parse(localStorage.getItem("companies")) || [];
+    const storedCompanies = JSON.parse(sessionStorage.getItem("companies")) || [];
     const storedSelectedCompany = JSON.parse(localStorage.getItem("selectedCompany")) || null;
 
     if (storedCompanies.length > 0) {
@@ -54,19 +46,29 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
   }, [location.pathname]);
 
   const handleCompanyChange = (event) => {
+    setIsLoading(true);
+
     const companyId = event.target.value;
     const newSelectedCompany = companyOptions.find(c => String(c.customerId) === companyId);
 
     if (newSelectedCompany) {
-      setSelectedCompany(newSelectedCompany);
-      localStorage.setItem("selectedCompany", JSON.stringify(newSelectedCompany));
-      localStorage.setItem("userId", newSelectedCompany.userId);
-      localStorage.setItem("customerId", newSelectedCompany.customerId);
-      localStorage.setItem("locationId", newSelectedCompany.locationId);
-      localStorage.setItem("accessRights", JSON.stringify(newSelectedCompany.accessRight));
-
-      onSelectCompany(newSelectedCompany.customerId);
-      navigate("/dashboard");
+      try {
+        setSelectedCompany(newSelectedCompany);
+        localStorage.setItem("selectedCompany", JSON.stringify(newSelectedCompany));
+        localStorage.setItem("userId", newSelectedCompany.userId);
+        localStorage.setItem("customerId", newSelectedCompany.customerId);
+        localStorage.setItem("locationId", newSelectedCompany.locationId);
+        localStorage.setItem("accessRights", JSON.stringify(newSelectedCompany.accessRight));
+  
+        onSelectCompany(newSelectedCompany.customerId);
+        navigate("/dashboard");
+      } catch (error) {
+        setErrorModal({ title: "Company Change Error", message: error.message });
+      } finally {
+        setIsLoading(false); 
+      }
+    } else {
+      setIsLoading(false);
     }
   };
 
@@ -151,14 +153,14 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
       name: "Maintenance",
       icon: <Wrench size={20} />,
       children: [
-        { name: "User Maintenance", path: "/maintenances/user" },
-        { name: "Access Right Maintenance", path: "/maintenances/access-right" },
-        { name: "Debtor Maintenance", path: "/maintenances/debtor" },
-        { name: "Creditor Maintenance", path: "/maintenances/creditor" },
-        { name: "Item Maintenance", path: "/maintenances/item" },
-        { name: "Location Maintenance", path: "/maintenances/location" },
-        { name: "Member Maintenance", path: "/maintenances/member" },
-        { name: "PWP Maintenance", path: "/maintenances/pwp" },
+        { name: "User Maintenance", path: "/maintenances/user", icon: <Users size={16} /> },
+        { name: "Access Right Maintenance", path: "/maintenances/access-right", icon: <KeyRound size={16} /> },
+        { name: "Debtor Maintenance", path: "/maintenances/debtor", icon: <User2 size={16} /> },
+        { name: "Creditor Maintenance", path: "/maintenances/creditor", icon: <Landmark size={16} /> },
+        { name: "Item Maintenance", path: "/maintenances/item", icon: <Package size={16} /> },
+        { name: "Location Maintenance", path: "/maintenances/location", icon: <MapPin size={16} /> },
+        { name: "Member Maintenance", path: "/maintenances/member", icon: <BadgePercent size={16} /> },
+        { name: "PWP Maintenance", path: "/maintenances/pwp", icon: <UserCog size={16} /> },
       ],
     },
     { name: "Audit Logs", icon: <UserCheck size={20} />, path: "/audit-logs" },
@@ -167,7 +169,9 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
   ];
 
   return (
-    <div className="w-60 bg-secondary text-white h-screen flex flex-col p-4 relative">
+    <div className={`bg-secondary text-white h-screen flex flex-col p-2 relative transition-all duration-300
+      ${visible ? "w-60" : "w-16"}`}
+      >
       <ErrorModal
         title={errorModal.title}
         message={errorModal.message}
@@ -181,31 +185,39 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
         </div>
       )}
 
-      <div className="items-center justify-center mb-4">
-        <span className="text-yellow-500 font-bold text-lg mt-2">OPTIK</span>
-        <span className="text-white font-bold text-lg">POS</span>
-      </div>
+      {visible && (
+        <>
+          <div className="items-center justify-center mb-4">
+            <span className="text-yellow-500 font-bold text-lg mt-2">OPTIK</span>
+            <span className="text-white font-bold text-lg">POS</span>
+          </div>
 
-      <div className="border-b border-gray-500 mb-8"></div>
+          <div className="border-b border-gray-500 mb-8"></div>
+        </>
+      )}
 
-      <label className="text-sm">Select Company:</label>
-      <select
-        className="w-full bg-white p-1 rounded mt-2 text-secondary text-sm"
-        value={selectedCompany?.customerId || ""}
-        onChange={handleCompanyChange}
-      >
-        {companyOptions.length > 0 ? (
-          companyOptions.map((company) => (
-            <option key={company.customerId} value={company.customerId}>
-              {company.companyName}
-            </option>
-          ))
-        ) : (
-          <option value="">No companies available</option>
-        )}
-      </select>
+      {visible && (
+        <>
+          <label className="text-sm">Select Company:</label>
+          <select
+            className="w-full bg-white p-1 rounded mt-2 text-secondary text-sm"
+            value={selectedCompany?.customerId || ""}
+            onChange={handleCompanyChange}
+          >
+            {companyOptions.length > 0 ? (
+              companyOptions.map((company) => (
+                <option key={company.customerId} value={company.customerId}>
+                  {company.companyName}
+                </option>
+              ))
+            ) : (
+              <option value="">No companies available</option>
+            )}
+          </select>
+        </>
+      )}
 
-      <nav className="mt-8 flex-grow overflow-y-auto">
+      <nav className="mt-8 flex-grow overflow-y-auto scrollbar-hide">
         <ul>
           {menuItems.map((item) => {
             const isExpanded = expandedMenus.includes(item.name);
@@ -216,50 +228,57 @@ const SideBar = ({ onSelectCompany = () => {} }) => {
               activeMenu === item.path ||
               item.children?.some((child) => activeMenu === child.path);
 
-            return (
-              <div key={item.name}>
-                <li
-                  className={`flex items-center justify-between p-3 rounded cursor-pointer transition-colors 
-                    ${isActive ? "bg-primary text-black font-semibold" : "hover:bg-gray-700"}`}
-                  onClick={() => {
-                    setActiveMenu(item.path || item.children?.[0]?.path || "");
-                    if (item.children) {
-                      toggleMenu(item.name);
-                    } else {
-                      if (item.onClick) item.onClick();
-                      else if (item.path) navigate(item.path);
-                    }
-                  }}
-                >
-                  <div className="flex items-center">
-                    {item.icon}
-                    <span className="ml-2 text-sm">{item.name}</span>
-                  </div>
-                  {item.children && (isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
-                </li>
-
-                {item.children && isExpanded && (
-                  <ul className="ml-6 mt-1 space-y-1">
-                    {item.children.map((child) => (
-                      <li
-                        key={child.name}
-                        className={`text-sm cursor-pointer px-2 py-2 rounded transition-colors ${
-                          location.pathname === child.path || activeMenu === child.path
-                            ? "bg-yellow-100 text-secondary font-semibold"
-                            : "hover:bg-gray-600"
-                        }`}
-                        onClick={() => {
-                          setActiveMenu(child.path);
-                          navigate(child.path);
-                        }}
-                      >
-                        {child.name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            );
+              return (
+                <div key={item.name}>
+                  <li
+                    className={`flex items-center justify-between p-3 rounded cursor-pointer transition-colors 
+                      ${isActive ? "bg-primary text-black font-semibold" : "hover:bg-gray-700"}`}
+                    onClick={() => {
+                      setActiveMenu(item.path || item.children?.[0]?.path || "");
+                      if (item.children) {
+                        toggleMenu(item.name);
+                      } else {
+                        if (item.onClick) item.onClick();
+                        else if (item.path) navigate(item.path);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center">
+                      {item.icon}
+                      {visible && <span className="ml-2 text-sm">{item.name}</span>}
+                    </div>
+              
+                    {item.children && (
+                      visible ? (
+                        isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+                      ) : (
+                        isExpanded && <ChevronDown size={16} />
+                      )
+                    )}
+                  </li>
+              
+                  {item.children && isExpanded && (
+                    <ul className={`${visible ? "ml-6" : "ml-2"} mt-1 space-y-1`}>
+                      {item.children.map((child) => (
+                        <li
+                          key={child.name}
+                          className={`flex items-center gap-2 text-sm cursor-pointer px-2 py-2 rounded transition-colors 
+                            ${location.pathname === child.path || activeMenu === child.path
+                              ? "bg-yellow-100 text-secondary font-semibold"
+                              : "hover:bg-gray-600"}`}
+                          onClick={() => {
+                            setActiveMenu(child.path);
+                            navigate(child.path);
+                          }}
+                        >
+                          {child.icon}
+                          {visible && <span>{child.name}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
           })}
         </ul>
       </nav>

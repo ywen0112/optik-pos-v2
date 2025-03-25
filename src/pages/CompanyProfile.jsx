@@ -144,7 +144,6 @@ const CompanyProfile = () => {
         onConfirm={confirmSave}
         onCancel={() => setShowConfirm(false)}
         loading={confirmLoading}
-        
       />
 
       <ErrorModal

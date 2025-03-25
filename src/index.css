@@ -62,12 +62,22 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   appearance: none;
-  background: white; /* Make the spinner white */
+  background: white;
   width: 16px;
   height: 16px;
-  opacity: 1; /* Keep it visible */
+  opacity: 1; 
   border-radius: 3px;
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+}
+
 
 @media (prefers-color-scheme: light) {
   :root {

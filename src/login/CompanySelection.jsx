@@ -4,8 +4,6 @@ const CompanySelection = ({ companies, onCancel }) => {
   const navigate = useNavigate();
 
   const handleCompanySelect = (company) => {
-    console.log("Selecting company:", company);
-
     localStorage.setItem("userId", company.userId);
     localStorage.setItem("customerId", company.customerId);
     localStorage.setItem("locationId", company.locationId);

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import SideBar from "./SideBar";
 import HeaderBar from "./HeaderBar";
@@ -15,6 +16,7 @@ import LocationMaintenance from "../pages/LocationMaintenance";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
+  const [sidebarVisible, setSidebarVisible] = useState(true);
 
   const renderContent = () => {
     switch (location.pathname) {
@@ -53,11 +55,11 @@ const MainLayout = ({ title }) => {
 
   return (
     <div className="flex h-screen w-screen">
-      <SideBar />
+      <SideBar visible={sidebarVisible}/>
       <div className="flex flex-col flex-1 bg-gray-100">
-        <HeaderBar />
+        <HeaderBar onToggleSidebar={() => setSidebarVisible(!sidebarVisible)}/>
         <div className="px-4 mt-4 text-2xl font-bold text-secondary">{title}</div>
-        <div className="flex-grow py-2 px-4 overflow-y-auto max-h-[calc(100vh-100px)] pr-2">{renderContent()}</div>
+        <div className="flex-grow py-2 px-4 overflow-y-auto max-h-[calc(100vh-100px)] pr-2 scrollbar-hide">{renderContent()}</div>
       </div>
     </div>
   );
