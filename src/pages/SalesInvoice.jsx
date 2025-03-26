@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
 import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales, SaveSalesPayment, GetDebtorPreviousEyeProfile, NewEyePower, SaveEyePower } from "../apiconfig";
@@ -626,15 +625,14 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
   const confirmSave = () => {
     for (const item of invoiceItems) {
       const hasItemCode = item.itemCode && item.itemCode.trim() !== "";
-      const hasDesc = item.description && item.description.trim() !== "";
       const hasUom = item.uom && item.uom.trim() !== "";
       const hasUnitPrice = item.unitPrice > 0;
       const hasQty = item.quantity > 0;
-  
-      if (!hasItemCode && (!hasDesc || !hasUom || !hasUnitPrice || !hasQty)) {
+
+      if (!hasItemCode || !hasUom || !hasUnitPrice || !hasQty) {
         setErrorModal({
           title: "Validation Error",
-          message: "If Item Code is empty, Description, UOM, Unit Price, and Quantity must all be filled in."
+          message: "Each item must have an Item Code, UOM, Unit Price > 0, and Quantity > 0."
         });
         return;
       }
@@ -953,47 +951,6 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
     }),
   };
 
-  const customStylesItem = {
-    control: (provided, state) => ({
-      ...provided,
-      border: "1px solid #ccc", 
-      padding: "1px",
-      fontSize: "0.875rem", 
-      width: "100%", 
-      minHeight: "2.5rem",
-      backgroundColor: state.isDisabled ? "#f9f9f9" : "white", 
-      cursor: state.isDisabled ? "not-allowed" : "pointer",
-    }),
-    input: (provided) => ({
-      ...provided,
-      fontSize: "0.875rem",
-    }),
-    placeholder: (provided) => ({
-      ...provided,
-      fontSize: "0.875rem",
-    }),
-    menu: (provided) => ({
-      ...provided,
-      fontSize: "0.875rem", 
-      zIndex: 9999, 
-      position: "absolute",  
-    }),
-    menuPortal: (provided) => ({
-      ...provided,
-      zIndex: 9999, 
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      fontSize: "0.875rem", 
-      padding: "4px 8px", 
-      backgroundColor: state.isSelected ? "#f0f0f0" : "#fff",
-      color: state.isSelected ? "#333" : "#000",
-      "&:hover": {
-        backgroundColor: "#e6e6e6",
-      },
-    }),
-  };
-
   return (
     <div>
       <ErrorModal
@@ -1023,12 +980,12 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       />
       
       <h2 className="text-xl font-bold text-secondary">Sales Invoice</h2>    
-      <div className="flex border-b mb-4">
+      <div className="flex border-b">
         {["Sales Invoice", "Eye Powers"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`relative text-sm font-medium bg-transparent border-none ${
+            className={`relative text-xs font-medium bg-transparent border-none ${
               activeTab === tab ? "text-secondary font-semibold after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-primary" : "text-gray-500 hover:text-secondary"
             }`}
           >
@@ -1038,7 +995,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       </div>
 
       {activeTab === "Sales Invoice" && (
-        <div className="flex flex-col h-[calc(76vh-200px)]">   
+        <div className="flex flex-col h-[calc(85vh-200px)]">   
           <div className="grid grid-cols-5 gap-2 mt-4 ">
             <div>
               <label className="block text-xs font-semibold text-secondary">Debtor</label>
@@ -1046,7 +1003,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 options={debtorOptions}
                 value={selectedDebtor}
                 onChange={handleDebtorChange}
-                placeholder="Select debtor"
+                placeholder="Select"
                 styles={customStyles}
               />
             </div>
@@ -1066,8 +1023,9 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 options={locationOptions}
                 value={selectedLocation}
                 onChange={(option) => setSelectedLocation(option)}
-                placeholder="Select location"
+                placeholder="Select"
                 styles={customStyles}
+                isSearchable={false}
               />
             </div>
             <div>
@@ -1076,8 +1034,9 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 options={agentOptions}
                 value={selectedAgent}
                 onChange={(option) => setSelectedAgent(option)}
-                placeholder="Select agent"
+                placeholder="Select"
                 styles={customStyles}
+                isSearchable={false}
               />
             </div>
             <div>
@@ -1089,6 +1048,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 placeholder="Select"
                 styles={customStyles}
                 isDisabled={isPaymentConfirmed}
+                isSearchable={false}
               />
             </div>
           </div>
@@ -1099,40 +1059,38 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
             </button>
           </div>
 
-          <div className="border border-gray-300 rounded-md">
-            <table className="w-full border-collapse">
-              <thead className="bg-gray-900 text-white text-left text-xs">
-                <tr>
-                  <th className="p-1 w-32">Item Code</th>
-                  <th className="py-2 w-32">Description</th>
-                  <th className="py-2 w-32">UOM</th>
-                  <th className="py-2 w-32">Unit Price</th>
-                  <th className="py-2 w-32">Quantity</th>
-                  <th className="py-2 w-32">Discount</th>
-                  <th className="py-2 w-32">Discount Amount</th>
-                  <th className="py-2 w-24">Subtotal</th>
-                  <th className="py-2 w-12">Actions</th>
-                </tr>
-              </thead>
-            </table>
+          <div className="flex flex-col h-[400px] rounded-md overflow-hidden">
+            <div className="overflow-y-auto scrollbar-hide">
+              <table className="w-full table-fixed border border-gray-300">
+                <thead className="block bg-gray-900 text-white text-left text-xs w-full">
+                  <tr className="table w-full table-fixed">
+                    <th className="w-32 pl-1 py-2">Item Code</th>
+                    <th className="w-32 py-2">Description</th>
+                    <th className="w-32 py-2">UOM</th>
+                    <th className="w-32 py-2">Unit Price</th>
+                    <th className="w-24 py-2">Quantity</th>
+                    <th className="w-32 py-2">Discount</th>
+                    <th className="w-32 py-2">Discount Amount</th>
+                    <th className="w-24 py-2">Subtotal</th>
+                    <th className="w-12 py-2">Actions</th>
+                  </tr>
+                </thead>
 
-            <div className="overflow-y-auto max-h-[150px] scrollbar-hide">
-              <table className="w-full border-collapse">
-                <tbody>
+                <tbody className="block max-h-[250px] overflow-y-auto">
                   {invoiceItems.map((item, index) => (
-                    <tr key={index} className="text-sm">
-                      <td>
-                        <CreatableSelect
+                    <tr key={index} className="table w-full table-fixed text-sm">
+                      <td className="w-32">
+                        <Select
                           options={itemOptions}
                           value={item.itemId ? { value: item.itemId, label: item.itemCode } : null}
                           onChange={(option) => handleItemChange(index, option)}
                           placeholder="Select"
-                          styles={customStylesItem}
+                          styles={customStyles}
                           menuPortalTarget={document.body}
                           isDisabled={isPaymentConfirmed}
                         />
                       </td>
-                      <td>
+                      <td className="w-32">
                         <input 
                           type="text" 
                           className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
@@ -1141,18 +1099,19 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           disabled={isPaymentConfirmed}
                         />
                       </td>
-                      <td>
-                        <CreatableSelect
+                      <td className="w-32">
+                        <Select
                           options={item.uomOptions}
                           value={item.uom ? { value: item.uom, label: item.uom } : null}
                           onChange={(option) => handleUomChange(index, option)}
                           placeholder="Select"
-                          styles={customStylesItem}
+                          styles={customStyles}
                           menuPortalTarget={document.body}
                           isDisabled={isPaymentConfirmed}
+                          isSearchable={false}
                         />
                       </td>
-                      <td>
+                      <td className="w-32"> 
                         <input 
                           type="number" 
                           min={0}
@@ -1163,7 +1122,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           disabled={isPaymentConfirmed}
                         />
                       </td>
-                      <td>
+                      <td className="w-24">
                         <input 
                           type="number" 
                           min={0}
@@ -1174,17 +1133,18 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           disabled={isPaymentConfirmed}
                         />
                       </td>
-                      <td>
+                      <td className="w-32">
                         <Select
                           options={discountTypeOptions}
                           value={item.discountType ? { value: item.discountType, label: item.discountType } : null}
                           onChange={(option) => handleRowChange(index, "discountType", option.value)}
-                          styles={customStylesItem}
+                          styles={customStyles}
                           menuPortalTarget={document.body}
                           isDisabled={isPaymentConfirmed}
+                          isSearchable={false}
                         />
                       </td>
-                      <td>
+                      <td className="w-32">
                         <input 
                           type="number" 
                           min={0}
@@ -1195,40 +1155,41 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           disabled={isPaymentConfirmed}
                         />
                       </td>
-                      <td>
+                      <td className="w-24">
                       <input 
                           className="bg-gray-100 border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
                           value={item.subtotal.toFixed(2)}
                           disabled
                         />
                       </td>
-                      <td className="p-2">
+                      <td className="w-12">
                           <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} disabled={isPaymentConfirmed}>
                               <Trash2 size={16} strokeWidth={1} />
                           </button>                
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="border-t border-gray-300 bg-white px-2 py-2 mt-auto">
+                <div className="flex justify-between mb-2 text-sm font-bold text-secondary">
+                  <p className="text-sm font-bold text-secondary">Total: {total.toFixed(2)}</p>
+                  <p className="text-sm font-bold text-secondary">
+                    {isOutstanding
+                      ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}`
+                      : `Change: ${outstandingOrChange.toFixed(2)}`}
+                  </p>
+                </div>
+                <div className="flex justify-between mt-1 mb-4">
+                  <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
+                  <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="flex gap-2 mt-2">
-            <p className="text-sm font-bold text-secondary">Total: {total.toFixed(2)}</p>
-            <p className="text-sm font-bold text-secondary">
-              {isOutstanding
-                ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}`
-                : `Change: ${outstandingOrChange.toFixed(2)}`}
-            </p>
-          </div>
-
-          <div className="flex justify-between mt-1 mb-4">
-            <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
-            <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
-          </div>
-        </div>
-      )}
+        )}
 
       <ConfirmationModal 
         isOpen={isConfirmationModalOpen}
@@ -1411,6 +1372,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                   onChange={(option) => handleMultiPaymentTypeChange(index, option)}
                   placeholder="Select Payment Method"
                   styles={customStyles}
+                  isSearchable={false}
                 />
 
                 {payment.type === "Cash Payment" && (

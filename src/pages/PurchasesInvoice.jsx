@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
 import { GetCreditorRecords, GetLocationRecords, GetUsers, GetItemRecords, SavePurchases, SavePurchasePayment } from "../apiconfig";
@@ -617,21 +616,20 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
   };
   
   const confirmSave = () => {
-      for (const item of invoiceItems) {
-        const hasItemCode = item.itemCode && item.itemCode.trim() !== "";
-        const hasDesc = item.description && item.description.trim() !== "";
-        const hasUom = item.uom && item.uom.trim() !== "";
-        const hasUnitPrice = item.unitPrice > 0;
-        const hasQty = item.quantity > 0;
-    
-        if (!hasItemCode && (!hasDesc || !hasUom || !hasUnitPrice || !hasQty)) {
-          setErrorModal({
-            title: "Validation Error",
-            message: "If Item Code is empty, Description, UOM, Unit Price, and Quantity must all be filled in."
-          });
-          return;
-        }
+    for (const item of invoiceItems) {
+      const hasItemCode = item.itemCode && item.itemCode.trim() !== "";
+      const hasUom = item.uom && item.uom.trim() !== "";
+      const hasUnitPrice = item.unitPrice > 0;
+      const hasQty = item.quantity > 0;
+
+      if (!hasItemCode || !hasUom || !hasUnitPrice || !hasQty) {
+        setErrorModal({
+          title: "Validation Error",
+          message: "Each item must have an Item Code, UOM, Unit Price > 0, and Quantity > 0."
+        });
+        return;
       }
+    }
   
       setIsSaveConfirmationModalOpen(true);
     };
@@ -805,464 +803,8 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
             ? errorModal.onClose
             : () => setErrorModal({ title: "", message: "" })
         }
-      />   
-      <h2 className="text-xl font-bold text-secondary">Purchases Invoice</h2>
-      <div className="grid grid-cols-5 gap-2 mt-4">
-        <div>
-          <label className="block text-xs font-semibold text-secondary">Creditor</label>
-          <Select
-            options={creditorOptions}
-            value={selectedCreditor}
-            onChange={handleCreditorChange}
-            placeholder="Select creditor"
-            styles={customStyles}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-secondary">Company Name</label>
-          <input 
-            type="text" 
-            className="border border-gray-300 rounded p-2 w-full text-sm text-secondary bg-white" 
-            placeholder="Company Name" 
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-secondary">Location</label>
-          <Select
-            options={locationOptions}
-            value={selectedLocation}
-            onChange={(option) => setSelectedLocation(option)}
-            placeholder="Select location"
-            styles={customStyles}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-secondary">Agent</label>
-          <Select
-            options={agentOptions}
-            value={selectedAgent}
-            onChange={(option) => setSelectedAgent(option)}
-            placeholder="Select agent"
-            styles={customStyles}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-secondary">Payment Type</label>
-          <Select
-            options={paymentTypeOptions}
-            value={selectedPaymentType}
-            onChange={handlePaymentTypeChange}
-            placeholder="Select payment type"
-            styles={customStyles}
-            isDisabled={isPaymentConfirmed}
-          />
-        </div>
-      </div>
-
-      <div className="mt-6 overflow-x-auto relative">
-      <div className="text-right mb-2"><button className="px-6 py-1 bg-secondary text-white rounded-md text-xs" onClick={addNewItem}>Add Item</button></div>
-        <table className="w-full border-collapse border">
-          <thead className="bg-gray-900 text-white text-left text-xs">
-            <tr>
-              <th className="p-2 w-48">Item Code</th>
-              <th className="p-2 w-48">Description</th>
-              <th className="p-2 w-48">UOM</th>
-              <th className="p-2 w-24">Unit Price</th>
-              <th className="p-2 w-24">Quantity</th>
-              <th className="p-2 w-32">Discount</th>
-              <th className="p-2 w-32">Discount Amount</th>
-              <th className="p-2 w-24">Subtotal</th>
-              <th className="p-2 w-12">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoiceItems.map((item, index) => (
-              <tr key={index} className="text-sm">
-                <td>
-                  <CreatableSelect
-                    options={itemOptions}
-                    value={item.itemId ? { value: item.itemId, label: item.itemCode } : null}
-                    onChange={(option) => handleItemChange(index, option)}
-                    placeholder="Select item"
-                    styles={customStyles}
-                    menuPortalTarget={document.body}
-                    isDisabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <input 
-                    type="text" 
-                    className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                    value={item.description} 
-                    onChange={(e) => handleRowChange(index, "description", e.target.value)}
-                    disabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <CreatableSelect
-                    options={item.uomOptions}
-                    value={item.uom ? { value: item.uom, label: item.uom } : null}
-                    onChange={(option) => handleUomChange(index, option)}
-                    placeholder="Select UOM"
-                    styles={customStyles}
-                    menuPortalTarget={document.body}
-                    isDisabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <input 
-                    type="number" 
-                    min={0}
-                    step="0.01"
-                    className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                    value={item.unitPrice} 
-                    onChange={(e) => handleRowChange(index, "unitPrice", parseFloat(e.target.value) || 0)} 
-                    disabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <input 
-                    type="number" 
-                    min={0}
-                    step="1"
-                    className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                    value={item.quantity} 
-                    onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 0)} 
-                    disabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <Select
-                    options={discountTypeOptions}
-                    value={item.discountType ? { value: item.discountType, label: item.discountType } : null}
-                    onChange={(option) => handleRowChange(index, "discountType", option.value)}
-                    placeholder="Select Discount Type"
-                    styles={customStyles}
-                    menuPortalTarget={document.body}
-                    isDisabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                  <input 
-                    type="number" 
-                    min={0}
-                    step="0.01"
-                    className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                    value={item.discount} 
-                    onChange={(e) => handleRowChange(index, "discount", parseFloat(e.target.value) || 0)} 
-                    disabled={isPaymentConfirmed}
-                  />
-                </td>
-                <td>
-                <input 
-                    className="bg-gray-100 border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                    value={item.subtotal.toFixed(2)}
-                    disabled
-                  />
-                </td>
-                <td className="p-2">
-                    <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} disabled={isPaymentConfirmed}>
-                        <Trash2 size={16} strokeWidth={1} />
-                    </button>                
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <ConfirmationModal 
-        isOpen={isConfirmationModalOpen}
-        title="Confirm Payment"
-        message="Are you sure you want to proceed with this payment?"
-        onConfirm={handleConfirmPayment}
-        onCancel={() => setIsConfirmationModalOpen(false)}
-        confirmButtonDisabled={isSavingPayment}
-        confirmButtonText={isSavingPayment ? "Processing..." : "Yes"}
       />
-
-      {isPaymentModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white p-6 rounded-lg shadow-md w-96">
-            <h2 className="text-lg font-semibold text-secondary">Cash Payment</h2>
-            <p className="text-sm mt-2 text-secondary">
-              <strong>Total:</strong> {total.toFixed(2)}
-            </p>
-            <p className="mt-2 text-sm font-semibold text-secondary">
-              {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
-            </p>
-            <input
-              type="number"
-              placeholder="Enter Amount"
-              className="w-full mt-2 p-2 border rounded-md bg-white text-secondary text-xs"
-              min={0}
-              step="0.01"
-              value={enteredAmount}
-              onChange={handleAmountChange}
-            />  
-            <div className="flex justify-between mt-4">
-              <button onClick={confirmPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
-                Confirm Payment
-              </button>
-              <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isCardPaymentModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white p-6 rounded-lg shadow-md w-fit">
-            <h2 className="text-lg font-semibold text-secondary">Card Payment</h2>
-            
-            <p className="text-sm mt-2 text-secondary">
-              <strong>Total:</strong> {total.toFixed(2)}
-            </p>
-            <p className="mt-2 text-sm font-semibold text-secondary">
-              {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
-            </p>
-
-            <input
-              type="text"
-              placeholder="Enter Receipt Reference"
-              className="p-2 w-full border rounded-md bg-white text-secondary text-xs mt-2"
-              value={cardReceiptRef}
-              onChange={(e) => setCardReceiptRef(e.target.value)}
-            />
-           
-           <div className="grid grid-cols-3 gap-2 mt-2">
-              <input
-                type="text"
-                placeholder="Card Number"
-                className="p-2 border rounded-md bg-white text-secondary text-xs"
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Approval Code"
-                className="p-2 border rounded-md bg-white text-secondary text-xs"
-                value={approvalCode}
-                onChange={(e) => setApprovalCode(e.target.value)}
-              />
-
-              <input
-                type="number"
-                placeholder="Enter Amount"
-                min={0}
-                step="0.01"
-                className="p-2 border rounded-md bg-white text-secondary text-xs"
-                value={enteredAmount}
-                onChange={handleAmountChange}
-              />
-            </div>
-
-            <div className="flex justify-between mt-4">
-              <button onClick={confirmPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
-                Confirm Payment
-              </button>
-              <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isBankTransferModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white p-6 rounded-lg shadow-md w-fit">
-            <h2 className="text-lg font-semibold text-secondary">Bank Transfer</h2>
-            
-            <p className="text-sm mt-2 text-secondary">
-              <strong>Total:</strong> {total.toFixed(2)}
-            </p>
-            <p className="mt-2 text-sm font-semibold text-secondary">
-              {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
-            </p>
-
-            <input
-              type="text"
-              placeholder="Enter Receipt Reference"
-              className="p-2 mt-2 w-full border rounded-md bg-white text-secondary text-xs"
-              value={bankReceiptRef}
-              onChange={(e) => setBankReceiptRef(e.target.value)}
-            />
-            
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <input
-                type="text"
-                placeholder="Bank Reference No"
-                className="p-2 border rounded-md bg-white text-secondary text-xs"
-                value={bankRef}
-                onChange={(e) => setBankRef(e.target.value)}
-              />
-
-              <input
-                type="number"
-                placeholder="Enter Amount"
-                className="p-2 border rounded-md bg-white text-secondary text-xs"
-                min={0}
-                step="0.01"
-                value={enteredAmount}
-                onChange={handleAmountChange}
-              />
-            </div>
-
-            <div className="flex justify-between mt-4">
-              <button onClick={confirmPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
-                Confirm Payment
-              </button>
-              <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isMultiPaymentModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white p-6 rounded-lg shadow-md w-1/2">
-            <h2 className="text-lg font-semibold text-secondary">Multi Payment</h2>
-            
-            <p className="text-sm mt-2 text-secondary">
-              <strong>Total:</strong> {total.toFixed(2)}
-            </p>
-            <p className="mt-2 text-sm font-semibold text-secondary">
-              {isOutstanding ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
-            </p>
-
-            <div className="text-right">
-              <button 
-                onClick={addPaymentMethod} 
-                className="p-1 bg-primary text-white rounded-md text-xs w-1/4 mt-1"
-              >
-                Add Payment
-              </button>
-            </div>
-
-            {multiPaymentMethods.map((payment, index) => (
-              <div key={index} className="border p-1 mt-2 rounded-md">
-                <Select
-                  options={paymentTypeOptions.filter(opt => opt.value !== "Multi Payment")}
-                  value={payment.type ? { value: payment.type, label: payment.type } : null}
-                  onChange={(option) => handleMultiPaymentTypeChange(index, option)}
-                  placeholder="Select Payment Method"
-                  styles={customStyles}
-                />
-
-                {payment.type === "Cash Payment" && (
-                  <input
-                    type="number"
-                    placeholder="Enter Amount"
-                    className="w-full mt-2 p-2 border rounded-md bg-white text-secondary text-xs"
-                    min={0}
-                    step="0.01"
-                    value={payment.amount}
-                    onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
-                  />
-                )}
-
-                {payment.type === "Card Payment" && (
-                  <div className="grid grid-cols-4 gap-2 mt-2">
-                    <input
-                      type="text"
-                      placeholder="Enter Receipt Reference"
-                      className="p-2 border rounded-md bg-white text-secondary text-xs"
-                      value={payment.cardReceiptRef}
-                      onChange={(e) => handleMultiPaymentFieldChange(index, "cardReceiptRef", e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Card Number"
-                      className="p-2 border rounded-md bg-white text-secondary text-xs"
-                      value={payment.cardNumber}
-                      onChange={(e) => handleMultiPaymentFieldChange(index, "cardNumber", e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Approval Code"
-                      className="p-2 border rounded-md bg-white text-secondary text-xs"
-                      value={payment.approvalCode}
-                      onChange={(e) => handleMultiPaymentFieldChange(index, "approvalCode", e.target.value)}
-                    />
-                    
-                    <input
-                      type="number"
-                      placeholder="Enter Amount"
-                      className="p-2 border rounded-md bg-white text-secondary text-xs"
-                      min={0}
-                      step="0.01"
-                      value={payment.amount}
-                      onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
-                    />
-                  </div>
-                )}
-
-                {payment.type === "Bank Transfer" && (
-                  <div className="grid grid-cols-3 gap-2 mt-2">
-                    <input
-                      type="text"
-                      placeholder="Receipt Reference"
-                      className="p-2 border rounded-md bg-white text-secondary text-xs"
-                      value={payment.bankReceiptRef}
-                      onChange={(e) => handleMultiPaymentFieldChange(index, "bankReceiptRef", e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Bank Reference No"
-                      className="p-2 border rounded-md bg-white text-secondary text-xs"
-                      value={payment.bankRef}
-                      onChange={(e) => handleMultiPaymentFieldChange(index, "bankRef", e.target.value)}
-                    />
-                    <input
-                      type="number"
-                      placeholder="Enter Amount"
-                      className="p-2 border rounded-md bg-white text-secondary text-xs"
-                      min={0}
-                      step="0.01"
-                      value={payment.amount}
-                      onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
-                    />
-                  </div>
-                )}
-
-                <button 
-                  onClick={() => removePaymentMethod(index)} 
-                  className="px-3 py-1 bg-red-500 text-white rounded-md text-xs mt-2"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-
-            <div className="flex justify-between mt-4">
-              <button onClick={confirmMultiPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
-                Confirm Payment
-              </button>
-              <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="flex gap-2 mt-2">
-        <p className="text-sm font-bold text-secondary">Total: {total.toFixed(2)}</p>
-        <p className="text-sm font-bold text-secondary">
-          {isOutstanding
-            ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}`
-            : `Change: ${outstandingOrChange.toFixed(2)}`}
-        </p>
-      </div>
-      
-      <ConfirmationModal 
+       <ConfirmationModal 
         isOpen={isSaveConfirmationModalOpen}
         title="Confirm Save"
         message="Are you sure you want to proceed with saving this invoice?"
@@ -1279,11 +821,484 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
           onClose={notificationModal.onClose}
         />
 
-      <div className="flex justify-between mt-4">
-        <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
-        <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
+
+        <h2 className="text-xl font-bold text-secondary">Purchases Invoice</h2>
+        <div className="flex flex-col h-[calc(85vh-200px)]">  
+          <div className="grid grid-cols-5 gap-2 mt-4">
+            <div>
+              <label className="block text-xs font-semibold text-secondary">Creditor</label>
+              <Select
+                options={creditorOptions}
+                value={selectedCreditor}
+                onChange={handleCreditorChange}
+                placeholder="Select"
+                styles={customStyles}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-secondary">Company Name</label>
+              <input 
+                type="text" 
+                className="border border-gray-300 rounded p-2 w-full text-sm text-secondary bg-white" 
+                placeholder="Company Name" 
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-secondary">Location</label>
+              <Select
+                options={locationOptions}
+                value={selectedLocation}
+                onChange={(option) => setSelectedLocation(option)}
+                placeholder="Select"
+                styles={customStyles}
+                isSearchable={false}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-secondary">Agent</label>
+              <Select
+                options={agentOptions}
+                value={selectedAgent}
+                onChange={(option) => setSelectedAgent(option)}
+                placeholder="Select"
+                styles={customStyles}
+                isSearchable={false}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-secondary">Payment Type</label>
+              <Select
+                options={paymentTypeOptions}
+                value={selectedPaymentType}
+                onChange={handlePaymentTypeChange}
+                placeholder="Select"
+                styles={customStyles}
+                isDisabled={isPaymentConfirmed}
+                isSearchable={false}
+              />
+            </div>
+          </div>
+
+          <div className="text-right mb-2 mt-4">
+            <button className="px-6 py-1 bg-secondary text-white rounded-md text-xs" onClick={addNewItem}>
+              Add Item
+            </button>
+          </div>
+
+          <div className="flex flex-col h-[400px] rounded-md overflow-hidden">
+            <div className="overflow-y-auto scrollbar-hide">
+              <table className="w-full table-fixed border border-gray-300">
+                <thead className="block bg-gray-900 text-white text-left text-xs w-full">
+                  <tr className="table w-full table-fixed">
+                    <th className="w-32 pl-1 py-2">Item Code</th>
+                    <th className="w-32 py-2">Description</th>
+                    <th className="w-32 py-2">UOM</th>
+                    <th className="w-32 py-2">Unit Price</th>
+                    <th className="w-24 py-2">Quantity</th>
+                    <th className="w-32 py-2">Discount</th>
+                    <th className="w-32 py-2">Discount Amount</th>
+                    <th className="w-24 py-2">Subtotal</th>
+                    <th className="w-12 py-2">Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody className="block max-h-[250px] overflow-y-auto">
+                  {invoiceItems.map((item, index) => (
+                    <tr key={index} className="table w-full table-fixed text-sm">
+                      <td className="w-32">
+                        <Select
+                          options={itemOptions}
+                          value={item.itemId ? { value: item.itemId, label: item.itemCode } : null}
+                          onChange={(option) => handleItemChange(index, option)}
+                          placeholder="Select"
+                          styles={customStyles}
+                          menuPortalTarget={document.body}
+                          isDisabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td className="w-32">
+                        <input 
+                          type="text" 
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                          value={item.description} 
+                          onChange={(e) => handleRowChange(index, "description", e.target.value)}
+                          disabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td className="w-32">
+                        <Select
+                          options={item.uomOptions}
+                          value={item.uom ? { value: item.uom, label: item.uom } : null}
+                          onChange={(option) => handleUomChange(index, option)}
+                          placeholder="Select"
+                          styles={customStyles}
+                          menuPortalTarget={document.body}
+                          isDisabled={isPaymentConfirmed}
+                          isSearchable={false}
+                        />
+                      </td>
+                      <td className="w-32"> 
+                        <input 
+                          type="number" 
+                          min={0}
+                          step="0.01"
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                          value={item.unitPrice} 
+                          onChange={(e) => handleRowChange(index, "unitPrice", parseFloat(e.target.value) || 0)} 
+                          disabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td className="w-24">
+                        <input 
+                          type="number" 
+                          min={0}
+                          step="1"
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                          value={item.quantity} 
+                          onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 0)} 
+                          disabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td className="w-32">
+                        <Select
+                          options={discountTypeOptions}
+                          value={item.discountType ? { value: item.discountType, label: item.discountType } : null}
+                          onChange={(option) => handleRowChange(index, "discountType", option.value)}
+                          styles={customStyles}
+                          menuPortalTarget={document.body}
+                          isDisabled={isPaymentConfirmed}
+                          isSearchable={false}
+                        />
+                      </td>
+                      <td className="w-32">
+                        <input 
+                          type="number" 
+                          min={0}
+                          step="0.01"
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                          value={item.discount} 
+                          onChange={(e) => handleRowChange(index, "discount", parseFloat(e.target.value) || 0)} 
+                          disabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td className="w-24">
+                      <input 
+                          className="bg-gray-100 border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                          value={item.subtotal.toFixed(2)}
+                          disabled
+                        />
+                      </td>
+                      <td className="w-12">
+                          <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} disabled={isPaymentConfirmed}>
+                              <Trash2 size={16} strokeWidth={1} />
+                          </button>                
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="border-t border-gray-300 bg-white px-2 py-2 mt-auto">
+                <div className="flex justify-between mb-2 text-sm font-bold text-secondary">
+                  <p className="text-sm font-bold text-secondary">Total: {total.toFixed(2)}</p>
+                  <p className="text-sm font-bold text-secondary">
+                    {isOutstanding
+                      ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}`
+                      : `Change: ${outstandingOrChange.toFixed(2)}`}
+                  </p>
+                </div>
+                <div className="flex justify-between mt-1 mb-4">
+                  <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
+                  <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        <ConfirmationModal 
+          isOpen={isConfirmationModalOpen}
+          title="Confirm Payment"
+          message="Are you sure you want to proceed with this payment?"
+          onConfirm={handleConfirmPayment}
+          onCancel={() => setIsConfirmationModalOpen(false)}
+          confirmButtonDisabled={isSavingPayment}
+          confirmButtonText={isSavingPayment ? "Processing..." : "Yes"}
+        />
+
+        {isPaymentModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+            <div className="bg-white p-6 rounded-lg shadow-md w-96">
+              <h2 className="text-lg font-semibold text-secondary">Cash Payment</h2>
+              <p className="text-sm mt-2 text-secondary">
+                <strong>Total:</strong> {total.toFixed(2)}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-secondary">
+                {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
+              </p>
+              <input
+                type="number"
+                placeholder="Enter Amount"
+                className="w-full mt-2 p-2 border rounded-md bg-white text-secondary text-xs"
+                min={0}
+                step="0.01"
+                value={enteredAmount}
+                onChange={handleAmountChange}
+              />  
+              <div className="flex justify-between mt-4">
+                <button onClick={confirmPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
+                  Confirm Payment
+                </button>
+                <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isCardPaymentModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+            <div className="bg-white p-6 rounded-lg shadow-md w-fit">
+              <h2 className="text-lg font-semibold text-secondary">Card Payment</h2>
+              
+              <p className="text-sm mt-2 text-secondary">
+                <strong>Total:</strong> {total.toFixed(2)}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-secondary">
+                {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
+              </p>
+
+              <input
+                type="text"
+                placeholder="Enter Receipt Reference"
+                className="p-2 w-full border rounded-md bg-white text-secondary text-xs mt-2"
+                value={cardReceiptRef}
+                onChange={(e) => setCardReceiptRef(e.target.value)}
+              />
+            
+            <div className="grid grid-cols-3 gap-2 mt-2">
+                <input
+                  type="text"
+                  placeholder="Card Number"
+                  className="p-2 border rounded-md bg-white text-secondary text-xs"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Approval Code"
+                  className="p-2 border rounded-md bg-white text-secondary text-xs"
+                  value={approvalCode}
+                  onChange={(e) => setApprovalCode(e.target.value)}
+                />
+
+                <input
+                  type="number"
+                  placeholder="Enter Amount"
+                  min={0}
+                  step="0.01"
+                  className="p-2 border rounded-md bg-white text-secondary text-xs"
+                  value={enteredAmount}
+                  onChange={handleAmountChange}
+                />
+              </div>
+
+              <div className="flex justify-between mt-4">
+                <button onClick={confirmPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
+                  Confirm Payment
+                </button>
+                <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isBankTransferModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+            <div className="bg-white p-6 rounded-lg shadow-md w-fit">
+              <h2 className="text-lg font-semibold text-secondary">Bank Transfer</h2>
+              
+              <p className="text-sm mt-2 text-secondary">
+                <strong>Total:</strong> {total.toFixed(2)}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-secondary">
+                {isOutstanding ? `Outstanding Balance: ${outstandingOrChange.toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
+              </p>
+
+              <input
+                type="text"
+                placeholder="Enter Receipt Reference"
+                className="p-2 mt-2 w-full border rounded-md bg-white text-secondary text-xs"
+                value={bankReceiptRef}
+                onChange={(e) => setBankReceiptRef(e.target.value)}
+              />
+              
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <input
+                  type="text"
+                  placeholder="Bank Reference No"
+                  className="p-2 border rounded-md bg-white text-secondary text-xs"
+                  value={bankRef}
+                  onChange={(e) => setBankRef(e.target.value)}
+                />
+
+                <input
+                  type="number"
+                  placeholder="Enter Amount"
+                  className="p-2 border rounded-md bg-white text-secondary text-xs"
+                  min={0}
+                  step="0.01"
+                  value={enteredAmount}
+                  onChange={handleAmountChange}
+                />
+              </div>
+
+              <div className="flex justify-between mt-4">
+                <button onClick={confirmPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
+                  Confirm Payment
+                </button>
+                <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isMultiPaymentModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+            <div className="bg-white p-6 rounded-lg shadow-md w-1/2">
+              <h2 className="text-lg font-semibold text-secondary">Multi Payment</h2>
+              
+              <p className="text-sm mt-2 text-secondary">
+                <strong>Total:</strong> {total.toFixed(2)}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-secondary">
+                {isOutstanding ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}` : `Change: ${outstandingOrChange.toFixed(2)}`}
+              </p>
+
+              <div className="text-right">
+                <button 
+                  onClick={addPaymentMethod} 
+                  className="p-1 bg-primary text-white rounded-md text-xs w-1/4 mt-1"
+                >
+                  Add Payment
+                </button>
+              </div>
+
+              {multiPaymentMethods.map((payment, index) => (
+                <div key={index} className="border p-1 mt-2 rounded-md">
+                  <Select
+                    options={paymentTypeOptions.filter(opt => opt.value !== "Multi Payment")}
+                    value={payment.type ? { value: payment.type, label: payment.type } : null}
+                    onChange={(option) => handleMultiPaymentTypeChange(index, option)}
+                    placeholder="Select Payment Method"
+                    styles={customStyles}
+                    isSearchable={false}
+                  />
+
+                  {payment.type === "Cash Payment" && (
+                    <input
+                      type="number"
+                      placeholder="Enter Amount"
+                      className="w-full mt-2 p-2 border rounded-md bg-white text-secondary text-xs"
+                      min={0}
+                      step="0.01"
+                      value={payment.amount}
+                      onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
+                    />
+                  )}
+
+                  {payment.type === "Card Payment" && (
+                    <div className="grid grid-cols-4 gap-2 mt-2">
+                      <input
+                        type="text"
+                        placeholder="Enter Receipt Reference"
+                        className="p-2 border rounded-md bg-white text-secondary text-xs"
+                        value={payment.cardReceiptRef}
+                        onChange={(e) => handleMultiPaymentFieldChange(index, "cardReceiptRef", e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Card Number"
+                        className="p-2 border rounded-md bg-white text-secondary text-xs"
+                        value={payment.cardNumber}
+                        onChange={(e) => handleMultiPaymentFieldChange(index, "cardNumber", e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Approval Code"
+                        className="p-2 border rounded-md bg-white text-secondary text-xs"
+                        value={payment.approvalCode}
+                        onChange={(e) => handleMultiPaymentFieldChange(index, "approvalCode", e.target.value)}
+                      />
+                      
+                      <input
+                        type="number"
+                        placeholder="Enter Amount"
+                        className="p-2 border rounded-md bg-white text-secondary text-xs"
+                        min={0}
+                        step="0.01"
+                        value={payment.amount}
+                        onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {payment.type === "Bank Transfer" && (
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      <input
+                        type="text"
+                        placeholder="Receipt Reference"
+                        className="p-2 border rounded-md bg-white text-secondary text-xs"
+                        value={payment.bankReceiptRef}
+                        onChange={(e) => handleMultiPaymentFieldChange(index, "bankReceiptRef", e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Bank Reference No"
+                        className="p-2 border rounded-md bg-white text-secondary text-xs"
+                        value={payment.bankRef}
+                        onChange={(e) => handleMultiPaymentFieldChange(index, "bankRef", e.target.value)}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Enter Amount"
+                        className="p-2 border rounded-md bg-white text-secondary text-xs"
+                        min={0}
+                        step="0.01"
+                        value={payment.amount}
+                        onChange={(e) => handleMultiPaymentAmountChange(index, e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  <button 
+                    onClick={() => removePaymentMethod(index)} 
+                    className="px-3 py-1 bg-red-500 text-white rounded-md text-xs mt-2"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+
+              <div className="flex justify-between mt-4">
+                <button onClick={confirmMultiPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
+                  Confirm Payment
+                </button>
+                <button onClick={closePayment} className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
   );
 };
 

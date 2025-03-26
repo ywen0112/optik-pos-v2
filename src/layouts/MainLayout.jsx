@@ -55,14 +55,14 @@ const MainLayout = ({ title }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) {
+      if (window.innerWidth <= 1366) {
         setSidebarVisible(false);
       } else {
         setSidebarVisible(true);
       }
     };
 
-    handleResize(); // call on mount
+    handleResize(); 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);

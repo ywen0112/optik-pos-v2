@@ -398,7 +398,7 @@ const handleConfirmCloseCounter = async () => {
      <NotificationModal isOpen={notificationModal.isOpen} title={notificationModal.title} message={notificationModal.message} onClose={notificationModal.onClose || (() => setNotificationModal({ isOpen: false }))} />
 
       {counterSession?.isExist ? (
-        <div className="flex items-center gap-2 w-full mt-2">
+        <div className="flex items-center gap-2 w-full mt-1">
           <div>
           <nav className="flex">
               {["Cash In", "Cash Out", "Sales Invoice", "Purchases Invoice", "Stock Adjustment"
@@ -447,9 +447,9 @@ const handleConfirmCloseCounter = async () => {
 
       {counterSession?.isExist && (
         <div className="mt-4">
-          <div className="mt-4">
+          <div>
             {activeTab === "Cash In" || activeTab === "Cash Out" ? (
-              <div className="w-1/2 bg-white shadow-md p-6 rounded-md mx-auto">
+              <div className="w-1/2 bg-white shadow-md p-4 rounded-md mx-auto">
                 <h2 className="text-xl font-semibold mb-4 text-secondary">{activeTab}</h2>
                 <input
                   type="number"
@@ -480,11 +480,11 @@ const handleConfirmCloseCounter = async () => {
                 </div>
               </div>
             ) : activeTab === "Sales Invoice" ? (
-              <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto mb-4">
+              <div className="w-full h-full bg-white shadow-md p-4   rounded-md mx-auto mb-4">
                <SalesInvoice salesId={salesId} docNo={docNo} counterSession={counterSession} setCounterSession={setCounterSession}/>
               </div>
             ) : activeTab === "Purchases Invoice" ? (
-              <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">
+              <div className="w-full h-full bg-white shadow-md p-4 rounded-md mx-auto">
                <PurchasesInvoice purchasesId={purchasesId} docNo={docNo} counterSession={counterSession} setCounterSession={setCounterSession}/>
               </div>
             // ) : activeTab === "Credit Note" ? (
