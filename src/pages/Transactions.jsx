@@ -29,7 +29,6 @@ const Transactions = () => {
   const [closingBalanceModal, setClosingBalanceModal] = useState(false);
   const [sessionDetailsModal, setSessionDetailsModal] = useState(false);
   const [sessionDetails, setSessionDetails] = useState({});
-  const [closingBalance, setClosingBalance] = useState("");
   const [newCounterSessionData, setNewCounterSessionData] = useState(null);
   const [confirmModal, setConfirmModal] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -375,14 +374,12 @@ const handleConfirmCloseCounter = async () => {
 
   const handleCloseClosingModal = () => {
     setClosingBalanceModal(false);
-    setClosingBalance("");
   }
 
   const closeSessionDetails = () => {
     setSessionDetailsModal(false);
     setClosingBalanceModal(false)
     setCounterSession(null);
-    setClosingBalance("");
   }
 
   return (
@@ -402,22 +399,33 @@ const handleConfirmCloseCounter = async () => {
 
       {counterSession?.isExist ? (
         <div className="flex items-center gap-2 w-full mt-2">
-          <label className="text-sm text-secondary font-semibold whitespace-nowrap">Opening Balance:</label>
-          <input
-            type="text"
-            value={counterSession.openingBal}
-            disabled
-            className="w-1/3 p-1 text-secondary border rounded bg-gray-200 cursor-not-alloweds text-left"
-          />
-         <button
-          onClick={fetchCloseCounterSessionData}
-          className="text-xs p-2 rounded-md bg-red-500 text-white"
-        >
-          Close Counter
-        </button>
+          <div>
+          <nav className="flex">
+              {["Cash In", "Cash Out", "Sales Invoice", "Purchases Invoice", "Stock Adjustment"
+            ].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`relative text-sm font-medium bg-transparent border-none ${
+                    activeTab === tab ? "text-secondary font-semibold after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-primary" : "text-gray-500 hover:text-secondary"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </nav>
+          </div>
+          <div>
+            <button
+            onClick={fetchCloseCounterSessionData}
+            className="text-xs p-2 rounded-md bg-red-500 text-white"
+            >
+              Close Counter
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="w-1/3 bg-white shadow-md p-4 rounded-md mt-6">
+        <div className="w-1/2 bg-white shadow-md p-4 rounded-md mt-6">
           <label className="text-sm text-secondary font-semibold">Enter Opening Balance:</label>
           <div className="flex items-center gap-2 w-full">
             <input
@@ -439,25 +447,9 @@ const handleConfirmCloseCounter = async () => {
 
       {counterSession?.isExist && (
         <div className="mt-4">
-          <nav className="flex">
-            {["Cash In", "Cash Out", "Sales Invoice", "Purchases Invoice"
-            // , "Credit Note"
-          ].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`relative text-sm font-medium bg-transparent border-none ${
-                  activeTab === tab ? "text-secondary font-semibold after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-primary" : "text-gray-500 hover:text-secondary"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </nav>
-
           <div className="mt-4">
             {activeTab === "Cash In" || activeTab === "Cash Out" ? (
-              <div className="w-1/3 bg-white shadow-md p-6 rounded-md mx-auto">
+              <div className="w-1/2 bg-white shadow-md p-6 rounded-md mx-auto">
                 <h2 className="text-xl font-semibold mb-4 text-secondary">{activeTab}</h2>
                 <input
                   type="number"

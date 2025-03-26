@@ -6,7 +6,7 @@ const HeaderBar = ({ onToggleSidebar }) => {
   const [profileOpen, setProfileOpen] = useState(false);
 
   return (
-    <div className="w-full h-12 bg-white flex justify-between items-center px-8 shadow-md">
+    <div className="w-full min-h-12 bg-white flex justify-between items-center px-8 shadow-md">
       <div className="flex items-center">
         <Menu
           className="text-secondary w-6 h-6 cursor-pointer mr-4"

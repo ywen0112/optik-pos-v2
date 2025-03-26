@@ -236,7 +236,7 @@ const TransactionsInquiry = () => {
       />
 
       <nav className="flex">
-        {["Counter Session", "Cash Transactions", "Sales Invoice", "Purchase Invoice", "Credit Note"].map((tab) => ( 
+        {["Counter Session", "Sales Invoice", "Purchase Invoice", "Stock Adjustment", "Cash Transactions"].map((tab) => ( 
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}

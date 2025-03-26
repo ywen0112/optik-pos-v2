@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import SideBar from "./SideBar";
 import HeaderBar from "./HeaderBar";
@@ -53,13 +53,27 @@ const MainLayout = ({ title }) => {
     }
   };
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setSidebarVisible(false);
+      } else {
+        setSidebarVisible(true);
+      }
+    };
+
+    handleResize(); // call on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div className="flex h-screen w-screen">
       <SideBar visible={sidebarVisible}/>
       <div className="flex flex-col flex-1 bg-gray-100">
         <HeaderBar onToggleSidebar={() => setSidebarVisible(!sidebarVisible)}/>
         <div className="px-4 mt-4 text-2xl font-bold text-secondary">{title}</div>
-        <div className="flex-grow py-2 px-4 overflow-y-auto max-h-[calc(100vh-100px)] pr-2 scrollbar-hide">{renderContent()}</div>
+        <div className="flex-grow py-2 px-4">{renderContent()}</div>
       </div>
     </div>
   );

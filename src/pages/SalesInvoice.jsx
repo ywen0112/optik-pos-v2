@@ -953,6 +953,47 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
     }),
   };
 
+  const customStylesItem = {
+    control: (provided, state) => ({
+      ...provided,
+      border: "1px solid #ccc", 
+      padding: "1px",
+      fontSize: "0.875rem", 
+      width: "100%", 
+      minHeight: "2.5rem",
+      backgroundColor: state.isDisabled ? "#f9f9f9" : "white", 
+      cursor: state.isDisabled ? "not-allowed" : "pointer",
+    }),
+    input: (provided) => ({
+      ...provided,
+      fontSize: "0.875rem",
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      fontSize: "0.875rem",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      fontSize: "0.875rem", 
+      zIndex: 9999, 
+      position: "absolute",  
+    }),
+    menuPortal: (provided) => ({
+      ...provided,
+      zIndex: 9999, 
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      fontSize: "0.875rem", 
+      padding: "4px 8px", 
+      backgroundColor: state.isSelected ? "#f0f0f0" : "#fff",
+      color: state.isSelected ? "#333" : "#000",
+      "&:hover": {
+        backgroundColor: "#e6e6e6",
+      },
+    }),
+  };
+
   return (
     <div>
       <ErrorModal
@@ -997,8 +1038,8 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       </div>
 
       {activeTab === "Sales Invoice" && (
-        <div>   
-          <div className="grid grid-cols-5 gap-2 mt-4">
+        <div className="flex flex-col h-[calc(76vh-200px)]">   
+          <div className="grid grid-cols-5 gap-2 mt-4 ">
             <div>
               <label className="block text-xs font-semibold text-secondary">Debtor</label>
               <Select
@@ -1045,123 +1086,132 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 options={paymentTypeOptions}
                 value={selectedPaymentType}
                 onChange={handlePaymentTypeChange}
-                placeholder="Select payment type"
+                placeholder="Select"
                 styles={customStyles}
                 isDisabled={isPaymentConfirmed}
               />
             </div>
           </div>
 
-          <div className="mt-6 overflow-x-auto relative">
-          <div className="text-right mb-2"><button className="px-6 py-1 bg-secondary text-white rounded-md text-xs" onClick={addNewItem}>Add Item</button></div>
-            <table className="w-full border-collapse border">
+          <div className="text-right mb-2 mt-4">
+            <button className="px-6 py-1 bg-secondary text-white rounded-md text-xs" onClick={addNewItem}>
+              Add Item
+            </button>
+          </div>
+
+          <div className="border border-gray-300 rounded-md">
+            <table className="w-full border-collapse">
               <thead className="bg-gray-900 text-white text-left text-xs">
                 <tr>
-                  <th className="p-2 w-48">Item Code</th>
-                  <th className="p-2 w-48">Description</th>
-                  <th className="p-2 w-48">UOM</th>
-                  <th className="p-2 w-24">Unit Price</th>
-                  <th className="p-2 w-24">Quantity</th>
-                  <th className="p-2 w-32">Discount</th>
-                  <th className="p-2 w-32">Discount Amount</th>
-                  <th className="p-2 w-24">Subtotal</th>
-                  <th className="p-2 w-12">Actions</th>
+                  <th className="p-1 w-32">Item Code</th>
+                  <th className="py-2 w-32">Description</th>
+                  <th className="py-2 w-32">UOM</th>
+                  <th className="py-2 w-32">Unit Price</th>
+                  <th className="py-2 w-32">Quantity</th>
+                  <th className="py-2 w-32">Discount</th>
+                  <th className="py-2 w-32">Discount Amount</th>
+                  <th className="py-2 w-24">Subtotal</th>
+                  <th className="py-2 w-12">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {invoiceItems.map((item, index) => (
-                  <tr key={index} className="text-sm">
-                    <td>
-                      <CreatableSelect
-                        options={itemOptions}
-                        value={item.itemId ? { value: item.itemId, label: item.itemCode } : null}
-                        onChange={(option) => handleItemChange(index, option)}
-                        placeholder="Select item"
-                        styles={customStyles}
-                        menuPortalTarget={document.body}
-                        isDisabled={isPaymentConfirmed}
-                      />
-                    </td>
-                    <td>
-                      <input 
-                        type="text" 
-                        className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                        value={item.description} 
-                        onChange={(e) => handleRowChange(index, "description", e.target.value)}
-                        disabled={isPaymentConfirmed}
-                      />
-                    </td>
-                    <td>
-                      <CreatableSelect
-                        options={item.uomOptions}
-                        value={item.uom ? { value: item.uom, label: item.uom } : null}
-                        onChange={(option) => handleUomChange(index, option)}
-                        placeholder="Select UOM"
-                        styles={customStyles}
-                        menuPortalTarget={document.body}
-                        isDisabled={isPaymentConfirmed}
-                      />
-                    </td>
-                    <td>
-                      <input 
-                        type="number" 
-                        min={0}
-                        step="0.01"
-                        className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                        value={item.unitPrice} 
-                        onChange={(e) => handleRowChange(index, "unitPrice", parseFloat(e.target.value) || 0)} 
-                        disabled={isPaymentConfirmed}
-                      />
-                    </td>
-                    <td>
-                      <input 
-                        type="number" 
-                        min={0}
-                        step="1"
-                        className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                        value={item.quantity} 
-                        onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 0)} 
-                        disabled={isPaymentConfirmed}
-                      />
-                    </td>
-                    <td>
-                      <Select
-                        options={discountTypeOptions}
-                        value={item.discountType ? { value: item.discountType, label: item.discountType } : null}
-                        onChange={(option) => handleRowChange(index, "discountType", option.value)}
-                        placeholder="Select Discount Type"
-                        styles={customStyles}
-                        menuPortalTarget={document.body}
-                        isDisabled={isPaymentConfirmed}
-                      />
-                    </td>
-                    <td>
-                      <input 
-                        type="number" 
-                        min={0}
-                        step="0.01"
-                        className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                        value={item.discount} 
-                        onChange={(e) => handleRowChange(index, "discount", parseFloat(e.target.value) || 0)} 
-                        disabled={isPaymentConfirmed}
-                      />
-                    </td>
-                    <td>
-                    <input 
-                        className="bg-gray-100 border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                        value={item.subtotal.toFixed(2)}
-                        disabled
-                      />
-                    </td>
-                    <td className="p-2">
-                        <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} disabled={isPaymentConfirmed}>
-                            <Trash2 size={16} strokeWidth={1} />
-                        </button>                
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
             </table>
+
+            <div className="overflow-y-auto max-h-[150px] scrollbar-hide">
+              <table className="w-full border-collapse">
+                <tbody>
+                  {invoiceItems.map((item, index) => (
+                    <tr key={index} className="text-sm">
+                      <td>
+                        <CreatableSelect
+                          options={itemOptions}
+                          value={item.itemId ? { value: item.itemId, label: item.itemCode } : null}
+                          onChange={(option) => handleItemChange(index, option)}
+                          placeholder="Select"
+                          styles={customStylesItem}
+                          menuPortalTarget={document.body}
+                          isDisabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td>
+                        <input 
+                          type="text" 
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                          value={item.description} 
+                          onChange={(e) => handleRowChange(index, "description", e.target.value)}
+                          disabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td>
+                        <CreatableSelect
+                          options={item.uomOptions}
+                          value={item.uom ? { value: item.uom, label: item.uom } : null}
+                          onChange={(option) => handleUomChange(index, option)}
+                          placeholder="Select"
+                          styles={customStylesItem}
+                          menuPortalTarget={document.body}
+                          isDisabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td>
+                        <input 
+                          type="number" 
+                          min={0}
+                          step="0.01"
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                          value={item.unitPrice} 
+                          onChange={(e) => handleRowChange(index, "unitPrice", parseFloat(e.target.value) || 0)} 
+                          disabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td>
+                        <input 
+                          type="number" 
+                          min={0}
+                          step="1"
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                          value={item.quantity} 
+                          onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 0)} 
+                          disabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td>
+                        <Select
+                          options={discountTypeOptions}
+                          value={item.discountType ? { value: item.discountType, label: item.discountType } : null}
+                          onChange={(option) => handleRowChange(index, "discountType", option.value)}
+                          styles={customStylesItem}
+                          menuPortalTarget={document.body}
+                          isDisabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td>
+                        <input 
+                          type="number" 
+                          min={0}
+                          step="0.01"
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                          value={item.discount} 
+                          onChange={(e) => handleRowChange(index, "discount", parseFloat(e.target.value) || 0)} 
+                          disabled={isPaymentConfirmed}
+                        />
+                      </td>
+                      <td>
+                      <input 
+                          className="bg-gray-100 border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                          value={item.subtotal.toFixed(2)}
+                          disabled
+                        />
+                      </td>
+                      <td className="p-2">
+                          <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} disabled={isPaymentConfirmed}>
+                              <Trash2 size={16} strokeWidth={1} />
+                          </button>                
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div className="flex gap-2 mt-2">
@@ -1173,7 +1223,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
             </p>
           </div>
 
-          <div className="flex justify-between mt-4">
+          <div className="flex justify-between mt-1 mb-4">
             <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
             <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
           </div>

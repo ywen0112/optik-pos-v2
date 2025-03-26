@@ -42,7 +42,19 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
   }, []);
 
   useEffect(() => {
-    setActiveMenu(location.pathname);
+    const matchedMenu = menuItems.find((item) => {
+      if (item.children) {
+        return item.children.some((child) => child.path === location.pathname);
+      }
+      return item.path === location.pathname;
+    });
+  
+    if (matchedMenu) {
+      setActiveMenu(matchedMenu.name);
+      if (matchedMenu.children) {
+        setExpandedMenus((prev) => [...prev, matchedMenu.name]);
+      }
+    }
   }, [location.pathname]);
 
   const handleCompanyChange = (event) => {
@@ -179,7 +191,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
       />
 
       {isLoading && (
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center z-50">
           <ClipLoader color="#ffffff" size={35} />
           <p className="mt-2 text-sm text-white">Loading</p>
         </div>
@@ -221,12 +233,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
         <ul>
           {menuItems.map((item) => {
             const isExpanded = expandedMenus.includes(item.name);
-            const isChildActive = item.children?.some((child) => location.pathname === child.path);
-            const isActive =
-              location.pathname === item.path ||
-              isChildActive ||
-              activeMenu === item.path ||
-              item.children?.some((child) => activeMenu === child.path);
+            const isActive = activeMenu === item.name;
 
               return (
                 <div key={item.name}>
@@ -234,10 +241,11 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
                     className={`flex items-center justify-between p-3 rounded cursor-pointer transition-colors 
                       ${isActive ? "bg-primary text-black font-semibold" : "hover:bg-gray-700"}`}
                     onClick={() => {
-                      setActiveMenu(item.path || item.children?.[0]?.path || "");
+                      setActiveMenu(item.name);
                       if (item.children) {
                         toggleMenu(item.name);
                       } else {
+                        setActiveMenu(item.path);
                         if (item.onClick) item.onClick();
                         else if (item.path) navigate(item.path);
                       }
@@ -263,7 +271,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
                         <li
                           key={child.name}
                           className={`flex items-center gap-2 text-sm cursor-pointer px-2 py-2 rounded transition-colors 
-                            ${location.pathname === child.path || activeMenu === child.path
+                            ${location.pathname === child.path
                               ? "bg-yellow-100 text-secondary font-semibold"
                               : "hover:bg-gray-600"}`}
                           onClick={() => {
