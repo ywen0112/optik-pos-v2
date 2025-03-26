@@ -32,7 +32,7 @@ const CompanySelection = ({ companies, onCancel }) => {
             </div>
           ))}
         </div>
-        <button className="mt-6 w-full bg-secondary text-white py-2 rounded-md" onClick={handleCancel}>Cancel</button>
+        <button className="mt-6 w-full bg-secondary text-white py-2 rounded-md" onClick={handleCancel}>Back to Login</button>
       </div>
     </div>
   );
