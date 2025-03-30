@@ -49,8 +49,8 @@ const TransactionsInquiry = () => {
       fetchCounterSessions();
     }
      else if (activeTab === "Cash Transactions") {
-    fetchCashTransactions();
-  }
+      fetchCashTransactions();
+    }
     // else if (activeTab === "salesInvoice") {
     //   fetchSalesTransactions();
     // }
@@ -82,10 +82,13 @@ const TransactionsInquiry = () => {
       });
       const data = await response.json();
       if (data.success) {
-        setTableData(data.data);
+        const records = data.data.counterSessionRecords || [];
+        const total = data.data.totalRecords || 0;
+
+        setTableData(records);
         setPagination((prev) => ({
           ...prev,
-          [activeTab]: { ...prev[activeTab], totalItems: data.data.length },
+          [activeTab]: { ...prev[activeTab], totalItems: total },
         }));
       } else {
         throw new Error(data.errorMessage || "Failed to fetch counter session records.");
@@ -116,10 +119,13 @@ const TransactionsInquiry = () => {
       });
       const data = await response.json();
       if (data.success) {
-        setTableData(data.data);
+        const records = data.data.cashTransactionsRecords || [];
+        const total = data.data.totalRecods || 0;
+
+        setTableData(records);
         setPagination((prev) => ({
           ...prev,
-          [activeTab]: { ...prev[activeTab], totalItems: data.data.length },
+          [activeTab]: { ...prev[activeTab], totalItems: total },
         }));
       } else {
         throw new Error(data.errorMessage || "Failed to fetch cash transactions records.");
@@ -249,8 +255,8 @@ const TransactionsInquiry = () => {
         ))}
       </nav>
       
-      {activeTab === "Counter Session" && <CounterSessionTable tableData={tableData} expandedRows={expandedRows} toggleExpandRow={toggleExpandRow} exportReport={exportReport} loading={loading} />}
-      {activeTab === "Cash Transactions" && <CashTransactionsTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} />}
+      {activeTab === "Counter Session" && <CounterSessionTable tableData={tableData} expandedRows={expandedRows} toggleExpandRow={toggleExpandRow} exportReport={exportReport} loading={loading} pagination={pagination[activeTab]}/>}
+      {activeTab === "Cash Transactions" && <CashTransactionsTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}/>}
 
       <div className="flex justify-between p-4 text-xs text-secondary mt-4">
         <span>
@@ -259,27 +265,34 @@ const TransactionsInquiry = () => {
           {pagination[activeTab].totalItems}
         </span>
         <div className="flex">
-          <button
-            onClick={() => handlePageChange(pagination[activeTab].currentPage - 1)}
-            disabled={pagination[activeTab].currentPage === 1}
-            className="px-2 py-1 bg-white border rounded disabled:opacity-50 cursor-not-allowed"
-          >
-            ←
-          </button>
-          <button
-            onClick={() => handlePageChange(pagination[activeTab].currentPage + 1)}
-            disabled={pagination[activeTab].currentPage * pagination[activeTab].itemsPerPage >= pagination[activeTab].totalItems}
-            className="px-2 py-1 bg-white border rounded disabled:opacity-50 cursor-not-allowed"
-          >
-            →
-          </button>
+        <button
+          onClick={() => handlePageChange(pagination[activeTab].currentPage - 1)}
+          disabled={pagination[activeTab].currentPage === 1}
+          className={`px-2 py-1 bg-white border rounded ${
+            pagination[activeTab].currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer"
+          }`}
+        >
+          ←
+        </button>
+
+        <button
+          onClick={() => handlePageChange(pagination[activeTab].currentPage + 1)}
+          disabled={pagination[activeTab].currentPage * pagination[activeTab].itemsPerPage >= pagination[activeTab].totalItems}
+          className={`px-2 py-1 bg-white border rounded ${
+            pagination[activeTab].currentPage * pagination[activeTab].itemsPerPage >= pagination[activeTab].totalItems
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100 cursor-pointer"
+          }`}
+        >
+          →
+        </button>
         </div>
       </div>
     </div>
   );
 };
 
-const CounterSessionTable = ({ tableData, expandedRows, toggleExpandRow, exportReport, loading }) => {
+const CounterSessionTable = ({ tableData, expandedRows, toggleExpandRow, exportReport, loading, pagination }) => {
   return (
     <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
       {loading ? (
@@ -304,7 +317,9 @@ const CounterSessionTable = ({ tableData, expandedRows, toggleExpandRow, exportR
           {tableData.map((row, index) => (
             <React.Fragment key={row.counterSessionId || index}>
               <tr className="text-xs border-b-2 border-gray-100 font-medium text-secondary">
-                <td className="pl-4 p-2">{index + 1}</td>
+                <td className="pl-4 p-2">
+                  {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}
+                </td>
                 <td className="p-1">{row.sessionCode}</td>
                 <td className="p-1">{row.openingBal ?? "-"}</td>
                 <td className="p-1">{row.closingBal ?? "-"}</td>
@@ -357,7 +372,7 @@ const CounterSessionTable = ({ tableData, expandedRows, toggleExpandRow, exportR
   );
 };
 
-const CashTransactionsTable = ({ tableData, setConfirmationModal, loading }) => {
+const CashTransactionsTable = ({ tableData, setConfirmationModal, loading, pagination }) => {
   return (
     <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
       {loading ? (
@@ -382,7 +397,9 @@ const CashTransactionsTable = ({ tableData, setConfirmationModal, loading }) => 
         <tbody>
           {tableData.map((row, index) => (
             <tr key={row.cashTransactionId || index} className="text-xs border-b-2 border-gray-100 font-medium text-secondary">
-              <td className="pl-4 p-2">{index + 1}</td>
+              <td className="pl-4 p-2">
+                {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}  
+              </td>
               <td className="p-1">{row.docNo != null ? row.docNo : "-"}</td>
               <td className="p-1">{row.effectedAmount != null ? row.effectedAmount : "-"}</td>
               <td className="p-1">{row.isCashOut ? "Yes" : "No"}</td>

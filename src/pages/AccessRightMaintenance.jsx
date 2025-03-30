@@ -51,10 +51,13 @@ const AccessRightMaintenance = () => {
       });
       const data = await res.json();
       if (data.success) {
-        setAccessRights(data.data);
-        setPagination((prev) => ({
+      const records = data.data.accessRightsRecords || [];
+      const total = data.data.totalRecords || 0;
+
+      setAccessRights(records);
+      setPagination((prev) => ({
         ...prev,
-        totalItems: data.data.length,
+        totalItems: total,
       }));
     }
       else throw new Error(data.errorMessage || "Failed to fetch access rights.");
@@ -95,11 +98,12 @@ const AccessRightMaintenance = () => {
             "Dashboard",
             "Audit Logs",
             "Transaction Inquiry",
-            "Report",
+            "Transaction Open Counter/Close Counter",
             "Transaction Cash In/Out",
             "Transaction Sales Invoice",
             "Transaction Purchase Invoice",
-            "Transaction Credit Note",
+            "Transaction Stock Adjustment",
+            "Report",
             "User Maintenance",
             "Access Right Maintenance",
             "Debtor Maintenance",
@@ -271,7 +275,9 @@ const AccessRightMaintenance = () => {
             <tbody>
               {accessRights.map((accessRight, index) => (
                 <tr key={accessRight.accessRightId} className="text-xs font-medium text-secondary border-gray-100 text-secondary">
-                  <td className="pl-4 p-2">{index + 1}</td>
+                  <td className="pl-4 p-2">
+                    {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}
+                  </td>
                   <td className="p-1">{accessRight.description === "" ? "-" : accessRight.description }</td>
                   <td className="p-1 flex space-x-1">
                     <button className="text-blue-600 bg-transparent pl-0" onClick={() => handleOpenModal(accessRight, "view")}>
@@ -298,26 +304,33 @@ const AccessRightMaintenance = () => {
           {pagination.totalItems}
         </span>
         <div className="flex">
-          <button
-            onClick={() => handlePageChange(pagination.currentPage - 1)}
-            disabled={pagination.currentPage === 1}
-            className="px-2 py-1 bg-white border rounded disabled:opacity-50 cursor-not-allowed"
-          >
-            ←
-          </button>
-          <button
-            onClick={() => handlePageChange(pagination.currentPage + 1)}
-            disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems}
-            className="px-2 py-1 bg-white border rounded disabled:opacity-50 cursor-not-allowed"
-          >
-            →
-          </button>
+        <button
+          onClick={() => handlePageChange(pagination.currentPage - 1)}
+          disabled={pagination.currentPage === 1}
+          className={`px-2 py-1 bg-white border rounded ${
+            pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer"
+          }`}
+        >
+          ←
+        </button>
+
+        <button
+          onClick={() => handlePageChange(pagination.currentPage + 1)}
+          disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems}
+          className={`px-2 py-1 bg-white border rounded ${
+            pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100 cursor-pointer"
+          }`}
+        >
+          →
+        </button>
         </div>
       </div>
 
       {selectedAccessRight && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[600px] max-h-[90vh] overflow-y-auto text-secondary text-xs">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[600px] max-h-[90vh] overflow-y-auto text-secondary text-xs scrollbar-hide">
           <h3 className="text-lg font-semibold mb-4">
             {viewMode
               ? "View User Role"

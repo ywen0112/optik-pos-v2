@@ -61,10 +61,13 @@ const UserMaintenance = () => {
       const data = await response.json();
 
       if (data.success) {
-        setUsers(data.data);
+        const records = data.data.userRecords || [];
+        const total = data.data.totalRecords || 0;
+
+        setUsers(records);
         setPagination((prev) => ({
           ...prev,
-          totalItems: data.data.length,
+          totalItems: total,
         }));
       } else {
         throw new Error(data.errorMessage || "Failed to fetch users.");
@@ -89,7 +92,7 @@ const UserMaintenance = () => {
     });
     const data = await res.json();
     if (data.success) {
-        setAccessRights(data.data)
+        setAccessRights(data.data.accessRightsRecords || [])
     } else {
         throw new Error(data.errorMessage || "Failed to fetch access right.");
       }
@@ -110,7 +113,7 @@ const UserMaintenance = () => {
     });
     const data = await res.json();
     if (data.success) {
-        setLocations(data.data)
+        setLocations(data.data.locationRecords || [])
     } else {
         throw new Error(data.errorMessage || "Failed to fetch locations.");
       }
@@ -271,6 +274,16 @@ const UserMaintenance = () => {
       fontSize: "0.75rem",
       zIndex: 9999,
       position: "absolute",
+      maxHeight: "10.5rem",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch",
+      pointerEvents: "auto",
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      maxHeight: "10.5rem",
+      overflowY: "auto", 
+      WebkitOverflowScrolling: "touch",
     }),
     menuPortal: (provided) => ({
       ...provided,
@@ -318,12 +331,14 @@ const UserMaintenance = () => {
             <tbody>
               {users.map((user, index) => (
                 <tr key={user.userId} className="text-xs font-medium border-b-2 border-gray-100 text-secondary">
-                <td className="pl-4 p-2">{index + 1}</td>
-                <td className="p-1">{user.userName || "-"}</td>
-                <td className="p-1">{user.userEmail || "-"}</td>
-                <td className="p-1">{getAccessRightLabel(user.accessRightId)}</td>
-                <td className="p-1">{getLocationLabel(user.locationId)}</td>
-                <td className="p-1 flex space-x-1">
+                  <td className="pl-4 p-2">
+                    {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}
+                  </td>
+                  <td className="p-1">{user.userName || "-"}</td>
+                  <td className="p-1">{user.userEmail || "-"}</td>
+                  <td className="p-1">{getAccessRightLabel(user.accessRightId)}</td>
+                  <td className="p-1">{getLocationLabel(user.locationId)}</td>
+                  <td className="p-1 flex space-x-1">
                     <button className="text-blue-500 bg-transparent pl-0" onClick={() => openEditModal(user, true)}>
                       <Eye size={14} />
                     </button>
@@ -348,20 +363,27 @@ const UserMaintenance = () => {
           {pagination.totalItems}
         </span>
         <div className="flex">
-          <button
-            onClick={() => handlePageChange(pagination.currentPage - 1)}
-            disabled={pagination.currentPage === 1}
-            className="px-2 py-1 bg-white border rounded disabled:opacity-50 cursor-not-allowed"
-          >
-            ←
-          </button>
-          <button
-            onClick={() => handlePageChange(pagination.currentPage + 1)}
-            disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems}
-            className="px-2 py-1 bg-white border rounded disabled:opacity-50 cursor-not-allowed"
-          >
-            →
-          </button>
+        <button
+          onClick={() => handlePageChange(pagination.currentPage - 1)}
+          disabled={pagination.currentPage === 1}
+          className={`px-2 py-1 bg-white border rounded ${
+            pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer"
+          }`}
+        >
+          ←
+        </button>
+
+        <button
+          onClick={() => handlePageChange(pagination.currentPage + 1)}
+          disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems}
+          className={`px-2 py-1 bg-white border rounded ${
+            pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100 cursor-pointer"
+          }`}
+        >
+          →
+        </button>
         </div>
       </div>
 
@@ -387,7 +409,7 @@ const UserMaintenance = () => {
                 {viewMode ? (
                   <div className="mt-1 p-2 bg-gray-100 rounded">{getAccessRightLabel(editUser.accessRightId)}</div>
                 ) : (
-                  <Select value={selectedAccess} onChange={setSelectedAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} />
+                  <Select value={selectedAccess} onChange={setSelectedAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}/>
                 )}
               </div>
               <div>
@@ -395,7 +417,7 @@ const UserMaintenance = () => {
                 {viewMode ? (
                   <div className="mt-1 p-2 bg-gray-100 rounded">{getLocationLabel(editUser.locationId)}</div>
                 ) : (
-                  <Select value={selectedLocation} onChange={setSelectedLocation} getOptionLabel={(e) => e.locationCode} getOptionValue={(e) => e.locationId} options={locations} styles={customStyles} />
+                  <Select value={selectedLocation} onChange={setSelectedLocation} getOptionLabel={(e) => e.locationCode} getOptionValue={(e) => e.locationId} options={locations} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}/>
                 )}
               </div>
             </div>
@@ -420,7 +442,7 @@ const UserMaintenance = () => {
               </div>
               <div>
                 <label>User Role</label>
-                <Select value={inviteAccess} onChange={setInviteAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} />
+                <Select value={inviteAccess} onChange={setInviteAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}/>
               </div>
             </div>
             <div className="mt-6 flex justify-end space-x-2">

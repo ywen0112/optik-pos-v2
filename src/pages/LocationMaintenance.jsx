@@ -50,8 +50,14 @@ const LocationMaintenance = () => {
       });
       const data = await res.json();
       if (data.success) {
-        setLocations(data.data);
-        setPagination((prev) => ({ ...prev, totalItems: data.data.length }));
+      const records = data.data.locationRecords || [];
+      const total = data.data.totalRecords || 0;
+
+      setLocations(records);
+      setPagination((prev) => ({
+        ...prev,
+        totalItems: total,
+       }));
       } else throw new Error(data.errorMessage || "Failed to fetch locations.");
     } catch (error) {
       setErrorModal({ title: "Fetch Error", message: error.message });
@@ -210,7 +216,9 @@ const LocationMaintenance = () => {
             <tbody>
               {locations.map((location, index) => (
                 <tr key={location.locationid} className="text-xs font-medium text-secondary border-gray-100">
-                  <td className="pl-4 p-2">{index + 1}</td>
+                  <td className="pl-4 p-2">
+                    {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}
+                  </td>
                   <td className="p-1">{location.locationCode}</td>
                   <td className="p-1">{location.description || "-"}</td>
                   <td className="p-1 flex space-x-1">
@@ -230,8 +238,27 @@ const LocationMaintenance = () => {
           Showing {(pagination.currentPage - 1) * pagination.itemsPerPage + 1} to {Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} of {pagination.totalItems}
         </span>
         <div className="flex">
-          <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage === 1} className="px-2 py-1 bg-white border rounded disabled:opacity-50 cursor-not-allowed">←</button>
-          <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems} className="px-2 py-1 bg-white border rounded disabled:opacity-50 cursor-not-allowed">→</button>
+        <button
+          onClick={() => handlePageChange(pagination.currentPage - 1)}
+          disabled={pagination.currentPage === 1}
+          className={`px-2 py-1 bg-white border rounded ${
+            pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer"
+          }`}
+        >
+          ←
+        </button>
+
+        <button
+          onClick={() => handlePageChange(pagination.currentPage + 1)}
+          disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems}
+          className={`px-2 py-1 bg-white border rounded ${
+            pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100 cursor-pointer"
+          }`}
+        >
+          →
+        </button>
         </div>
       </div>
 

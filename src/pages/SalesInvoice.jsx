@@ -96,7 +96,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
 
         const data = await response.json();
         if (data.success) {
-          const options = data.data.map((debtor) => ({
+          const options = data.data.debtorRecords?.map((debtor) => ({
             value: debtor.debtorId,
             label: `${debtor.debtorCode} - ${debtor.companyName}`
           }));
@@ -142,7 +142,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
 
         const data = await response.json();
         if (data.success) {
-          const options = data.data.map((location) => ({
+          const options = data.data.locationRecords?.map((location) => ({
             value: location.locationId,
             label: `${location.locationCode} - ${location.description}`
           }));
@@ -185,7 +185,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
 
         const data = await response.json();
         if (data.success) {
-          const options = data.data.map((agent) => ({
+          const options = data.data.userRecords?.map((agent) => ({
             value: agent.userId,
             label: agent.userName
           }));
@@ -229,7 +229,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
 
         const data = await response.json();
         if (data.success) {
-          const options = data.data.map((item) => ({
+          const options = data.data.itemRecords?.map((item) => ({
             value: item.itemId,
             label: item.itemCode,
             description: item.description,
@@ -664,6 +664,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       locationId: selectedLocation?.value || locationId,
       remark: "",
       total: parseFloat(total.toFixed(2)),
+      submitEInvoice: true,
       details: invoiceItems.map((item) => {
         const discountAmount =
           item.discountType === "Percentage"
@@ -933,7 +934,16 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       ...provided,
       fontSize: "0.875rem", 
       zIndex: 9999, 
-      position: "absolute",  
+      position: "absolute",  maxHeight: "10.5rem",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch",
+      pointerEvents: "auto",
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      maxHeight: "10.5rem",
+      overflowY: "auto", 
+      WebkitOverflowScrolling: "touch",
     }),
     menuPortal: (provided) => ({
       ...provided,
@@ -1005,6 +1015,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 onChange={handleDebtorChange}
                 placeholder="Select"
                 styles={customStyles}
+                classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
             <div>
@@ -1026,6 +1037,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 placeholder="Select"
                 styles={customStyles}
                 isSearchable={false}
+                classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
             <div>
@@ -1037,6 +1049,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 placeholder="Select"
                 styles={customStyles}
                 isSearchable={false}
+                classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
             <div>
@@ -1049,6 +1062,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 styles={customStyles}
                 isDisabled={isPaymentConfirmed}
                 isSearchable={false}
+                classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
           </div>
@@ -1086,8 +1100,8 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           onChange={(option) => handleItemChange(index, option)}
                           placeholder="Select"
                           styles={customStyles}
-                          menuPortalTarget={document.body}
                           isDisabled={isPaymentConfirmed}
+                          classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                         />
                       </td>
                       <td className="w-32">
@@ -1106,9 +1120,9 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           onChange={(option) => handleUomChange(index, option)}
                           placeholder="Select"
                           styles={customStyles}
-                          menuPortalTarget={document.body}
                           isDisabled={isPaymentConfirmed}
                           isSearchable={false}
+                          classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                         />
                       </td>
                       <td className="w-32"> 
@@ -1139,9 +1153,9 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           value={item.discountType ? { value: item.discountType, label: item.discountType } : null}
                           onChange={(option) => handleRowChange(index, "discountType", option.value)}
                           styles={customStyles}
-                          menuPortalTarget={document.body}
                           isDisabled={isPaymentConfirmed}
                           isSearchable={false}
+                          classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                         />
                       </td>
                       <td className="w-32">
@@ -1373,6 +1387,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                   placeholder="Select Payment Method"
                   styles={customStyles}
                   isSearchable={false}
+                  classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                 />
 
                 {payment.type === "Cash Payment" && (

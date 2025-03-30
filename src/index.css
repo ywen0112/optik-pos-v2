@@ -50,9 +50,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: transparent;
 }
+
 button:focus,
 button:focus-visible {
   outline: none;
@@ -70,14 +72,14 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+  width: 0px;
+  background: transparent;
 }
 
 .scrollbar-hide {
   -ms-overflow-style: none; 
   scrollbar-width: none; 
 }
-
 
 @media (prefers-color-scheme: light) {
   :root {
