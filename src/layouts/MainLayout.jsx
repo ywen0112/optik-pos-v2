@@ -13,6 +13,7 @@ import AccessRightMaintenance from "../pages/AccessRightMaintenance";
 import DebtorMaintenance from "../pages/DebtorMaintenance";
 import CreditorMaintenance from "../pages/CreditorMaintenance";
 import LocationMaintenance from "../pages/LocationMaintenance";
+import ItemMaintenance from "../pages/ItemMaintenance";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -41,7 +42,7 @@ const MainLayout = ({ title }) => {
       case "/maintenances/creditor":
         return <CreditorMaintenance />;
       case "/maintenances/item":
-        return <div className="text-secondary">Item Maintenance Page in Maintenance ...</div>;
+        return <ItemMaintenance />;
       case "/maintenances/location":
         return <LocationMaintenance />;
       case "/maintenances/member":

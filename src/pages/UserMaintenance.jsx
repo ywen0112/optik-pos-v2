@@ -409,7 +409,7 @@ const UserMaintenance = () => {
                 {viewMode ? (
                   <div className="mt-1 p-2 bg-gray-100 rounded">{getAccessRightLabel(editUser.accessRightId)}</div>
                 ) : (
-                  <Select value={selectedAccess} onChange={setSelectedAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}/>
+                  <Select value={selectedAccess} onChange={setSelectedAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable/>
                 )}
               </div>
               <div>
@@ -417,7 +417,7 @@ const UserMaintenance = () => {
                 {viewMode ? (
                   <div className="mt-1 p-2 bg-gray-100 rounded">{getLocationLabel(editUser.locationId)}</div>
                 ) : (
-                  <Select value={selectedLocation} onChange={setSelectedLocation} getOptionLabel={(e) => e.locationCode} getOptionValue={(e) => e.locationId} options={locations} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}/>
+                  <Select value={selectedLocation} onChange={setSelectedLocation} getOptionLabel={(e) => e.locationCode} getOptionValue={(e) => e.locationId} options={locations} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable/>
                 )}
               </div>
             </div>
@@ -442,7 +442,7 @@ const UserMaintenance = () => {
               </div>
               <div>
                 <label>User Role</label>
-                <Select value={inviteAccess} onChange={setInviteAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}/>
+                <Select value={inviteAccess} onChange={setInviteAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable/>
               </div>
             </div>
             <div className="mt-6 flex justify-end space-x-2">

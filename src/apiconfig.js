@@ -32,6 +32,10 @@ export const EditDebtor = `${DebtorApi}Edit`;
 export const SaveDebtor = `${DebtorApi}Save`;
 export const DeleteDebtor = `${DebtorApi}Delete`;
 
+//Debtor Type
+export const DebtorTypeApi = `${ApiBaseUrl}DebtorType/`;
+export const GetDebtorType = `${DebtorTypeApi}GetRecords`;
+
 //Creditor
 export const CreditorApi = `${ApiBaseUrl}Creditor/`
 export const GetCreditorRecords = `${CreditorApi}GetRecords`;
@@ -39,6 +43,10 @@ export const NewCreditor = `${CreditorApi}New`;
 export const EditCreditor = `${CreditorApi}Edit`;
 export const SaveCreditor = `${CreditorApi}Save`;
 export const DeleteCreditor = `${CreditorApi}Delete`;
+
+//Debtor Type
+export const CredtiorTypeApi = `${ApiBaseUrl}CreditorType/`;
+export const GetCreditorType = `${CredtiorTypeApi}GetRecords`;
 
 //Location
 export const LocationApi = `${ApiBaseUrl}Location/`;
@@ -52,13 +60,17 @@ export const DeleteLocation = `${LocationApi}Delete`;
 export const SalesApi = `${ApiBaseUrl}Sales/`;
 export const NewSales = `${SalesApi}New`;
 export const SaveSales = `${SalesApi}Save`;
-export const SaveSalesPayment = `${SalesApi}SaveSalesPayment`
+export const SaveSalesPayment = `${SalesApi}SaveSalesPayment`;
+export const GetSales = `${SalesApi}GetRecords`;
+export const VoidSales = `${SalesApi}Void`;
 
 //Purchases
 export const PurchasesApi = `${ApiBaseUrl}Purchases/`;
 export const NewPurchases = `${PurchasesApi}New`;
 export const SavePurchases = `${PurchasesApi}Save`;
-export const SavePurchasePayment = `${PurchasesApi}SavePurchasePayment`
+export const SavePurchasePayment = `${PurchasesApi}SavePurchasePayment`;
+export const GetPurchases = `${PurchasesApi}GetRecords`;
+export const VoidPurchases = `${PurchasesApi}Void`;
 
 //Credit Note
 export const CreditNoteApi = `${ApiBaseUrl}CreditNote/`;
@@ -72,6 +84,14 @@ export const NewItemDetail = `${ItemApi}NewDetail`;
 export const EditItem = `${ItemApi}Edit`;
 export const SaveItem = `${ItemApi}Save`;
 export const DeleteItem = `${ItemApi}Delete`;
+
+//Item Type
+export const ItemTypeApi = `${ApiBaseUrl}ItemType/`;
+export const GetItemType = `${ItemTypeApi}GetRecords`;
+
+//Item Group
+export const ItemGroupApi = `${ApiBaseUrl}ItemGroup/`;
+export const GetItemGroup = `${ItemGroupApi}GetRecords`;
 
 //Access Rights
 export const AccessRightApi = `${ApiBaseUrl}AccessRight/`;
@@ -92,3 +112,12 @@ export const EyePowerApi = `${ApiBaseUrl}EyePower/`;
 export const GetDebtorPreviousEyeProfile = `${EyePowerApi}GetDebtorPreviousEyeProfile`;
 export const NewEyePower = `${EyePowerApi}New`;
 export const SaveEyePower = `${EyePowerApi}Save`;
+export const GetDebtorEyePowerRecords = `${EyePowerApi}GetDebtorEyePowerRecords`;
+export const EditEyePower = `${EyePowerApi}Edit`;
+export const DeleteEyePower = `${EyePowerApi}Delete`;
+
+//Audit Logs
+export const AuditLogApi = `${ApiBaseUrl}AuditLog/`;
+export const GetAuditLog = `${AuditLogApi}GetRecords`;
+export const GetAllAuditChangeType = `${AuditLogApi}GetAllAuditChangeType`;
+

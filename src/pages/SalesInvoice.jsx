@@ -1015,6 +1015,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 onChange={handleDebtorChange}
                 placeholder="Select"
                 styles={customStyles}
+                isClearable
                 classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
@@ -1037,6 +1038,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 placeholder="Select"
                 styles={customStyles}
                 isSearchable={false}
+                isClearable
                 classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
@@ -1049,6 +1051,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 placeholder="Select"
                 styles={customStyles}
                 isSearchable={false}
+                isClearable
                 classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
@@ -1062,6 +1065,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 styles={customStyles}
                 isDisabled={isPaymentConfirmed}
                 isSearchable={false}
+                isClearable
                 classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
@@ -1101,6 +1105,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           placeholder="Select"
                           styles={customStyles}
                           isDisabled={isPaymentConfirmed}
+                          isClearable
                           classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                         />
                       </td>
@@ -1122,6 +1127,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           styles={customStyles}
                           isDisabled={isPaymentConfirmed}
                           isSearchable={false}
+                          isClearable
                           classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                         />
                       </td>
@@ -1155,6 +1161,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           styles={customStyles}
                           isDisabled={isPaymentConfirmed}
                           isSearchable={false}
+                          isClearable
                           classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                         />
                       </td>
@@ -1387,6 +1394,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                   placeholder="Select Payment Method"
                   styles={customStyles}
                   isSearchable={false}
+                  isClearable
                   classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                 />
 

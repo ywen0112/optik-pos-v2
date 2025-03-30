@@ -77,6 +77,17 @@ const AccessRightMaintenance = () => {
     }
   };
 
+  const allowOnlyModules = [
+    "Dashboard",
+    "Audit Logs",
+    "Report",
+    "Sales Invoice",
+    "Open/Close Counter",
+    "Cash Transactions",
+    "Counter Session Inquiry",
+    "Cash Transactons Inquiry"
+  ];
+
   const handleAddNew = async () => {
     try {
       const res = await fetch(NewAccessRight, {
@@ -97,13 +108,14 @@ const AccessRightMaintenance = () => {
           accessRightActions: [
             "Dashboard",
             "Audit Logs",
-            "Transaction Inquiry",
-            "Transaction Open Counter/Close Counter",
-            "Transaction Cash In/Out",
-            "Transaction Sales Invoice",
-            "Transaction Purchase Invoice",
-            "Transaction Stock Adjustment",
             "Report",
+            "Sales Invoice",
+            "Open/Close Counter",
+            "Cash Transactions",
+            "Counter Session Inquiry",
+            "Cash Transactons Inquiry",
+            "Purchases Invoice",
+            "Stock Adjustment",
             "User Maintenance",
             "Access Right Maintenance",
             "Debtor Maintenance",
@@ -161,9 +173,34 @@ const AccessRightMaintenance = () => {
 
   const handleCheckboxChange = (idx, actionType) => {
     const updated = { ...selectedAccessRight };
-    updated.accessRightActions[idx][actionType] = !updated.accessRightActions[idx][actionType];
-    const { view, add, edit, delete: del } = updated.accessRightActions[idx];
-    updated.accessRightActions[idx].allow = view || add || edit || del;
+    const action = updated.accessRightActions[idx];
+  
+    if (actionType === "allow") {
+      const newAllowState = !action.allow;
+      action.allow = newAllowState;
+  
+      // If it's an allow-only module, update view/add/edit/delete behind the scenes
+      if (allowOnlyModules.includes(action.module)) {
+        action.view = newAllowState;
+        action.add = newAllowState;
+        action.edit = newAllowState;
+        action.delete = newAllowState;
+      } else {
+        action.view = newAllowState;
+        action.add = newAllowState;
+        action.edit = newAllowState;
+        action.delete = newAllowState;
+      }
+    } else {
+      // Toggle the specific permission
+      action[actionType] = !action[actionType];
+  
+      // Recalculate allow based on other permissions
+      const { view, add, edit, delete: del } = action;
+      action.allow = view || add || edit || del;
+    }
+  
+    updated.accessRightActions[idx] = action;
     setSelectedAccessRight(updated);
   };
 
@@ -354,6 +391,7 @@ const AccessRightMaintenance = () => {
                 <thead>
                   <tr>
                     <th className="p-2 text-left">Access</th>
+                    <th className="p-2 text-center">Allow</th>
                     <th className="p-2 text-center">View</th>
                     <th className="p-2 text-center">Add</th>
                     <th className="p-2 text-center">Edit</th>
@@ -361,41 +399,76 @@ const AccessRightMaintenance = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedAccessRight.accessRightActions.map((action, idx) => (
+                {selectedAccessRight.accessRightActions.map((action, idx) => {
+                  const isAllowOnly = allowOnlyModules.includes(action.module);
+                  return (
                     <tr key={idx} className="border-t">
                       <td className="p-2">{action.module}</td>
+                      
+                      <td className="p-2 text-center">
+                        <label className="inline-block relative w-4 h-4">
+                          <input
+                            type="checkbox"
+                            checked={action.allow}
+                            disabled={viewMode}
+                            onChange={() => handleCheckboxChange(idx, "allow")}
+                            className="peer sr-only"
+                          />
+                          <div
+                            className={`w-4 h-4 rounded border flex items-center justify-center 
+                              ${viewMode ? "cursor-default" : "cursor-pointer"} 
+                              ${action.allow ? "bg-secondary border-secondary" : "bg-white border-gray-300"}`}
+                          >
+                            {action.allow && (
+                              <svg
+                                className="w-3 h-3 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
+                        </label>
+                      </td>
+
                       {["view", "add", "edit", "delete"].map((type) => (
                         <td key={type} className="p-2 text-center">
-                          <label className="inline-block relative w-4 h-4">
-                            <input
-                              type="checkbox"
-                              checked={action[type]}
-                              disabled={viewMode}
-                              onChange={() => handleCheckboxChange(idx, type)}
-                              className="peer sr-only"
-                            />
-                            <div
-                              className={`w-4 h-4 rounded border flex items-center justify-center 
-                                ${viewMode ? "cursor-default" : "cursor-pointer"} 
-                                ${action[type] ? "bg-secondary border-secondary" : "bg-white border-gray-300"}`}
-                            >
-                              {action[type] && (
-                                <svg
-                                  className="w-3 h-3 text-white"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="3"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                              )}
-                            </div>
-                          </label>
+                          {!isAllowOnly && (
+                            <label className="inline-block relative w-4 h-4">
+                              <input
+                                type="checkbox"
+                                checked={action[type]}
+                                disabled={viewMode}
+                                onChange={() => handleCheckboxChange(idx, type)}
+                                className="peer sr-only"
+                              />
+                              <div
+                                className={`w-4 h-4 rounded border flex items-center justify-center 
+                                  ${viewMode ? "cursor-default" : "cursor-pointer"} 
+                                  ${action[type] ? "bg-secondary border-secondary" : "bg-white border-gray-300"}`}
+                              >
+                                {action[type] && (
+                                  <svg
+                                    className="w-3 h-3 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="3"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                            </label>
+                          )}
                         </td>
                       ))}
                     </tr>
-                  ))}
+                  );
+                })}
                 </tbody>
               </table>
             </div>

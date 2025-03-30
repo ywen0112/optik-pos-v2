@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, FileText, Ban, CheckCircle } from "lucide-react";
-import { GetCounterSessionRecords, GetCounterSummaryReport, GetCashTransactionsRecords, VoidCashTransaction} from "../apiconfig";
+import { GetCounterSessionRecords, GetCounterSummaryReport, GetCashTransactionsRecords, VoidCashTransaction, GetSales, GetPurchases, VoidSales, VoidPurchases} from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
 
@@ -27,19 +27,23 @@ const TransactionsInquiry = () => {
       itemsPerPage: 10,
       totalItems: 0,
     },
-    "Purchase Invoice": {
+    "Purchases Invoice": {
       currentPage: 1,
       itemsPerPage: 10,
       totalItems: 0,
     },
-    "Credit Note": {
-      currentPage: 1,
-      itemsPerPage: 10,
-      totalItems: 0,
+    "Stock Adjustment": {            
+    currentPage: 1,
+    itemsPerPage: 10,
+    totalItems: 0,
     },
   });
   const [errorModal, setErrorModal] = useState({title: "", message: "" });
-  const [confirmationModal, setConfirmationModal] = useState({ isOpen: false, transactionId: null});
+  const [confirmationModal, setConfirmationModal] = useState({
+    isOpen: false,
+    transactionId: null,
+    type: null,
+  });
   const [loading, setLoading] = useState(false); 
  
   useEffect(() => {
@@ -51,15 +55,12 @@ const TransactionsInquiry = () => {
      else if (activeTab === "Cash Transactions") {
       fetchCashTransactions();
     }
-    // else if (activeTab === "salesInvoice") {
-    //   fetchSalesTransactions();
-    // }
-    // else if (activeTab === "purchaseInvoice") {
-    //   fetchPurchaseTransactions();
-    // }
-    // else if (activeTab === "creditNote") {
-    //   fetchCreditNotes();
-    // }
+    else if (activeTab === "Sales Invoice") {
+      fetchSalesTransactions();
+    }
+    else if (activeTab === "Purchases Invoice") {
+      fetchPurchaseTransactions();
+    }
   }, [activeTab, pagination[activeTab].currentPage]);
 
   const fetchCounterSessions = async () => {
@@ -136,6 +137,84 @@ const TransactionsInquiry = () => {
       setLoading(false); 
     }
   };
+
+  const fetchSalesTransactions = async () => {
+    const offset = (pagination[activeTab].currentPage - 1) * pagination[activeTab].itemsPerPage;
+    const requestBody = {
+      customerId: Number(customerId),
+      keyword: "",
+      offset: offset,
+      limit: pagination[activeTab].itemsPerPage,
+    };
+  
+    try {
+      const response = await fetch(GetSales, {
+        method: "POST",
+        headers: {
+          "Accept": "text/plain",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        const records = data.data.salesRecords || [];
+        const total = data.data.totalRecords || 0;
+  
+        setTableData(records);
+        setPagination((prev) => ({
+          ...prev,
+          [activeTab]: { ...prev[activeTab], totalItems: total },
+        }));
+      } else {
+        throw new Error(data.errorMessage || "Failed to fetch sales transactions.");
+      }
+    } catch (error) {
+      setErrorModal({ title: "Fetch Error", message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const fetchPurchaseTransactions = async () => {
+    const offset = (pagination[activeTab].currentPage - 1) * pagination[activeTab].itemsPerPage;
+    const requestBody = {
+      customerId: Number(customerId),
+      keyword: "",
+      offset: offset,
+      limit: pagination[activeTab].itemsPerPage,
+    };
+  
+    try {
+      const response = await fetch(GetPurchases, {
+        method: "POST",
+        headers: {
+          "Accept": "text/plain",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        const records = data.data.purchaseRecords || [];
+        const total = data.data.totalRecord || 0;
+  
+        setTableData(records);
+        setPagination((prev) => ({
+          ...prev,
+          [activeTab]: { ...prev[activeTab], totalItems: total },
+        }));
+      } else {
+        throw new Error(data.errorMessage || "Failed to fetch purchase transactions.");
+      }
+    } catch (error) {
+      setErrorModal({ title: "Fetch Error", message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };  
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= Math.ceil(pagination[activeTab].totalItems / pagination[activeTab].itemsPerPage)) {
@@ -229,6 +308,81 @@ const TransactionsInquiry = () => {
     }
   };
   
+  const voidSalesTransaction = async () => {
+    if (!confirmationModal.transactionId) return;
+  
+    const requestBody = {
+      customerId: Number(customerId),
+      userId: userId,
+      locationId: locationId,
+      id: confirmationModal.transactionId,
+    };
+  
+    try {
+      const response = await fetch(VoidSales, {
+        method: "POST",
+        headers: {
+          "Accept": "text/plain",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        setTableData((prevData) =>
+          prevData.map((row) =>
+            row.salesId === confirmationModal.transactionId
+              ? { ...row, isVoid: true }
+              : row
+          )
+        );
+        setConfirmationModal({ isOpen: false, transactionId: null, type: null });
+      } else {
+        throw new Error(data.errorMessage || "Failed to void sales transaction.");
+      }
+    } catch (error) {
+      setErrorModal({ title: "Void Sales Error", message: error.message });
+    }
+  };
+  
+  const voidPurchaseTransaction = async () => {
+    if (!confirmationModal.transactionId) return;
+  
+    const requestBody = {
+      customerId: Number(customerId),
+      userId: userId,
+      locationId: locationId,
+      id: confirmationModal.transactionId,
+    };
+  
+    try {
+      const response = await fetch(VoidPurchases, {
+        method: "POST",
+        headers: {
+          "Accept": "text/plain",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        setTableData((prevData) =>
+          prevData.map((row) =>
+            row.purchaseId === confirmationModal.transactionId
+              ? { ...row, isVoid: true }
+              : row
+          )
+        );
+        setConfirmationModal({ isOpen: false, transactionId: null, type: null });
+      } else {
+        throw new Error(data.errorMessage || "Failed to void purchase transaction.");
+      }
+    } catch (error) {
+      setErrorModal({ title: "Void Purchase Error", message: error.message });
+    }
+  };  
 
   return (
     <div>
@@ -237,12 +391,18 @@ const TransactionsInquiry = () => {
         isOpen={confirmationModal.isOpen}
         title="Confirm Void Transaction"
         message="Are you sure you want to void this transaction? This action cannot be undone."
-        onConfirm={voidTransaction}
-        onCancel={() => setConfirmationModal({ isOpen: false, transactionId: null })}
+        onConfirm={
+          confirmationModal.type === "sales"
+            ? voidSalesTransaction
+            : confirmationModal.type === "purchase"
+            ? voidPurchaseTransaction
+            : voidTransaction
+        }
+        onCancel={() => setConfirmationModal({ isOpen: false, transactionId: null, type: null })}
       />
 
       <nav className="flex">
-        {["Counter Session", "Sales Invoice", "Purchase Invoice", "Stock Adjustment", "Cash Transactions"].map((tab) => ( 
+        {["Counter Session", "Sales Invoice", "Purchases Invoice", "Stock Adjustment", "Cash Transactions"].map((tab) => ( 
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -257,6 +417,13 @@ const TransactionsInquiry = () => {
       
       {activeTab === "Counter Session" && <CounterSessionTable tableData={tableData} expandedRows={expandedRows} toggleExpandRow={toggleExpandRow} exportReport={exportReport} loading={loading} pagination={pagination[activeTab]}/>}
       {activeTab === "Cash Transactions" && <CashTransactionsTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}/>}
+      {activeTab === "Sales Invoice" && <SalesInvoiceTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}/>}
+      {activeTab === "Purchases Invoice" && <PurchaseInvoiceTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}/>}
+      {activeTab === "Stock Adjustment" && (
+        <div className="mt-6 p-6 text-center text-sm text-gray-500 border border-dashed border-gray-300 rounded-lg bg-white shadow">
+          Stock Adjustment is currently under maintenance.
+        </div>
+      )}
 
       <div className="flex justify-between p-4 text-xs text-secondary mt-4">
         <span>
@@ -384,8 +551,8 @@ const CashTransactionsTable = ({ tableData, setConfirmationModal, loading, pagin
             <th className="px-4 py-3">NO</th>
             <th className="px-1 py-3">DOC NO</th>
             <th className="px-1 py-3">AMOUNT</th>
-            <th className="px-1 py-3">IS CASH OUT</th>
-            <th className="px-1 py-3">IS VOID</th>
+            <th className="px-1 py-3">CASH OUT</th>
+            <th className="px-1 py-3">VOID</th>
             <th className="px-1 py-3">REMARK</th>
             <th className="px-1 py-3">CREATED BY</th>
             <th className="px-1 py-3">CREATED TIME</th>
@@ -422,6 +589,298 @@ const CashTransactionsTable = ({ tableData, setConfirmationModal, loading, pagin
           ))}
         </tbody>
       </table>
+      )}
+    </div>
+  );
+};
+
+const SalesInvoiceTable = ({ tableData, loading, pagination, setConfirmationModal }) => {
+  const [expandedRows, setExpandedRows] = useState({});
+
+  const toggleExpandRow = (index) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  return (
+    <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
+      {loading ? (
+        <p className="text-center py-4 text-gray-500">Loading...</p>
+      ) : (
+        <table className="w-full border-collapse">
+          <thead className="bg-gray-200 border-b-2 border-gray-100 font-bold">
+            <tr className="text-left text-xs text-secondary">
+              <th className="px-4 py-3">NO</th>
+              <th className="px-1 py-3">DOC NO</th>
+              <th className="px-1 py-3">DOC DATE</th>
+              <th className="px-1 py-3">DEBTOR CODE</th>
+              <th className="px-1 py-3">LOCATION CODE</th>
+              <th className="px-1 py-3">REMARK</th>
+              <th className="px-1 py-3">TOTAL</th>
+              <th className="px-1 py-3">VOID</th>
+              <th className="px-1 py-3">COMPLETE</th>
+              <th className="px-1 py-3">OUTSTANDING BAL</th>
+              <th className="px-2 py-3">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tableData.map((row, index) => (
+              <React.Fragment key={row.salesId || index}>
+                <tr className="text-xs border-b-2 border-gray-100 font-medium text-secondary">
+                  <td className="pl-4 p-2">
+                    {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}
+                  </td>
+                  <td className="p-1">{row.docNo ?? "-"}</td>
+                  <td className="p-1">{row.docDate ? new Date(row.docDate).toLocaleString() : "-"}</td>
+                  <td className="p-1">{row.debtorCode ?? "-"}</td>
+                  <td className="p-1">{row.locationCode ?? "-"}</td>
+                  <td className="p-1">{row.remark ?? "-"}</td>
+                  <td className="p-1">{row.total ?? "-"}</td>
+                  <td className="p-1">{row.isVoid ? "Yes" : "No"}</td>
+                  <td className="p-1">{row.isComplete ? "Yes" : "No"}</td>
+                  <td className="p-1">{row.outstandingBal ?? "-"}</td>
+                 <td className="p-1 flex gap-1 items-center">
+                    <button className="text-green-500 bg-transparent pl-0" onClick={() => toggleExpandRow(index)}>
+                      {expandedRows[index] ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                    {row.isVoid ? (
+                      <div className="p-1 flex items-center justify-center">
+                        <Ban size={14} className="text-gray-400" />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          setConfirmationModal({
+                            isOpen: true,
+                            transactionId: row.salesId,
+                            type: "sales",
+                          })
+                        }
+                        className="text-red-500 bg-transparent p-1"
+                      >
+                        <CheckCircle size={14} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+
+                {expandedRows[index] && (
+                  <tr>
+                    <td colSpan={11} className="p-2 text-xs text-secondary">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <table className="w-full border-collapse border text-xs">
+                              <thead className="bg-gray-100 border-b">
+                                <tr>
+                                  <th className="p-1 border">Item Code</th>
+                                  <th className="p-1 border">Description</th>
+                                  <th className="p-1 border">UOM</th>
+                                  <th className="p-1 border">Qty</th>
+                                  <th className="p-1 border">Unit Price</th>
+                                  <th className="p-1 border">Discount</th>
+                                  <th className="p-1 border">Discount Amt</th>
+                                  <th className="p-1 border">Subtotal</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {row.details?.map((detail) => (
+                                  <tr key={detail.salesDetailId}>
+                                    <td className="p-1 border">{detail.itemCode ?? "-"}</td>
+                                    <td className="p-1 border">{detail.description ?? "-"}</td>
+                                    <td className="p-1 border">{detail.uom ?? "-"}</td>
+                                    <td className="p-1 border">{detail.qty ?? "-"}</td>
+                                    <td className="p-1 border">{detail.unitPrice ?? "-"}</td>
+                                    <td className="p-1 border">{detail.discount ?? "-"}</td>
+                                    <td className="p-1 border">{detail.discountAmount ?? "-"}</td>
+                                    <td className="p-1 border">{detail.subTotal ?? "-"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {row.paymentHistory && row.paymentHistory.length > 0 && (
+                          <div>
+                            <table className="w-full border-collapse border text-xs">
+                              <thead className="bg-gray-100 border-b">
+                                <tr>
+                                  <th className="p-1 border">Doc No</th>
+                                  <th className="p-1 border">Payment Date</th>
+                                  <th className="p-1 border">Remark</th>
+                                  <th className="p-1 border">Reference</th>
+                                  <th className="p-1 border">Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {row.paymentHistory.map((pay) => (
+                                  <tr key={pay.salesPaymentId}>
+                                    <td className="p-1 border">{pay.docNo ?? "-"}</td>
+                                    <td className="p-1 border">{pay.paymentDate ? new Date(pay.paymentDate).toLocaleString() : "-"}</td>
+                                    <td className="p-1 border">{pay.remark ?? "-"}</td>
+                                    <td className="p-1 border">{pay.reference ?? "-"}</td>
+                                    <td className="p-1 border">{pay.amount ?? "-"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
+const PurchaseInvoiceTable = ({ tableData, loading, pagination, setConfirmationModal }) => {
+  const [expandedRows, setExpandedRows] = useState({});
+
+  const toggleExpandRow = (index) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  return (
+    <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
+      {loading ? (
+        <p className="text-center py-4 text-gray-500">Loading...</p>
+      ) : (
+        <table className="w-full border-collapse">
+          <thead className="bg-gray-200 border-b-2 border-gray-100 font-bold">
+            <tr className="text-left text-xs text-secondary">
+              <th className="px-4 py-3">NO</th>
+              <th className="px-1 py-3">DOC NO</th>
+              <th className="px-1 py-3">DOC DATE</th>
+              <th className="px-1 py-3">CREDITOR CODE</th>
+              <th className="px-1 py-3">LOCATION CODE</th>
+              <th className="px-1 py-3">REMARK</th>
+              <th className="px-1 py-3">TOTAL</th>
+              <th className="px-1 py-3">VOID</th>
+              <th className="px-1 py-3">COMPLETE</th>
+              <th className="px-1 py-3">OUTSTANDING BAL</th>
+              <th className="px-2 py-3">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tableData.map((row, index) => (
+              <React.Fragment key={row.purchaseId || index}>
+                <tr className="text-xs border-b-2 border-gray-100 font-medium text-secondary">
+                  <td className="pl-4 p-2">
+                    {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}
+                  </td>
+                  <td className="p-1">{row.docNo ?? "-"}</td>
+                  <td className="p-1">{row.docDate ? new Date(row.docDate).toLocaleString() : "-"}</td>
+                  <td className="p-1">{row.creditorCode ?? "-"}</td>
+                  <td className="p-1">{row.locationCode ?? "-"}</td>
+                  <td className="p-1">{row.remark ?? "-"}</td>
+                  <td className="p-1">{row.total ?? "-"}</td>
+                  <td className="p-1">{row.isVoid ? "Yes" : "No"}</td>
+                  <td className="p-1">{row.isComplete ? "Yes" : "No"}</td>
+                  <td className="p-1">{row.outstandingBal ?? "-"}</td>
+                  <td className="p-1 flex gap-1 items-center">
+                    <button className="text-green-500 bg-transparent p-1" onClick={() => toggleExpandRow(index)}>
+                      {expandedRows[index] ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                    {row.isVoid ? (
+                      <div className="p-1 flex items-center justify-center">
+                        <Ban size={14} className="text-gray-400" />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          setConfirmationModal({
+                            isOpen: true,
+                            transactionId: row.purchaseId,
+                            type: "purchase",
+                          })
+                        }
+                        className="text-red-500 bg-transparent p-1"
+                      >
+                        <CheckCircle size={14} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+
+                {expandedRows[index] && (
+                  <tr>
+                    <td colSpan={11} className="p-2 text-xs text-secondary">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="font-semibold mb-1">Purchase Details</p>
+                          <table className="w-full border-collapse border text-xs">
+                            <thead className="bg-gray-100 border-b">
+                              <tr>
+                                <th className="p-1 border">Item Code</th>
+                                <th className="p-1 border">Description</th>
+                                <th className="p-1 border">UOM</th>
+                                <th className="p-1 border">Qty</th>
+                                <th className="p-1 border">Unit Price</th>
+                                <th className="p-1 border">Discount</th>
+                                <th className="p-1 border">Discount Amt</th>
+                                <th className="p-1 border">Subtotal</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {row.details?.map((detail) => (
+                                <tr key={detail.purchaseDetailId}>
+                                  <td className="p-1 border">{detail.itemCode ?? "-"}</td>
+                                  <td className="p-1 border">{detail.description ?? "-"}</td>
+                                  <td className="p-1 border">{detail.uom ?? "-"}</td>
+                                  <td className="p-1 border">{detail.qty ?? "-"}</td>
+                                  <td className="p-1 border">{detail.unitPrice ?? "-"}</td>
+                                  <td className="p-1 border">{detail.discount ?? "-"}</td>
+                                  <td className="p-1 border">{detail.discountAmount ?? "-"}</td>
+                                  <td className="p-1 border">{detail.subTotal ?? "-"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {row.paymentHistory && row.paymentHistory.length > 0 && (
+                          <div>
+                            <p className="font-semibold mb-1">Payment History</p>
+                            <table className="w-full border-collapse border text-xs">
+                              <thead className="bg-gray-100 border-b">
+                                <tr>
+                                  <th className="p-1 border">Payment Date</th>
+                                  <th className="p-1 border">Remark</th>
+                                  <th className="p-1 border">Reference</th>
+                                  <th className="p-1 border">Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {row.paymentHistory.map((pay) => (
+                                  <tr key={pay.purchasePaymentId}>
+                                    <td className="p-1 border">{pay.paymentDate ? new Date(pay.paymentDate).toLocaleString() : "-"}</td>
+                                    <td className="p-1 border">{pay.remark ?? "-"}</td>
+                                    <td className="p-1 border">{pay.reference ?? "-"}</td>
+                                    <td className="p-1 border">{pay.amount ?? "-"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );

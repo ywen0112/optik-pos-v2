@@ -23,7 +23,6 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
   const [expandedMenus, setExpandedMenus] = useState([]);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const [internalVisible, setInternalVisible] = useState(visible);
 
   useEffect(() => {
     const storedCompanies = JSON.parse(sessionStorage.getItem("companies")) || [];
@@ -158,20 +157,6 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     );
   };
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth <= 1366) {
-        setInternalVisible(false);
-      } else {
-        setInternalVisible(true);
-      }
-    };
-
-    handleResize(); 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   const menuItems = [
     { name: "Dashboard", icon: <Clock size={20} />, path: "/dashboard" },
     { name: "Transactions", icon: <Briefcase size={20} />, path: "/transactions", onClick: handleTransactionsClick },
@@ -190,14 +175,14 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
         { name: "PWP Maintenance", path: "/maintenances/pwp", icon: <UserCog size={16} /> },
       ],
     },
-    { name: "Audit Logs", icon: <UserCheck size={20} />, path: "/audit-logs" },
     { name: "Company Profile", icon: <Building size={20} />, path: "/company-profile", onClick: handleCompanyProfileClick },
     { name: "Reports", icon: <BarChart2 size={20} />, path: "/reports" },
+    { name: "Audit Logs", icon: <UserCheck size={20} />, path: "/audit-logs" },
   ];
 
   return (
     <div className={`bg-secondary text-white h-screen flex flex-col p-2 relative transition-all duration-300
-      ${internalVisible ? "w-60" : "w-16"}`}>
+      ${visible ? "w-60" : "w-16"}`}>
       <ErrorModal
         title={errorModal.title}
         message={errorModal.message}

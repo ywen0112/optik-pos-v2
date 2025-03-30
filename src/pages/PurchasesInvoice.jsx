@@ -843,8 +843,8 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
                 onChange={handleCreditorChange}
                 placeholder="Select"
                 styles={customStyles}
-                classNames={{ menu: () => "scrollbar-hide"}} 
-                menuPortalTarget={document.body}
+                isClearable
+                classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
             <div>
@@ -866,6 +866,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
                 placeholder="Select"
                 styles={customStyles}
                 isSearchable={false}
+                isClearable
                 classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
@@ -878,6 +879,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
                 placeholder="Select"
                 styles={customStyles}
                 isSearchable={false}
+                isClearable
                 classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
@@ -891,6 +893,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
                 styles={customStyles}
                 isDisabled={isPaymentConfirmed}
                 isSearchable={false}
+                isClearable
                 classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
               />
             </div>
@@ -930,6 +933,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
                           placeholder="Select"
                           styles={customStyles}
                           isDisabled={isPaymentConfirmed}
+                          isClearable
                           classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                         />
                       </td>
@@ -951,6 +955,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
                           styles={customStyles}
                           isDisabled={isPaymentConfirmed}
                           isSearchable={false}
+                          isClearable
                           classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}                        />
                       </td>
                       <td className="w-32"> 
@@ -983,6 +988,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
                           styles={customStyles}
                           isDisabled={isPaymentConfirmed}
                           isSearchable={false}
+                          isClearable
                           classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                         />
                       </td>
@@ -1214,6 +1220,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
                     placeholder="Select Payment Method"
                     styles={customStyles}
                     isSearchable={false}
+                    isClearable
                     classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                   />
 

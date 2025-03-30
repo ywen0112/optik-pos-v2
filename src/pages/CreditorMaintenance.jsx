@@ -5,11 +5,13 @@ import {
   NewCreditor,
   EditCreditor,
   SaveCreditor,
-  DeleteCreditor
+  DeleteCreditor,
+  GetCreditorType
 } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import NotificationModal from "../modals/NotificationModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
+import Select from "react-select";
 
 const CreditorMaintenance = () => {
   const customerId = localStorage.getItem("customerId");
@@ -20,6 +22,8 @@ const CreditorMaintenance = () => {
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
+  const [creditorTypes, setCreditorTypes] = useState([]);
+  const [selectedCreditorType, setSelectedCreditorType] = useState(null);
 
   const [creditors, setCreditors] = useState([]);
   const [selectedCreditor, setSelectedCreditor] = useState(null);
@@ -35,6 +39,7 @@ const CreditorMaintenance = () => {
 
   useEffect(() => {
     fetchCreditors();
+    fetchCreditorType();
   }, [pagination.currentPage]);
 
   const fetchCreditors = async () => {
@@ -82,6 +87,7 @@ const CreditorMaintenance = () => {
       const data = await res.json();
       if (data.success) {
         setSelectedCreditor(data.data);
+        setSelectedCreditorType(null);
         setFormAction("add");
         setViewMode(false);
       } else throw new Error(data.errorMessage || "Failed to create new creditor.");
@@ -89,6 +95,29 @@ const CreditorMaintenance = () => {
       setErrorModal({ title: "New Creditor Error", message: error.message });
     }
   };
+
+  const fetchCreditorType = async () => {
+    try{
+    const res = await fetch(GetCreditorType, {
+      method: "POST",
+      headers: {
+        Accept: "text/plain",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ customerId: Number(customerId), keyword: "", offset: 0, limit: 9999 }),
+    });
+    const data = await res.json();
+    if (data.success) {
+        setCreditorTypes(data.data.creditorTypeRecords || [])
+    } else {
+        throw new Error(data.errorMessage || "Failed to fetch creditor type.");
+      }
+    } catch (error) {
+      setErrorModal({ title: "Fetch Error", message: error.message });
+    }
+  };
+  
+  const getCreditorTypeLabel = (id) => creditorTypes.find((ct) => ct.creditorTypeId === id)?.creditorTypeCode || "-";
 
   const handleOpenModal = async (creditor, mode) => {
     if (mode === "edit") {
@@ -101,6 +130,11 @@ const CreditorMaintenance = () => {
         const data = await res.json();
         if (data.success) {
           setSelectedCreditor(data.data);
+          const matchedType = creditorTypes.find((ct) => ct.creditorTypeId === data.data.creditorTypeId);
+          setSelectedCreditorType(matchedType ? {
+            value: matchedType.creditorTypeId,
+            label: matchedType.creditorTypeCode
+          } : null);
           setFormAction("edit");
           setViewMode(false);
         } else throw new Error(data.errorMessage || "Failed to fetch creditor data");
@@ -195,6 +229,57 @@ const CreditorMaintenance = () => {
     delete: "Are you sure you want to delete this creditor?"
   };
 
+  const customStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      border: "1px solid #ccc",
+      padding: "1px",
+      fontSize: "0.75rem",
+      width: "100%",
+      minHeight: "2.5rem",
+      backgroundColor: state.isDisabled ? "#f9f9f9" : "white",
+      cursor: state.isDisabled ? "not-allowed" : "pointer",
+    }),
+    input: (provided) => ({
+      ...provided,
+      fontSize: "0.75rem",
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      fontSize: "0.75rem",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      fontSize: "0.75rem",
+      zIndex: 9999,
+      position: "absolute",
+      maxHeight: "10.5rem",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch",
+      pointerEvents: "auto",
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      maxHeight: "10.5rem",
+      overflowY: "auto", 
+      WebkitOverflowScrolling: "touch",
+    }),
+    menuPortal: (provided) => ({
+      ...provided,
+      zIndex: 9999,
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      fontSize: "0.75rem",
+      padding: "4px 8px",
+      backgroundColor: state.isSelected ? "#f0f0f0" : "#fff",
+      color: state.isSelected ? "#333" : "#000",
+      ":hover": {
+        backgroundColor: "#e6e6e6",
+      },
+    }),
+  };
+
   return (
     <div>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
@@ -237,7 +322,7 @@ const CreditorMaintenance = () => {
                   </td>
                   <td className="p-1">{creditor.creditorCode}</td>
                   <td className="p-1">{creditor.companyName || "-"}</td>
-                  <td className="p-1">{creditor.creditorTypeId || "-"}</td>
+                  <td className="p-1">{getCreditorTypeLabel(creditor.creditorTypeId)}</td>
                   <td className="p-1">{creditor.mobile || "-"}</td>
                   <td className="p-1 flex space-x-1">
                     <button className="text-blue-600 pl-0" onClick={() => handleOpenModal(creditor, "view")}><Eye size={14} /></button>
@@ -287,11 +372,45 @@ const CreditorMaintenance = () => {
               {viewMode ? "View Creditor" : formAction === "edit" ? "Edit Creditor" : "Add Creditor"}
             </h3>
 
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-5 gap-4">
               {[
                 ["Creditor Code", "creditorCode"],
                 ["Company Name", "companyName"],
-                ["Creditor Type ID", "creditorTypeId"],
+              ].map(([label, key, disabled = false]) => (
+                <div key={key}>
+                  <label className="block">{label}</label>
+                  <input
+                    type="text"
+                    value={selectedCreditor[key] || ""}
+                    onChange={(e) => handleInputChange(key, e.target.value)}
+                    readOnly={viewMode || disabled}
+                    className={`mt-1 w-full p-2 border rounded ${viewMode || disabled ? "bg-gray-100" : "bg-white"}`}
+                  />
+                </div>
+              ))}
+
+              <div>
+                <label className="block">Creditor Type Code</label>
+                <Select
+                  options={creditorTypes.map((type) => ({
+                    value: type.creditorTypeId,
+                    label: type.creditorTypeCode
+                  }))}
+                  value={selectedCreditorType}
+                  isDisabled={viewMode}
+                  onChange={(selected) => {
+                    setSelectedCreditorType(selected);
+                    handleInputChange("creditorTypeId", selected ? selected.value : null);
+                  }}
+                  styles={customStyles}
+                  placeholder="Select"
+                  isSearchable={false} 
+                  isClearable
+                  classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
+                />
+              </div>
+
+              {[
                 ["Mobile", "mobile"],
                 ["Phone 1", "phone1"],
                 ["Phone 2", "phone2"],
