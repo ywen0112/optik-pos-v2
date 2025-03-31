@@ -988,7 +988,6 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
                           styles={customStyles}
                           isDisabled={isPaymentConfirmed}
                           isSearchable={false}
-                          isClearable
                           classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                         />
                       </td>

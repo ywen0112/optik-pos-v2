@@ -13,7 +13,7 @@ const Transactions = () => {
   const { counterSession: initialSession } = location.state || {}; 
   const [counterSession, setCounterSession] = useState(initialSession || { isExist: false });
   const [openingBalance, setOpeningBalance] = useState("");
-  const [activeTab, setActiveTab] = useState("Cash In");
+  const [activeTab, setActiveTab] = useState("Sales Invoice");
   const customerId = localStorage.getItem("customerId");
   const userId = localStorage.getItem("userId");
   const locationId = localStorage.getItem("locationId");
@@ -401,7 +401,7 @@ const handleConfirmCloseCounter = async () => {
         <div className="flex items-center gap-2 w-full mt-1">
           <div>
           <nav className="flex">
-              {["Cash In", "Cash Out", "Sales Invoice", "Purchases Invoice", "Stock Adjustment"
+              {["Sales Invoice", "Purchases Invoice", "Stock Adjustment","Cash In", "Cash Out"
             ].map((tab) => (
                 <button
                   key={tab}

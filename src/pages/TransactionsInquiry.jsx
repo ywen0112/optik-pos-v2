@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Eye, EyeOff, FileText, Ban, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, FileText, Ban, CheckCircle, DollarSign } from "lucide-react";
 import { GetCounterSessionRecords, GetCounterSummaryReport, GetCashTransactionsRecords, VoidCashTransaction, GetSales, GetPurchases, VoidSales, VoidPurchases} from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
+import PaymentModal from "../modals/PaymentModal";
 
 const TransactionsInquiry = () => {
   const [activeTab, setActiveTab] = useState("Counter Session");
@@ -45,6 +46,11 @@ const TransactionsInquiry = () => {
     type: null,
   });
   const [loading, setLoading] = useState(false); 
+
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [paymentTab, setPaymentTab] = useState("Cash Payment");      
+  const [multiPaymentMethods, setMultiPaymentMethods] = useState([]);                     
  
   useEffect(() => {
     setTableData([]); 
@@ -384,6 +390,21 @@ const TransactionsInquiry = () => {
     }
   };  
 
+  const openPaymentModal = (invoice) => {
+    const type = invoice.salesId ? "Sales" : invoice.purchaseId ? "Purchase" : null;
+    const id = invoice.salesId || invoice.purchaseId || null;
+  
+    setSelectedInvoice({ ...invoice, type, id });
+    setPaymentTab("Cash Payment");
+    setPaymentModalOpen(true);
+  };
+  
+  
+  const closePaymentModal = () => {
+    setSelectedInvoice(null);
+    setPaymentModalOpen(false);
+  };
+
   return (
     <div>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() =>setErrorModal({ title: "", message: "" })}/>
@@ -417,8 +438,22 @@ const TransactionsInquiry = () => {
       
       {activeTab === "Counter Session" && <CounterSessionTable tableData={tableData} expandedRows={expandedRows} toggleExpandRow={toggleExpandRow} exportReport={exportReport} loading={loading} pagination={pagination[activeTab]}/>}
       {activeTab === "Cash Transactions" && <CashTransactionsTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}/>}
-      {activeTab === "Sales Invoice" && <SalesInvoiceTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}/>}
-      {activeTab === "Purchases Invoice" && <PurchaseInvoiceTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}/>}
+      {activeTab === "Sales Invoice" && <SalesInvoiceTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}
+        openPaymentModal={openPaymentModal}
+        closePaymentModal={closePaymentModal}
+        paymentModalOpen={paymentModalOpen}
+        selectedInvoice={selectedInvoice}
+        paymentTab={paymentTab}
+        setPaymentTab={setPaymentTab}
+      />}
+      {activeTab === "Purchases Invoice" && <PurchaseInvoiceTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}
+        openPaymentModal={openPaymentModal}
+        closePaymentModal={closePaymentModal}
+        paymentModalOpen={paymentModalOpen}
+        selectedInvoice={selectedInvoice}
+        paymentTab={paymentTab}
+        setPaymentTab={setPaymentTab}
+      />}
       {activeTab === "Stock Adjustment" && (
         <div className="mt-6 p-6 text-center text-sm text-gray-500 border border-dashed border-gray-300 rounded-lg bg-white shadow">
           Stock Adjustment is currently under maintenance.
@@ -455,6 +490,23 @@ const TransactionsInquiry = () => {
         </button>
         </div>
       </div>
+      {paymentModalOpen && selectedInvoice && (
+        <PaymentModal
+          selectedInvoice={selectedInvoice}
+          closePaymentModal={closePaymentModal}
+          paymentTab={paymentTab}
+          setPaymentTab={setPaymentTab}
+          multiPaymentMethods={multiPaymentMethods}
+          setMultiPaymentMethods={setMultiPaymentMethods}
+          onPaymentSuccess={() => {
+            if (selectedInvoice?.type === "Sales") {
+              fetchSalesTransactions();
+            } else if (selectedInvoice?.type === "Purchase") {
+              fetchPurchaseTransactions();
+            }
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -594,7 +646,7 @@ const CashTransactionsTable = ({ tableData, setConfirmationModal, loading, pagin
   );
 };
 
-const SalesInvoiceTable = ({ tableData, loading, pagination, setConfirmationModal }) => {
+const SalesInvoiceTable = ({ tableData, loading, pagination, setConfirmationModal, openPaymentModal }) => {
   const [expandedRows, setExpandedRows] = useState({});
 
   const toggleExpandRow = (index) => {
@@ -661,6 +713,14 @@ const SalesInvoiceTable = ({ tableData, loading, pagination, setConfirmationModa
                         className="text-red-500 bg-transparent p-1"
                       >
                         <CheckCircle size={14} />
+                      </button>
+                    )}
+                    {!row.isVoid && !row.isComplete && (
+                      <button
+                        className="text-blue-500 bg-transparent p-1"
+                        onClick={() => openPaymentModal(row)}
+                      >
+                        <DollarSign size={14} />
                       </button>
                     )}
                   </td>
@@ -740,7 +800,7 @@ const SalesInvoiceTable = ({ tableData, loading, pagination, setConfirmationModa
   );
 };
 
-const PurchaseInvoiceTable = ({ tableData, loading, pagination, setConfirmationModal }) => {
+const PurchaseInvoiceTable = ({ tableData, loading, pagination, setConfirmationModal, openPaymentModal }) => {
   const [expandedRows, setExpandedRows] = useState({});
 
   const toggleExpandRow = (index) => {
@@ -807,6 +867,14 @@ const PurchaseInvoiceTable = ({ tableData, loading, pagination, setConfirmationM
                         className="text-red-500 bg-transparent p-1"
                       >
                         <CheckCircle size={14} />
+                      </button>
+                    )}
+                    {!row.isVoid && !row.isComplete && (
+                      <button
+                        className="text-blue-500 bg-transparent"
+                        onClick={() => openPaymentModal(row)}
+                      >
+                        <DollarSign size={14} />
                       </button>
                     )}
                   </td>

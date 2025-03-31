@@ -112,7 +112,7 @@ const ProfileModal = ({ open, onClose }) => {
 
             const result = await response.json();
             if (result.success) {
-            const options = result.data.map((location) => ({
+            const options = result.data.locationRecords.map((location) => ({
                 value: location.locationId,
                 label: location.locationCode,
             }));
@@ -145,7 +145,7 @@ const ProfileModal = ({ open, onClose }) => {
 
             const result = await response.json();
             if (result.success) {
-            const options = result.data.map((right) => ({
+            const options = result.data.accessRightsRecords.map((right) => ({
                 value: right.accessRightId,
                 label: right.description,
             }));

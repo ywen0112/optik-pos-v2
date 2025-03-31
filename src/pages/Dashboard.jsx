@@ -22,7 +22,7 @@ const formatCurrency = (value) => {
 
 const Dashboard = () => {
   return (
-    <div className="p-6 w-full bg-gray-100 min-h-screen">
+    <div className="p-6 w-full bg-gray-100 max-h-screen">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card label="Total Transactions" value={mockData.totalTransactions} icon={<Wallet className="text-blue-500 w-10 h-10" />} color="text-gray-800" />
         <Card label="Total Sales" value={mockData.totalSales} icon={<TrendingUp className="text-green-500 w-10 h-10" />} color="text-green-600" />
