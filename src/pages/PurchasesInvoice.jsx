@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
-import { GetCreditorRecords, GetLocationRecords, GetUsers, GetItemRecords, SavePurchases, SavePurchasePayment } from "../apiconfig";
+import { GetCreditorRecords, GetLocationRecords, GetUsers, GetItemRecords, SavePurchases, SavePurchasePayment, NewPurchases } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
 import NotificationModal from "../modals/NotificationModal";
 
-const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
+const PurchasesInvoice = ({ setCounterSession   }) => {
   const customerId = localStorage.getItem("customerId");
   const userId = localStorage.getItem("userId");
   const locationId = localStorage.getItem("locationId");
+  const purchaseId = localStorage.getItem("purchaseId");
   const [creditorOptions, setCreditorOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [agentOptions, setAgentOptions] = useState([]);
@@ -89,7 +90,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
 
         const data = await response.json();
         if (data.success) {
-          const options = data.data.creditorRecords?.map((creditor) => ({
+          const options = data.data.creditorsRecords?.map((creditor) => ({
             value: creditor.creditorId,
             label: `${creditor.creditorCode} - ${creditor.companyName}`
           }));
@@ -474,7 +475,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
       },
       isFirstPayment: true,
       docDate: localISOTime,
-      targetDocId: purchasesId,
+      targetDocId: purchaseId,
       payment: payments
     };
   
@@ -649,8 +650,7 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
           locationId: selectedLocation?.value || locationId,
           id: ""
         },
-        purchaseId: purchasesId,
-        docNo,
+        purchaseId: purchaseId,
         creditorId: selectedCreditor?.value || "",
         creditorName: companyName,
         docDate: localISOTime,
@@ -709,13 +709,10 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
         setNotificationModal({
           isOpen: true,
           title: "Success",
-          message: "Sales invoice saved successfully.",
+          message: "Purchase invoice saved successfully.",
           onClose: () => {
             setNotificationModal({ isOpen: false });
-            setSelectedCreditor(null);
-            setCompanyName("");
-            setSelectedLocation(null);
-            setSelectedAgent(null);
+            
             setSelectedPaymentType(null);
             setInvoiceItems([
               {
@@ -742,14 +739,72 @@ const PurchasesInvoice = ({ purchasesId, docNo, setCounterSession   }) => {
             setMultiPaymentMethods([]);
             setOutstandingOrChange(0);
             setIsOutstanding(false);
+            setSelectedCreditor(null);
+            setCompanyName("");
+
+            const locationOptions = data.data.locationRecords?.map((location) => ({
+              value: location.locationId,
+              label: `${location.locationCode} - ${location.description}`
+            }));
+            setLocationOptions(locationOptions);
+            if (locationId) {
+              const matchedLocation = locationOptions.find(loc => loc.value === locationId);
+              if (matchedLocation) {
+                setSelectedLocation(matchedLocation);
+              } else {
+                setSelectedLocation(null);
+              }
+            }
+  
+            const agentOptions = data.data.userRecords?.map((agent) => ({
+              value: agent.userId,
+              label: agent.userName
+            }));
+            setAgentOptions(agentOptions);
+            if (userId) {
+              const matchedAgent = agentOptions.find(agent => agent.value === userId);
+              if (matchedAgent) {
+                setSelectedAgent(matchedAgent);
+              } else {
+                setSelectedAgent(null);
+              }
+            }
           }
         });
+        fetchNewPurchasesInvoice();
       } catch (error) {
         setErrorModal({ title: "Save Error", message: error.message });
       } finally {
         setIsSaveLoading(false);
       }
-    };  
+    };
+    
+    const fetchNewPurchasesInvoice = async () => {
+        try {
+          const requestBody = {
+            customerId: Number(customerId),
+            userId,
+            locationId,
+            id: ""
+          };
+    
+          const response = await fetch(NewPurchases, {
+            method: "POST",
+            headers: { "Accept": "text/plain", "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody),
+          });
+    
+          const data = await response.json();
+          if (data.success) {
+            localStorage.setItem("purchaseId", data.data.purchaseId);
+            // setDocNo(data.data.docNo);
+          } else {
+            throw new Error(data.errorMessage || "Failed to create new purchases invoice.");
+          }
+        } catch (error) {
+          setErrorModal({ title: "Purchases Invoice Error", message: error.message });
+        }
+      };
 
   const customStyles = {
     control: (provided, state) => ({
