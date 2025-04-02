@@ -4,6 +4,7 @@ import { GetCounterSessionRecords, GetCounterSummaryReport, GetCashTransactionsR
 import ErrorModal from "../modals/ErrorModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
 import PaymentModal from "../modals/PaymentModal";
+import ReportSelectionModal from "../modals/ReportSelectionModel";
 
 const TransactionsInquiry = () => {
   const [activeTab, setActiveTab] = useState("Counter Session");
@@ -45,6 +46,10 @@ const TransactionsInquiry = () => {
     transactionId: null,
     type: null,
   });
+  const [reportSelectionModal, setReportSelectionModal] = useState({
+    isOpen: false,
+    docId: null
+  })
   const [loading, setLoading] = useState(false); 
 
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -399,7 +404,6 @@ const TransactionsInquiry = () => {
     setPaymentModalOpen(true);
   };
   
-  
   const closePaymentModal = () => {
     setSelectedInvoice(null);
     setPaymentModalOpen(false);
@@ -421,6 +425,12 @@ const TransactionsInquiry = () => {
         }
         onCancel={() => setConfirmationModal({ isOpen: false, transactionId: null, type: null })}
       />
+      <ReportSelectionModal 
+      isOpen={reportSelectionModal.isOpen} 
+      onCancel={() => setReportSelectionModal({isOpen: false, docId: null})}
+      docId={reportSelectionModal.docId}
+      customerId={customerId} />
+                    
 
       <nav className="flex">
         {["Counter Session", "Sales Invoice", "Purchases Invoice", "Stock Adjustment", "Cash Transactions"].map((tab) => ( 
@@ -438,7 +448,7 @@ const TransactionsInquiry = () => {
       
       {activeTab === "Counter Session" && <CounterSessionTable tableData={tableData} expandedRows={expandedRows} toggleExpandRow={toggleExpandRow} exportReport={exportReport} loading={loading} pagination={pagination[activeTab]}/>}
       {activeTab === "Cash Transactions" && <CashTransactionsTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}/>}
-      {activeTab === "Sales Invoice" && <SalesInvoiceTable tableData={tableData} setConfirmationModal={setConfirmationModal} loading={loading} pagination={pagination[activeTab]}
+      {activeTab === "Sales Invoice" && <SalesInvoiceTable tableData={tableData} setConfirmationModal={setConfirmationModal} setReportSelectionModal={setReportSelectionModal} loading={loading} pagination={pagination[activeTab]}
         openPaymentModal={openPaymentModal}
         closePaymentModal={closePaymentModal}
         paymentModalOpen={paymentModalOpen}
@@ -646,8 +656,9 @@ const CashTransactionsTable = ({ tableData, setConfirmationModal, loading, pagin
   );
 };
 
-const SalesInvoiceTable = ({ tableData, loading, pagination, setConfirmationModal, openPaymentModal }) => {
+const SalesInvoiceTable = ({ tableData, loading, pagination, setConfirmationModal, setReportSelectionModal,openPaymentModal }) => {
   const [expandedRows, setExpandedRows] = useState({});
+
 
   const toggleExpandRow = (index) => {
     setExpandedRows((prev) => ({
@@ -655,6 +666,8 @@ const SalesInvoiceTable = ({ tableData, loading, pagination, setConfirmationModa
       [index]: !prev[index],
     }));
   };
+
+  
 
   return (
     <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
@@ -715,6 +728,15 @@ const SalesInvoiceTable = ({ tableData, loading, pagination, setConfirmationModa
                         <CheckCircle size={14} />
                       </button>
                     )}
+                    {row.hasReport && (
+                      <button
+                      className="text-blue-500 bg-transparent p-1"
+                      onClick={() => setReportSelectionModal({isOpen: true, docId: row.salesId})}
+                      >
+                        <FileText size={14} />
+                      </button>
+                    )}
+                    
                     {!row.isVoid && !row.isComplete && (
                       <button
                         className="text-blue-500 bg-transparent p-1"

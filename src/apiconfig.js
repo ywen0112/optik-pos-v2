@@ -125,3 +125,6 @@ export const AuditLogApi = `${ApiBaseUrl}AuditLog/`;
 export const GetAuditLog = `${AuditLogApi}GetRecords`;
 export const GetAllAuditChangeType = `${AuditLogApi}GetAllAuditChangeType`;
 
+//Report
+export const ReportApi = `${ApiBaseUrl}Report/`;
+export const GetReportSelectionApi = `${ReportApi}GetReportsSelection`

@@ -750,7 +750,6 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
           setMultiPaymentMethods([]);
           setOutstandingOrChange(0);
           setIsOutstanding(false);
-          fetchNewSalesInvoice()
         }
       });
       openJobSheetForm(salesId);
@@ -780,7 +779,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       });
     }
     const fileId = data.data.fileId
-    const reportUrl = `${ReportBaseUrl}/reporting/ReportViewer/OptikPOS/${customerId}/Job Sheet Form/${fileId}`
+    const reportUrl = `${ReportBaseUrl}reporting/ReportViewer/OptikPOS/${customerId}/Job Sheet Form/${fileId}`
     window.open(reportUrl);
   }
 
