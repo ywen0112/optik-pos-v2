@@ -561,9 +561,9 @@ const CounterSessionTable = ({ tableData, expandedRows, toggleExpandRow, exportR
                   <button className="text-green-500 bg-transparent px-0" onClick={() => toggleExpandRow(index)}>
                     {expandedRows[index] ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
-                  <button className="text-blue-500 bg-transparent" onClick={() => exportReport(row.counterSessionId)}>
+                  {/* <button className="text-blue-500 bg-transparent" onClick={() => exportReport(row.counterSessionId)}>
                     <FileText size={14} />
-                  </button>
+                  </button> */}
                 </td>
               </tr>
               {expandedRows[index] && (
