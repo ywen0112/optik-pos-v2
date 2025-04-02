@@ -1,6 +1,6 @@
 export const ApiBaseUrl = "https://optikposwebsiteapi.absplt.com/";
 // export const ApiBaseUrl = "http://localhost:1014/";
-export const ReportBaseUrl = "https://report.absplt.com";
+export const ReportBaseUrl = "https://report.absplt.com/";
 // export const ReportBaseUrl = "http://localhost:7254/";
 
 //Users
