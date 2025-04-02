@@ -22,9 +22,6 @@ const Transactions = () => {
   const [notificationModal, setNotificationModal] = useState({ isOpen: false, title: "", message: "", onClose: null });
   const [transactionAmount, setTransactionAmount] = useState("");
   const [transactionDescription, setTransactionDescription] = useState("");
-  const [salesId, setSalesId] = useState(null);
-  const [docNo, setDocNo] = useState(null);
-  const [purchasesId, setPurchasesId] = useState(null);
   // const [creditNoteId, setCreditNoteId] = useState(null);
   const [closingBalanceModal, setClosingBalanceModal] = useState(false);
   const [sessionDetailsModal, setSessionDetailsModal] = useState(false);
@@ -52,6 +49,7 @@ const Transactions = () => {
     }
     else if (activeTab === "Sales Invoice") {
       fetchNewSalesInvoice();
+      console.log(localStorage.getItem("salesId"));
     }
     else if (activeTab === "Purchases Invoice") {
       fetchNewPurchasesInvoice();
@@ -209,8 +207,8 @@ const Transactions = () => {
 
       const data = await response.json();
       if (data.success) {
-        setSalesId(data.data.salesId);
-        setDocNo(data.data.docNo);
+        localStorage.setItem("salesId", data.data.salesId);
+        // localStorage.setItem("salesDocNo", data.data.docNo);
       } else {
         throw new Error(data.errorMessage || "Failed to create new sales invoice.");
       }
@@ -239,8 +237,8 @@ const Transactions = () => {
 
       const data = await response.json();
       if (data.success) {
-        setPurchasesId(data.data.purchaseId);
-        setDocNo(data.data.docNo);
+        localStorage.setItem("purchaseId", data.data.purchaseId);
+        // setDocNo(data.data.docNo);
       } else {
         throw new Error(data.errorMessage || "Failed to create new purchases invoice.");
       }
@@ -481,11 +479,11 @@ const handleConfirmCloseCounter = async () => {
               </div>
             ) : activeTab === "Sales Invoice" ? (
               <div className="w-full h-full bg-white shadow-md p-4   rounded-md mx-auto mb-4">
-               <SalesInvoice salesId={salesId} docNo={docNo} counterSession={counterSession} setCounterSession={setCounterSession}/>
+               <SalesInvoice counterSession={counterSession} setCounterSession={setCounterSession}/>
               </div>
             ) : activeTab === "Purchases Invoice" ? (
               <div className="w-full h-full bg-white shadow-md p-4 rounded-md mx-auto">
-               <PurchasesInvoice purchasesId={purchasesId} docNo={docNo} counterSession={counterSession} setCounterSession={setCounterSession}/>
+               <PurchasesInvoice counterSession={counterSession} setCounterSession={setCounterSession}/>
               </div>
             // ) : activeTab === "Credit Note" ? (
             //   <div className="w-full h-full bg-white shadow-md p-6 rounded-md mx-auto">

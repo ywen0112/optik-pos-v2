@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
-import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales, SaveSalesPayment, GetDebtorPreviousEyeProfile, NewEyePower, SaveEyePower, GetJobSheetForm, ReportBaseUrl } from "../apiconfig";
+import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales, SaveSalesPayment, GetDebtorPreviousEyeProfile, NewEyePower, SaveEyePower, GetJobSheetForm, ReportBaseUrl, NewSales } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
 import NotificationModal from "../modals/NotificationModal";
 
-const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
+const SalesInvoice = ({ setCounterSession }) => {
   const customerId = localStorage.getItem("customerId");
   const userId = localStorage.getItem("userId");
   const locationId = localStorage.getItem("locationId");
+  const salesId = localStorage.getItem("salesId");
+  // const salesDocNo = localStorage.getItem("salesDocNo");
   const [debtorOptions, setDebtorOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [agentOptions, setAgentOptions] = useState([]);
@@ -654,13 +656,13 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         customerId: Number(customerId),
         userId: selectedAgent?.value || userId,
         locationId: selectedLocation?.value || locationId,
-        id: ""
+        id: salesId,
       },
       salesId,
-      docNo,
+      docDate: localISOTime,
+      // docNo: salesDocNo,
       debtorId: selectedDebtor?.value || "",
       debtorName: companyName,
-      docDate: localISOTime,
       locationId: selectedLocation?.value || locationId,
       remark: "",
       total: parseFloat(total.toFixed(2)),
@@ -720,10 +722,6 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         message: "Sales invoice saved successfully.",
         onClose: () => {
           setNotificationModal({ isOpen: false });
-          setSelectedDebtor(null);
-          setCompanyName("");
-          setSelectedLocation(null);
-          setSelectedAgent(null);
           setSelectedPaymentType(null);
           setInvoiceItems([
             {
@@ -750,9 +748,39 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
           setMultiPaymentMethods([]);
           setOutstandingOrChange(0);
           setIsOutstanding(false);
-          fetchNewSalesInvoice()
+          setSelectedDebtor(null);
+          setCompanyName("");
+
+          const locationOptions = data.data.locationRecords?.map((location) => ({
+            value: location.locationId,
+            label: `${location.locationCode} - ${location.description}`
+          }));
+          setLocationOptions(locationOptions);
+          if (locationId) {
+            const matchedLocation = locationOptions.find(loc => loc.value === locationId);
+            if (matchedLocation) {
+              setSelectedLocation(matchedLocation);
+            } else {
+              setSelectedLocation(null);
+            }
+          }
+
+          const agentOptions = data.data.userRecords?.map((agent) => ({
+            value: agent.userId,
+            label: agent.userName
+          }));
+          setAgentOptions(agentOptions);
+          if (userId) {
+            const matchedAgent = agentOptions.find(agent => agent.value === userId);
+            if (matchedAgent) {
+              setSelectedAgent(matchedAgent);
+            } else {
+              setSelectedAgent(null);
+            }
+          }
         }
       });
+      fetchNewSalesInvoice();
       openJobSheetForm(salesId);
     } catch (error) {
       setErrorModal({ title: "Save Error", message: error.message });
@@ -760,6 +788,33 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       setIsSaveLoading(false);
     }
   };
+
+  const fetchNewSalesInvoice = async () => {
+      try {
+        const requestBody = {
+          customerId: Number(customerId),
+          userId,
+          locationId,
+          id: ""
+        };
+  
+        const response = await fetch(NewSales, {
+          method: "POST",
+          headers: { "Accept": "text/plain", "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        });
+  
+        const data = await response.json();
+        if (data.success) {
+          localStorage.setItem("salesId", data.data.salesId);
+          // localStorage.setItem("salesDocNo", data.data.docNo);
+        } else {
+          throw new Error(data.errorMessage || "Failed to create new sales invoice.");
+        }
+      } catch (error) {
+        setErrorModal({ title: "Sales Invoice Error", message: error.message });
+      } 
+    };
 
   const openJobSheetForm = async (salesId) => {
     const response = await fetch(`${GetJobSheetForm}?SalesId=${salesId}`,
