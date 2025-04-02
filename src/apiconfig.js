@@ -1,4 +1,7 @@
-export const ApiBaseUrl = "https://optikposstagingwebsiteapi.absplt.com/";
+export const ApiBaseUrl = "https://optikposwebsiteapi.absplt.com/";
+// export const ApiBaseUrl = "http://localhost:1014/";
+export const ReportBaseUrl = "https://report.absplt.com";
+// export const ReportBaseUrl = "http://localhost:7254/";
 
 //Users
 export const UsersApi = `${ApiBaseUrl}Users/`;
@@ -63,6 +66,7 @@ export const SaveSales = `${SalesApi}Save`;
 export const SaveSalesPayment = `${SalesApi}SaveSalesPayment`;
 export const GetSales = `${SalesApi}GetRecords`;
 export const VoidSales = `${SalesApi}Void`;
+export const GetJobSheetForm = `${SalesApi}GetJobSheetForm`
 
 //Purchases
 export const PurchasesApi = `${ApiBaseUrl}Purchases/`;

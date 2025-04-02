@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
-import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales, SaveSalesPayment, GetDebtorPreviousEyeProfile, NewEyePower, SaveEyePower } from "../apiconfig";
+import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales, SaveSalesPayment, GetDebtorPreviousEyeProfile, NewEyePower, SaveEyePower, GetJobSheetForm, ReportBaseUrl } from "../apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
 import NotificationModal from "../modals/NotificationModal";
@@ -25,15 +25,15 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
     { value: "Fixed", label: "Fixed" }
   ];
   const [invoiceItems, setInvoiceItems] = useState([
-    { 
-      itemCode: "", 
-      description: "", 
-      uom: "", 
-      unitPrice: 0, 
-      quantity: 0, 
-      discountType: "Percentage", 
-      discount: 0, 
-      subtotal: 0 
+    {
+      itemCode: "",
+      description: "",
+      uom: "",
+      unitPrice: 0,
+      quantity: 0,
+      discountType: "Percentage",
+      discount: 0,
+      subtotal: 0
     }
   ]);
   const [selectedDebtor, setSelectedDebtor] = useState(null);
@@ -116,7 +116,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
     setSelectedDebtor(selectedOption);
     const debtor = debtorOptions.find(d => d.value === selectedOption.value);
     if (debtor) {
-      const companyNameFromDebtor = debtor.label.split(" - ")[1]; 
+      const companyNameFromDebtor = debtor.label.split(" - ")[1];
       setCompanyName(companyNameFromDebtor);
     }
   };
@@ -206,7 +206,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
 
     fetchAgents();
   }, []);
-  
+
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -249,73 +249,73 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
 
   const handleItemChange = (index, newValue) => {
     if (!newValue) return;
-  
+
     let selectedItem = itemOptions.find(item => item.value === newValue.value);
-  
+
     if (!selectedItem) {
       selectedItem = {
         value: newValue.value,
         label: newValue.label,
         description: "",
-        itemUOMs: [] 
+        itemUOMs: []
       };
-  
-      setItemOptions([...itemOptions, selectedItem]); 
+
+      setItemOptions([...itemOptions, selectedItem]);
     }
-  
+
     const description = selectedItem.description || "";
     const uomOptions = selectedItem.itemUOMs.map(uom => ({
       value: uom.itemUOMId,
       label: uom.uom,
       unitPrice: uom.unitPrice
     }));
-  
+
     const updatedItems = [...invoiceItems];
     updatedItems[index] = {
       ...updatedItems[index],
       itemId: selectedItem.value,
       itemCode: selectedItem.label,
       description: description,
-      uomOptions: uomOptions, 
+      uomOptions: uomOptions,
       uom: "",
       unitPrice: 0
     };
-  
+
     setInvoiceItems(updatedItems);
     calculateTotals(updatedItems);
-  };  
+  };
 
   const handleUomChange = (index, newValue) => {
     if (!newValue) return;
-  
+
     const updatedItems = [...invoiceItems];
     const selectedItem = updatedItems[index];
-  
+
     let label = typeof newValue === "string" ? newValue : newValue.label;
     let value = typeof newValue === "string" ? newValue : newValue.value;
-  
+
     let selectedUOM = selectedItem.uomOptions.find(u => u.value === value);
-  
+
     if (!selectedUOM) {
       selectedUOM = {
         value,
         label,
         unitPrice: 0,
       };
-  
+
       selectedItem.uomOptions = [...selectedItem.uomOptions, selectedUOM];
     }
-  
+
     updatedItems[index] = {
       ...selectedItem,
       uom: selectedUOM.label,
       unitPrice: selectedUOM.unitPrice,
     };
-  
+
     setInvoiceItems(updatedItems);
     calculateTotals(updatedItems);
   };
-  
+
   const addNewItem = () => {
     setInvoiceItems([
       ...invoiceItems,
@@ -342,7 +342,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
 
   const handleRowChange = (index, field, value) => {
     const updatedItems = [...invoiceItems];
-  
+
     if ((field === "unitPrice" || field === "discount") && parseFloat(value) < 0) return;
     if (field === "quantity" && parseInt(value) < 0) return;
 
@@ -353,15 +353,15 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
     } else {
       updatedItems[index][field] = value;
     }
-  
+
     const item = updatedItems[index];
     const discountAmount =
       item.discountType === "Percentage"
         ? (item.unitPrice * item.quantity * item.discount) / 100
         : item.discount;
-  
+
     item.subtotal = item.unitPrice * item.quantity - discountAmount;
-  
+
     setInvoiceItems(updatedItems);
     calculateTotals(updatedItems);
   };
@@ -372,15 +372,15 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
   };
 
   const handlePaymentTypeChange = (option) => {
-    if (!isPaymentConfirmed) { 
+    if (!isPaymentConfirmed) {
       setSelectedPaymentType(option);
-  
+
       if (option.value === "Cash Payment") {
         setIsPaymentModalOpen(true);
       } else if (option.value === "Card Payment") {
-        setIsCardPaymentModalOpen(true);  
+        setIsCardPaymentModalOpen(true);
       } else if (option.value === "Bank Transfer") {
-        setIsBankTransferModalOpen(true);  
+        setIsBankTransferModalOpen(true);
       } else if (option.value === "Multi Payment") {
         setIsMultiPaymentModalOpen(true);
       }
@@ -389,17 +389,17 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
 
   const handleAmountChange = (e) => {
     let value = e.target.value;
-  
+
     if (value === "") {
       setEnteredAmount("");
       return;
     }
-  
+
     const floatValue = parseFloat(value);
     if (!isNaN(floatValue)) {
       const fixedValue = parseFloat(floatValue.toFixed(2));
       setEnteredAmount(fixedValue);
-  
+
       if (fixedValue < total) {
         setIsOutstanding(true);
         setOutstandingOrChange(total - fixedValue);
@@ -416,23 +416,23 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       return;
     }
 
-    setIsConfirmationModalOpen(true); 
+    setIsConfirmationModalOpen(true);
   };
 
   const handleConfirmPayment = async () => {
-    setIsSavingPayment(true); 
+    setIsSavingPayment(true);
 
     const now = new Date();
     const offset = now.getTimezoneOffset() * 60000;
     const localISOTime = new Date(now - offset).toISOString().slice(0, 19);
-  
+
     let payments = [];
-  
+
     if (selectedPaymentType?.value === "Multi Payment") {
       payments = multiPaymentMethods.map((method) => {
         let reference = "";
         let remark = "";
-  
+
         if (method.type === "Bank Transfer") {
           remark = "Method: Bank Transfer";
           reference = `bank reference no： ${method.bankRef || ""} ｜ receipt reference： ${method.bankReceiptRef || ""}`;
@@ -443,7 +443,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         } else {
           remark = `Method: ${method.type}`;
         }
-  
+
         return {
           remark,
           reference,
@@ -453,7 +453,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
     } else {
       let reference = "";
       let remark = "";
-  
+
       if (selectedPaymentType?.value === "Bank Transfer") {
         remark = "Method: Bank Transfer";
         reference = `bank reference no： ${bankRef || ""} ｜ receipt reference： ${bankReceiptRef || ""}`;
@@ -463,15 +463,15 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         reference = `approval code： ${approvalCode || ""} ｜ receipt reference： ${cardReceiptRef || ""}`;
       } else {
         remark = `Method: ${selectedPaymentType?.value}`;
-      }  
-  
+      }
+
       payments.push({
         remark: remark,
         reference: reference,
         amount: parseFloat(parseFloat(enteredAmount).toFixed(2)),
       });
     }
-  
+
     const payload = {
       actionData: {
         customerId: Number(customerId),
@@ -484,7 +484,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       targetDocId: salesId,
       payment: payments
     };
-  
+
     try {
       const response = await fetch(SaveSalesPayment, {
         method: "POST",
@@ -494,25 +494,25 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         },
         body: JSON.stringify(payload)
       });
-  
+
       const data = await response.json();
-  
+
       if (!data.success) {
         if (data.errorMessage === "There is currently no active counter session.") {
           setErrorModal({
             title: "Session Error",
             message: data.errorMessage,
             onClose: () => {
-              setCounterSession(null); 
-              setErrorModal({ title: "", message: "", onClose: null }); 
+              setCounterSession(null);
+              setErrorModal({ title: "", message: "", onClose: null });
             }
-          });          
+          });
         } else {
           throw new Error(data.errorMessage || "Payment failed.");
         }
         return;
       }
-  
+
       setIsPaymentConfirmed(true);
       setIsConfirmationModalOpen(false);
       setIsCardPaymentModalOpen(false);
@@ -532,9 +532,9 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         message: error.message
       });
     } finally {
-      setIsSavingPayment(false); 
+      setIsSavingPayment(false);
     }
-  };   
+  };
 
   const closePayment = () => {
     setIsPaymentModalOpen(false);
@@ -558,53 +558,53 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       { type: "", amount: "", cardReceiptRef: "", cardNumber: "", approvalCode: "", bankReceiptRef: "", bankRef: "" }
     ]);
   };
-  
+
   const handleMultiPaymentTypeChange = (index, option) => {
     const updatedPayments = [...multiPaymentMethods];
     updatedPayments[index].type = option.value;
     setMultiPaymentMethods(updatedPayments);
   };
-  
+
   const handleMultiPaymentFieldChange = (index, field, value) => {
     const updatedPayments = [...multiPaymentMethods];
     updatedPayments[index][field] = value;
     setMultiPaymentMethods(updatedPayments);
   };
-  
+
   const handleMultiPaymentAmountChange = (index, value) => {
     const floatValue = parseFloat(value);
     const fixedAmount = !isNaN(floatValue) ? parseFloat(floatValue.toFixed(2)) : 0;
-  
+
     const updatedPayments = [...multiPaymentMethods];
     updatedPayments[index].amount = fixedAmount;
     setMultiPaymentMethods(updatedPayments);
-  
+
     const totalPaid = updatedPayments.reduce(
       (sum, payment) => sum + (parseFloat(payment.amount) || 0),
       0
     );
     const newOutstandingOrChange = totalPaid - total;
-  
+
     setOutstandingOrChange(newOutstandingOrChange);
     setIsOutstanding(newOutstandingOrChange < 0);
   };;
-  
+
   const removePaymentMethod = (index) => {
     const updatedPayments = multiPaymentMethods.filter((_, i) => i !== index);
     setMultiPaymentMethods(updatedPayments);
-  
+
     const totalPaid = updatedPayments.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
     const newOutstandingOrChange = totalPaid - total;
-  
+
     setOutstandingOrChange(newOutstandingOrChange);
     setIsOutstanding(newOutstandingOrChange < 0);
   };
-  
+
   const confirmMultiPayment = () => {
     const hasNegativeAmount = multiPaymentMethods.some(
       (payment) => parseFloat(payment.amount) < 0
     );
-  
+
     if (hasNegativeAmount) {
       setErrorModal({
         title: "Invalid Amount",
@@ -615,7 +615,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
 
     const totalPaid = multiPaymentMethods.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
     const newOutstandingOrChange = totalPaid - total;
-  
+
     setOutstandingOrChange(newOutstandingOrChange);
     setIsOutstanding(newOutstandingOrChange < 0);
 
@@ -644,11 +644,11 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
   const handleConfirmSave = async () => {
     setIsSaveLoading(true);
     setIsSaveConfirmationModalOpen(false);
-  
+
     const now = new Date();
     const offset = now.getTimezoneOffset() * 60000;
     const localISOTime = new Date(now - offset).toISOString().slice(0, 19);
-  
+
     const requestBody = {
       actionData: {
         customerId: Number(customerId),
@@ -670,7 +670,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
           item.discountType === "Percentage"
             ? (item.unitPrice * item.quantity * item.discount) / 100
             : item.discount;
-  
+
         return {
           itemId: item.itemId || "",
           itemUOMId: item.uomOptions?.find((u) => u.label === item.uom)?.value || "",
@@ -680,12 +680,12 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
           qty: item.quantity,
           unitPrice: parseFloat(item.unitPrice.toFixed(2)),
           discount: `${item.discount}`,
-          discountAmount: parseFloat(discountAmount.toFixed(2)), 
+          discountAmount: parseFloat(discountAmount.toFixed(2)),
           subTotal: parseFloat(item.subtotal.toFixed(2))
         };
       })
     };
-  
+
     try {
       const response = await fetch(SaveSales, {
         method: "POST",
@@ -695,9 +695,9 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         },
         body: JSON.stringify(requestBody)
       });
-  
+
       const data = await response.json();
-  
+
       if (!data.success) {
         if (data.errorMessage === "There is currently no active counter session.") {
           setErrorModal({
@@ -713,7 +713,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         }
         return;
       }
-  
+
       setNotificationModal({
         isOpen: true,
         title: "Success",
@@ -750,15 +750,40 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
           setMultiPaymentMethods([]);
           setOutstandingOrChange(0);
           setIsOutstanding(false);
+          fetchNewSalesInvoice()
         }
       });
+      openJobSheetForm(salesId);
     } catch (error) {
       setErrorModal({ title: "Save Error", message: error.message });
     } finally {
       setIsSaveLoading(false);
     }
-  }; 
-  
+  };
+
+  const openJobSheetForm = async (salesId) => {
+    const response = await fetch(`${GetJobSheetForm}?SalesId=${salesId}`,
+      {
+        method: "GET",
+        headers: { accept: "text/plain" }
+      }
+    );
+    const data = await response.json();
+
+    if(!data.success){
+      setErrorModal({
+        title: "Report Empty",
+        message: data.errorMessage,
+        onClose: () => {
+          setErrorModal({ title: "", message: "", onClose: null });
+        }
+      });
+    }
+    const fileId = data.data.fileId
+    const reportUrl = `${ReportBaseUrl}/reporting/ReportViewer/OptikPOS/${customerId}/Job Sheet Form/${fileId}`
+    window.open(reportUrl);
+  }
+
   useEffect(() => {
     const fetchEyeProfile = async () => {
       if (activeTab === "Eye Powers" && selectedDebtor?.value) {
@@ -770,7 +795,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
             locationId,
             id: selectedDebtor.value.toString()
           };
-  
+
           const response = await fetch(GetDebtorPreviousEyeProfile, {
             method: "POST",
             headers: {
@@ -779,7 +804,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
             },
             body: JSON.stringify(payload)
           });
-  
+
           const data = await response.json();
           if (data.success) {
             setEyePower(data.data);
@@ -795,7 +820,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         }
       }
     };
-  
+
     fetchEyeProfile();
   }, [activeTab, selectedDebtor]);
 
@@ -803,13 +828,13 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
     setNewEyePower(prev => {
       const updated = { ...prev };
       const keys = fieldPath.split(".");
-  
+
       let current = updated;
       for (let i = 0; i < keys.length - 1; i++) {
         current[keys[i]] = current[keys[i]] || {};
         current = current[keys[i]];
       }
-  
+
       current[keys[keys.length - 1]] = value;
       return updated;
     });
@@ -825,7 +850,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
           locationId,
           id: ""
         };
-  
+
         const response = await fetch(NewEyePower, {
           method: "POST",
           headers: {
@@ -834,7 +859,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
           },
           body: JSON.stringify(payload)
         });
-  
+
         const data = await response.json();
         if (data.success) {
           setNewEyePower(data.data);
@@ -852,21 +877,21 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
 
   useEffect(() => {
     fetchNewEyePower();
-  }, [activeTab, selectedDebtor]);  
+  }, [activeTab, selectedDebtor]);
 
   const handleConfirmSaveEyePower = async () => {
     setIsSaveEyePowerConfirmModalOpen(false);
-  
+
     const now = new Date();
     const offset = now.getTimezoneOffset() * 60000;
     const localISOTime = new Date(now - offset).toISOString().slice(0, 19);
-  
+
     const payload = {
       actionData: {
         customerId: Number(customerId),
         userId,
         locationId,
-        id: newEyePower?.id ?? "" 
+        id: newEyePower?.id ?? ""
       },
       eyePowerId: newEyePower?.eyePowerId ?? "",
       debtorId: selectedDebtor?.value ?? "",
@@ -878,7 +903,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       actualGlassProfile: newEyePower.actualGlassProfile ?? {},
       userDefinedTime: localISOTime
     };
-  
+
     try {
       const response = await fetch(SaveEyePower, {
         method: "POST",
@@ -888,7 +913,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         },
         body: JSON.stringify(payload)
       });
-  
+
       const data = await response.json();
       if (data.success) {
         setNotificationModal({
@@ -897,7 +922,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
           message: "Eye power saved successfully.",
           onClose: () => {
             setNotificationModal({ isOpen: false });
-            fetchNewEyePower(); 
+            fetchNewEyePower();
           }
         });
       } else {
@@ -909,17 +934,17 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         message: error.message
       });
     }
-  };  
+  };
 
   const customStyles = {
     control: (provided, state) => ({
       ...provided,
-      border: "1px solid #ccc", 
+      border: "1px solid #ccc",
       padding: "1px",
-      fontSize: "0.875rem", 
-      width: "100%", 
+      fontSize: "0.875rem",
+      width: "100%",
       minHeight: "2.5rem",
-      backgroundColor: state.isDisabled ? "#f9f9f9" : "white", 
+      backgroundColor: state.isDisabled ? "#f9f9f9" : "white",
       cursor: state.isDisabled ? "not-allowed" : "pointer",
     }),
     input: (provided) => ({
@@ -932,9 +957,9 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
     }),
     menu: (provided) => ({
       ...provided,
-      fontSize: "0.875rem", 
-      zIndex: 9999, 
-      position: "absolute",  maxHeight: "10.5rem",
+      fontSize: "0.875rem",
+      zIndex: 9999,
+      position: "absolute", maxHeight: "10.5rem",
       overflowY: "auto",
       WebkitOverflowScrolling: "touch",
       pointerEvents: "auto",
@@ -942,17 +967,17 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
     menuList: (provided) => ({
       ...provided,
       maxHeight: "10.5rem",
-      overflowY: "auto", 
+      overflowY: "auto",
       WebkitOverflowScrolling: "touch",
     }),
     menuPortal: (provided) => ({
       ...provided,
-      zIndex: 9999, 
+      zIndex: 9999,
     }),
     option: (provided, state) => ({
       ...provided,
-      fontSize: "0.875rem", 
-      padding: "4px 8px", 
+      fontSize: "0.875rem",
+      padding: "4px 8px",
       backgroundColor: state.isSelected ? "#f0f0f0" : "#fff",
       color: state.isSelected ? "#333" : "#000",
       "&:hover": {
@@ -971,8 +996,8 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
             ? errorModal.onClose
             : () => setErrorModal({ title: "", message: "" })
         }
-      /> 
-        <ConfirmationModal 
+      />
+      <ConfirmationModal
         isOpen={isSaveConfirmationModalOpen}
         title="Confirm Save"
         message="Are you sure you want to proceed with saving this invoice?"
@@ -988,16 +1013,15 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         message={notificationModal.message}
         onClose={notificationModal.onClose}
       />
-      
-      <h2 className="text-xl font-bold text-secondary">Sales Invoice</h2>    
+
+      <h2 className="text-xl font-bold text-secondary">Sales Invoice</h2>
       <div className="flex border-b">
         {["Sales Invoice", "Eye Powers"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`relative text-xs font-medium bg-transparent border-none ${
-              activeTab === tab ? "text-secondary font-semibold after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-primary" : "text-gray-500 hover:text-secondary"
-            }`}
+            className={`relative text-xs font-medium bg-transparent border-none ${activeTab === tab ? "text-secondary font-semibold after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-primary" : "text-gray-500 hover:text-secondary"
+              }`}
           >
             {tab}
           </button>
@@ -1005,7 +1029,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
       </div>
 
       {activeTab === "Sales Invoice" && (
-        <div className="flex flex-col h-[calc(85vh-200px)]">   
+        <div className="flex flex-col h-[calc(85vh-200px)]">
           <div className="grid grid-cols-5 gap-2 mt-4 ">
             <div>
               <label className="block text-xs font-semibold text-secondary">Debtor</label>
@@ -1021,10 +1045,10 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
             </div>
             <div>
               <label className="block text-xs font-semibold text-secondary">Company Name</label>
-              <input 
-                type="text" 
-                className="border border-gray-300 rounded p-2 w-full text-sm text-secondary bg-white" 
-                placeholder="Company Name" 
+              <input
+                type="text"
+                className="border border-gray-300 rounded p-2 w-full text-sm text-secondary bg-white"
+                placeholder="Company Name"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
               />
@@ -1110,10 +1134,10 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                         />
                       </td>
                       <td className="w-32">
-                        <input 
-                          type="text" 
-                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                          value={item.description} 
+                        <input
+                          type="text"
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white"
+                          value={item.description}
                           onChange={(e) => handleRowChange(index, "description", e.target.value)}
                           disabled={isPaymentConfirmed}
                         />
@@ -1131,25 +1155,25 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                           classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0}
                         />
                       </td>
-                      <td className="w-32"> 
-                        <input 
-                          type="number" 
+                      <td className="w-32">
+                        <input
+                          type="number"
                           min={0}
                           step="0.01"
-                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                          value={item.unitPrice} 
-                          onChange={(e) => handleRowChange(index, "unitPrice", parseFloat(e.target.value) || 0)} 
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white"
+                          value={item.unitPrice}
+                          onChange={(e) => handleRowChange(index, "unitPrice", parseFloat(e.target.value) || 0)}
                           disabled={isPaymentConfirmed}
                         />
                       </td>
                       <td className="w-24">
-                        <input 
-                          type="number" 
+                        <input
+                          type="number"
                           min={0}
                           step="1"
-                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                          value={item.quantity} 
-                          onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 0)} 
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white"
+                          value={item.quantity}
+                          onChange={(e) => handleRowChange(index, "quantity", parseInt(e.target.value) || 0)}
                           disabled={isPaymentConfirmed}
                         />
                       </td>
@@ -1165,53 +1189,53 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                         />
                       </td>
                       <td className="w-32">
-                        <input 
-                          type="number" 
+                        <input
+                          type="number"
                           min={0}
                           step="0.01"
-                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
-                          value={item.discount} 
-                          onChange={(e) => handleRowChange(index, "discount", parseFloat(e.target.value) || 0)} 
+                          className="border border-gray-300 p-2 w-full rounded-md text-secondary bg-white"
+                          value={item.discount}
+                          onChange={(e) => handleRowChange(index, "discount", parseFloat(e.target.value) || 0)}
                           disabled={isPaymentConfirmed}
                         />
                       </td>
                       <td className="w-24">
-                      <input 
-                          className="bg-gray-100 border border-gray-300 p-2 w-full rounded-md text-secondary bg-white" 
+                        <input
+                          className="bg-gray-100 border border-gray-300 p-2 w-full rounded-md text-secondary bg-white"
                           value={item.subtotal.toFixed(2)}
                           disabled
                         />
                       </td>
                       <td className="w-12">
-                          <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} disabled={isPaymentConfirmed}>
-                              <Trash2 size={16} strokeWidth={1} />
-                          </button>                
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        <button className="p-1 text-red-500 bg-transparent hover:text-red-700 transition duration-200" onClick={() => removeItem(index)} disabled={isPaymentConfirmed}>
+                          <Trash2 size={16} strokeWidth={1} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-              <div className="border-t border-gray-300 bg-white px-2 py-2 mt-auto">
-                <div className="flex justify-between mb-2 text-sm font-bold text-secondary">
-                  <p className="text-sm font-bold text-secondary">Total: {total.toFixed(2)}</p>
-                  <p className="text-sm font-bold text-secondary">
-                    {isOutstanding
-                      ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}`
-                      : `Change: ${outstandingOrChange.toFixed(2)}`}
-                  </p>
-                </div>
-                <div className="flex justify-between mt-1 mb-4">
-                  <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
-                  <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
-                </div>
+            <div className="border-t border-gray-300 bg-white px-2 py-2 mt-auto">
+              <div className="flex justify-between mb-2 text-sm font-bold text-secondary">
+                <p className="text-sm font-bold text-secondary">Total: {total.toFixed(2)}</p>
+                <p className="text-sm font-bold text-secondary">
+                  {isOutstanding
+                    ? `Outstanding Balance: ${Math.abs(outstandingOrChange).toFixed(2)}`
+                    : `Change: ${outstandingOrChange.toFixed(2)}`}
+                </p>
+              </div>
+              <div className="flex justify-between mt-1 mb-4">
+                <button className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" onClick={confirmSave}>Save</button>
+                <button className="px-4 py-2 bg-red-500 text-white rounded-md text-sm">Cancel</button>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-      <ConfirmationModal 
+      <ConfirmationModal
         isOpen={isConfirmationModalOpen}
         title="Confirm Payment"
         message="Are you sure you want to proceed with this payment?"
@@ -1239,7 +1263,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
               step="0.01"
               value={enteredAmount}
               onChange={handleAmountChange}
-            />  
+            />
             <div className="flex justify-between mt-4">
               <button onClick={confirmPayment} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">
                 Confirm Payment
@@ -1256,7 +1280,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
           <div className="bg-white p-6 rounded-lg shadow-md w-fit">
             <h2 className="text-lg font-semibold text-secondary">Card Payment</h2>
-            
+
             <p className="text-sm mt-2 text-secondary">
               <strong>Total:</strong> {total.toFixed(2)}
             </p>
@@ -1271,8 +1295,8 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
               value={cardReceiptRef}
               onChange={(e) => setCardReceiptRef(e.target.value)}
             />
-           
-           <div className="grid grid-cols-3 gap-2 mt-2">
+
+            <div className="grid grid-cols-3 gap-2 mt-2">
               <input
                 type="text"
                 placeholder="Card Number"
@@ -1315,7 +1339,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
           <div className="bg-white p-6 rounded-lg shadow-md w-fit">
             <h2 className="text-lg font-semibold text-secondary">Bank Transfer</h2>
-            
+
             <p className="text-sm mt-2 text-secondary">
               <strong>Total:</strong> {total.toFixed(2)}
             </p>
@@ -1330,7 +1354,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
               value={bankReceiptRef}
               onChange={(e) => setBankReceiptRef(e.target.value)}
             />
-            
+
             <div className="grid grid-cols-2 gap-2 mt-2">
               <input
                 type="text"
@@ -1367,7 +1391,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
           <div className="bg-white p-6 rounded-lg shadow-md w-1/2">
             <h2 className="text-lg font-semibold text-secondary">Multi Payment</h2>
-            
+
             <p className="text-sm mt-2 text-secondary">
               <strong>Total:</strong> {total.toFixed(2)}
             </p>
@@ -1376,8 +1400,8 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
             </p>
 
             <div className="text-right">
-              <button 
-                onClick={addPaymentMethod} 
+              <button
+                onClick={addPaymentMethod}
                 className="p-1 bg-primary text-white rounded-md text-xs w-1/4 mt-1"
               >
                 Add Payment
@@ -1432,7 +1456,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                       value={payment.approvalCode}
                       onChange={(e) => handleMultiPaymentFieldChange(index, "approvalCode", e.target.value)}
                     />
-                    
+
                     <input
                       type="number"
                       placeholder="Enter Amount"
@@ -1473,8 +1497,8 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                   </div>
                 )}
 
-                <button 
-                  onClick={() => removePaymentMethod(index)} 
+                <button
+                  onClick={() => removePaymentMethod(index)}
                   className="px-3 py-1 bg-red-500 text-white rounded-md text-xs mt-2"
                 >
                   Remove
@@ -1698,7 +1722,7 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
                 </tbody>
               </table>
 
-              <ConfirmationModal 
+              <ConfirmationModal
                 isOpen={isSaveEyePowerConfirmModalOpen}
                 title="Confirm Save"
                 message="Are you sure you want to save this eye power data?"
@@ -1709,14 +1733,14 @@ const SalesInvoice = ({ salesId, docNo, setCounterSession }) => {
               />
 
               <div className="flex justify-between mt-4">
-                <button 
-                  className="px-4 py-2 bg-green-500 text-white rounded-md text-sm" 
+                <button
+                  className="px-4 py-2 bg-green-500 text-white rounded-md text-sm"
                   onClick={() => setIsSaveEyePowerConfirmModalOpen(true)}
                 >
                   Save
                 </button>
-                <button 
-                  className="px-4 py-2 bg-red-500 text-white rounded-md text-sm" 
+                <button
+                  className="px-4 py-2 bg-red-500 text-white rounded-md text-sm"
                   onClick={fetchNewEyePower}
                 >
                   Cancel
