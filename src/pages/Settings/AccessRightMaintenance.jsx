@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Pencil, Trash2, Eye } from "lucide-react";
-import { GetAccessRightRecords, NewAccessRight, EditAccessRight, SaveAccessRight, DeleteAccessRight } from "../apiconfig";
-import ErrorModal from "../modals/ErrorModal";
-import NotificationModal from "../modals/NotificationModal";
-import ConfirmationModal from "../modals/ConfirmationModal";
+import { GetAccessRightRecords, NewAccessRight, EditAccessRight, SaveAccessRight, DeleteAccessRight } from "../../apiconfig";
+import ErrorModal from "../../modals/ErrorModal";
+import NotificationModal from "../../modals/NotificationModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
 
 const AccessRightMaintenance = () => {
   const customerId = localStorage.getItem("customerId");

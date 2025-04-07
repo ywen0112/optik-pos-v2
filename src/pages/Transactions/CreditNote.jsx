@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
-import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords } from "../apiconfig";
-import ErrorModal from "../modals/ErrorModal";
-import ConfirmationModal from "../modals/ConfirmationModal";
+import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords } from "../../apiconfig";
+import ErrorModal from "../../modals/ErrorModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
 
 const CreditNote = ({ creditNoteId, docNo, counterSession, setCounterSession }) => {
   const customerId = localStorage.getItem("customerId");

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Pencil, Trash2, Eye } from "lucide-react";
-import { GetUsers, GetLocationRecords, GetAccessRightRecords, UpdateUser, DeleteUser, InviteUser } from "../apiconfig";
-import ErrorModal from "../modals/ErrorModal";
-import ConfirmationModal from "../modals/ConfirmationModal";
-import NotificationModal from "../modals/NotificationModal";
+import { GetUsers, GetLocationRecords, GetAccessRightRecords, UpdateUser, DeleteUser, InviteUser } from "../../apiconfig";
+import ErrorModal from "../../modals/ErrorModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
+import NotificationModal from "../../modals/NotificationModal";
 import Select from "react-select";
 
 const UserMaintenance = () => {

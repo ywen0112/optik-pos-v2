@@ -12,10 +12,10 @@ import {
   SaveEyePower,
   DeleteEyePower,
   NewEyePower
-} from "../apiconfig";
-import ErrorModal from "../modals/ErrorModal";
-import NotificationModal from "../modals/NotificationModal";
-import ConfirmationModal from "../modals/ConfirmationModal";
+} from "../../apiconfig";
+import ErrorModal from "../../modals/ErrorModal";
+import NotificationModal from "../../modals/NotificationModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
 import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";

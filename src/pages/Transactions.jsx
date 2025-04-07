@@ -4,8 +4,8 @@ import { OpenCounterSession, NewCashTransaction, NewSales, NewPurchases, NewCred
 import ErrorModal from "../modals/ErrorModal";
 import NotificationModal from "../modals/NotificationModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
-import SalesInvoice from "./SalesInvoice";
-import PurchasesInvoice from "./PurchasesInvoice";
+import SalesInvoice from "./Transactions/SalesInvoice";
+import PurchasesInvoice from "./Transactions/PurchasesInvoice";
 // import CreditNote from "./CreditNote";
 
 const Transactions = () => {

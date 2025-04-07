@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
-import { GetCreditorRecords, GetLocationRecords, GetUsers, GetItemRecords, SavePurchases, SavePurchasePayment, NewPurchases } from "../apiconfig";
-import ErrorModal from "../modals/ErrorModal";
-import ConfirmationModal from "../modals/ConfirmationModal";
-import NotificationModal from "../modals/NotificationModal";
+import { GetCreditorRecords, GetLocationRecords, GetUsers, GetItemRecords, SavePurchases, SavePurchasePayment, NewPurchases } from "../../apiconfig";
+import ErrorModal from "../../modals/ErrorModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
+import NotificationModal from "../../modals/NotificationModal";
 
 const PurchasesInvoice = ({ setCounterSession   }) => {
   const customerId = localStorage.getItem("customerId");
