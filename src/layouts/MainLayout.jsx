@@ -6,14 +6,14 @@ import Dashboard from "../pages/Dashboard";
 import Transactions from "../pages/Transactions";
 import TransactionsInquiry from "../pages/TransactionsInquiry";
 import AuditLogs from "../pages/AuditLogs";
-import CompanyProfile from "../pages/CompanyProfile";
+import CompanyProfile from "../pages/Settings/CompanyProfile";
 import Reports from "../pages/Reports";
-import UserMaintenance from "../pages/UserMaintenance";
-import AccessRightMaintenance from "../pages/AccessRightMaintenance";
-import DebtorMaintenance from "../pages/DebtorMaintenance";
-import CreditorMaintenance from "../pages/CreditorMaintenance";
-import LocationMaintenance from "../pages/LocationMaintenance";
-import ItemMaintenance from "../pages/ItemMaintenance";
+import UserMaintenance from "../pages/Settings/UserMaintenance";
+import AccessRightMaintenance from "../pages/Settings/AccessRightMaintenance";
+import DebtorMaintenance from "../pages/MasterData/DebtorMaintenance";
+import CreditorMaintenance from "../pages/MasterData/CreditorMaintenance";
+import LocationMaintenance from "../pages/MasterData/LocationMaintenance";
+import ItemMaintenance from "../pages/MasterData/ItemMaintenance";
 import UserProfile from "../pages/UserProfile"
 
 const MainLayout = ({ title }) => {

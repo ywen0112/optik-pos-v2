@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Eye, Trash2, Pencil } from "lucide-react";
-import ErrorModal from "../modals/ErrorModal";
-import ConfirmationModal from "../modals/ConfirmationModal";
-import NotificationModal from "../modals/NotificationModal";
-import { GetItemRecords, EditItem, GetItemGroup, GetItemType, NewItem, NewItemDetail, SaveItem, DeleteItem } from "../apiconfig";
+import ErrorModal from "../../modals/ErrorModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
+import NotificationModal from "../../modals/NotificationModal";
+import { GetItemRecords, EditItem, GetItemGroup, GetItemType, NewItem, NewItemDetail, SaveItem, DeleteItem } from "../../apiconfig";
 import Select from "react-select";
 
 const ItemMaintenance = () => {

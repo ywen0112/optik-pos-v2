@@ -7,10 +7,10 @@ import {
   SaveCreditor,
   DeleteCreditor,
   GetCreditorType
-} from "../apiconfig";
-import ErrorModal from "../modals/ErrorModal";
-import NotificationModal from "../modals/NotificationModal";
-import ConfirmationModal from "../modals/ConfirmationModal";
+} from "../../apiconfig";
+import ErrorModal from "../../modals/ErrorModal";
+import NotificationModal from "../../modals/NotificationModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
 import Select from "react-select";
 
 const CreditorMaintenance = () => {

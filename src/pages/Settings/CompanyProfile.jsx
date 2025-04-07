@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { EditCompany, SaveCompany } from "../apiconfig";
-import ConfirmationModal from "../modals/ConfirmationModal";
-import ErrorModal from "../modals/ErrorModal";
-import NotificationModal from "../modals/NotificationModal";
+import { EditCompany, SaveCompany } from "../../apiconfig";
+import ConfirmationModal from "../../modals/ConfirmationModal";
+import ErrorModal from "../../modals/ErrorModal";
+import NotificationModal from "../../modals/NotificationModal";
 
 const CompanyProfile = () => {
   const location = useLocation();

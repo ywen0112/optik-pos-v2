@@ -6,10 +6,10 @@ import {
   EditLocation,
   SaveLocation,
   DeleteLocation
-} from "../apiconfig";
-import ErrorModal from "../modals/ErrorModal";
-import NotificationModal from "../modals/NotificationModal";
-import ConfirmationModal from "../modals/ConfirmationModal";
+} from "../../apiconfig";
+import ErrorModal from "../../modals/ErrorModal";
+import NotificationModal from "../../modals/NotificationModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
 
 const LocationMaintenance = () => {
   const customerId = localStorage.getItem("customerId");
