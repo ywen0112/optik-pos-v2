@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Clock, Briefcase, FileText, UserCheck, Building, BarChart2, Wrench, ChevronDown, ChevronRight, 
-  Users, KeyRound, User2, Landmark, Package, MapPin, BadgePercent, UserCog
+  Users, KeyRound, User2, Landmark, Package, MapPin, BadgePercent, UserCog,
+  Gauge,
+  Receipt,
+  FileSearch,
+  ScrollText
 } from "lucide-react";
 import ErrorModal from "../modals/ErrorModal";
 import { CheckCounterSession, GetCompany } from "../apiconfig";
@@ -158,26 +162,37 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
   };
 
   const menuItems = [
-    { name: "Dashboard", icon: <Clock size={20} />, path: "/dashboard" },
-    { name: "Transactions", icon: <Briefcase size={20} />, path: "/transactions", onClick: handleTransactionsClick },
-    { name: "Transactions Inquiry", icon: <FileText size={20} />, path: "/transactions-inquiry" },
-    {
-      name: "Maintenance",
-      icon: <Wrench size={20} />,
+    { name: "Dashboard", icon: <Gauge size={20} />, path: "/dashboard" },
+    { name: "Transaction", icon: <Receipt size={20} />, 
       children: [
-        { name: "User Maintenance", path: "/maintenances/user", icon: <Users size={16} /> },
-        { name: "Access Right Maintenance", path: "/maintenances/access-right", icon: <KeyRound size={16} /> },
-        { name: "Debtor Maintenance", path: "/maintenances/debtor", icon: <User2 size={16} /> },
-        { name: "Creditor Maintenance", path: "/maintenances/creditor", icon: <Landmark size={16} /> },
-        { name: "Item Maintenance", path: "/maintenances/item", icon: <Package size={16} /> },
-        { name: "Location Maintenance", path: "/maintenances/location", icon: <MapPin size={16} /> },
-        { name: "Member Maintenance", path: "/maintenances/member", icon: <BadgePercent size={16} /> },
-        { name: "PWP Maintenance", path: "/maintenances/pwp", icon: <UserCog size={16} /> },
-      ],
+        { name: "Cash Sale", icon: <UserCheck size={20} />, path: "/transactions" },
+        { name: "Sales Order", icon: <UserCheck size={20} />, path: "/transactions" },
+        { name: "Purchase Invoice", icon: <UserCheck size={20} />, path: "/transactions" },
+        { name: "Stock Adjustment", icon: <UserCheck size={20} />, path: "/transactions" },
+        { name: "Goods Transit", icon: <UserCheck size={20} />, path: "/transactions" },
+      ]
     },
-    { name: "Company Profile", icon: <Building size={20} />, path: "/company-profile", onClick: handleCompanyProfileClick },
-    { name: "Reports", icon: <BarChart2 size={20} />, path: "/reports" },
-    { name: "Audit Logs", icon: <UserCheck size={20} />, path: "/audit-logs" },
+    { name: "Inquiry", icon: <FileSearch size={20} />, 
+      children: [
+        { name: "Sales Inquiry", icon: <UserCheck size={20} />, path: "/transactions-inquiry" },
+        { name: "Products Inquiry", icon: <UserCheck size={20} />, path: "/transactions-inquiry" },
+      ]
+    },
+    { name: "Reports", icon: <FileText size={20} />,
+      children: [
+        { name: "Counter Session Report", icon: <UserCheck size={20} />, path: "/reports" },
+        { name: "Daily Closing Summary Report", icon: <UserCheck size={20} />, path: "/reports" },
+        { name: "Outstanding Balance Report", icon: <UserCheck size={20} />, path: "/reports" },
+        { name: "Uncollected Order List", icon: <UserCheck size={20} />, path: "/reports" },
+        { name: "Commission Reprot", icon: <UserCheck size={20} />, path: "/reports" },
+      ]
+    },
+    { name: "Tools", icon: <Wrench size={20} />, 
+      children: [
+        { name: "Audit Logs", icon: <ScrollText size={20} />, path: "/audit-logs" },
+        { name: "Close Counter", icon: <UserCheck size={20} />, path: "/audit-logs" },
+      ]
+    }
   ];
 
   return (
@@ -198,9 +213,9 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
 
       {visible && (
         <>
-          <div className="items-center justify-center mb-4">
-            <span className="text-yellow-500 font-bold text-lg mt-2">OPTIK</span>
-            <span className="text-white font-bold text-lg">POS</span>
+          <div className="flex items-center justify-center mb-4">
+            <span className="text-yellow-500 font-bold text-2xl mt-2">OPTIK</span>
+            <span className="text-white font-bold text-2xl mt-2">POS</span>
           </div>
 
           <div className="border-b border-gray-500 mb-8"></div>

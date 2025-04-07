@@ -14,6 +14,7 @@ import DebtorMaintenance from "../pages/DebtorMaintenance";
 import CreditorMaintenance from "../pages/CreditorMaintenance";
 import LocationMaintenance from "../pages/LocationMaintenance";
 import ItemMaintenance from "../pages/ItemMaintenance";
+import UserProfile from "../pages/UserProfile"
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -21,6 +22,8 @@ const MainLayout = ({ title }) => {
 
   const renderContent = () => {
     switch (location.pathname) {
+      case "/user-profile":
+        return <UserProfile />
       case "/dashboard":
         return <Dashboard />;
       case "/transactions":
@@ -72,8 +75,7 @@ const MainLayout = ({ title }) => {
     <div className="flex h-screen w-screen">
       <SideBar visible={sidebarVisible}/>
       <div className="flex flex-col flex-1 bg-gray-100">
-        <HeaderBar onToggleSidebar={() => setSidebarVisible(!sidebarVisible)}/>
-        <div className="px-4 mt-4 text-2xl font-bold text-secondary">{title}</div>
+        <HeaderBar currentPage={title} onToggleSidebar={() => setSidebarVisible(!sidebarVisible)}/>
         <div className="flex-grow py-2 px-4">{renderContent()}</div>
       </div>
     </div>

@@ -11,7 +11,7 @@ export default {
         secondary: "#333333", // gray
       },
       fontFamily: {
-        nunito: ["Nunito", "sans-serif"],
+        nunito: ["Roboto", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "sans-serif"],
       },
     },
   },

@@ -12,7 +12,6 @@ const App = () => {
   });
 
   const isAuthenticated = sessionStorage.getItem("isLoggedIn") === "true";
-
   const handleLoginSuccess = (data) => {
     sessionStorage.setItem("companies", JSON.stringify(data));
     sessionStorage.setItem("isLoggedIn", "true");
@@ -29,6 +28,8 @@ const App = () => {
       <Routes>
         <Route path="/login" element={isAuthenticated ? <Navigate to="/company-selection" /> : <Login onLoginSuccess={handleLoginSuccess} />} />
         <Route path="/company-selection" element={companies ? <CompanySelection companies={companies} onCancel={handleCancel} /> : <Navigate to="/login" />} /> 
+
+        <Route path="/user-profile"element={isAuthenticated ? <MainLayout title="User Profile" /> : <Navigate to="/login" />} />
 
         <Route path="/dashboard" element={isAuthenticated ? <MainLayout title="Dashboard" /> : <Navigate to="/login" />} />
         <Route path="/transactions" element={isAuthenticated ? <MainLayout title="Transactions" /> : <Navigate to="/login" />} />
