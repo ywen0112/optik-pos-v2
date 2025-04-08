@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import config from 'devextreme/core/config'
+import {licenseKey} from "./devextreme-license"
+
 import Login from "./Login/Login";
 import CompanySelection from "./login/CompanySelection";
 import MainLayout from "./layouts/MainLayout"; 
 import UserRegistrationPage from "./Registration";
+
+config({licenseKey})
 
 const App = () => {
   const [companies, setCompanies] = useState(() => {
@@ -32,6 +37,9 @@ const App = () => {
         <Route path="/user-profile"element={isAuthenticated ? <MainLayout title="User Profile" /> : <Navigate to="/login" />} />
 
         <Route path="/dashboard" element={isAuthenticated ? <MainLayout title="Dashboard" /> : <Navigate to="/login" />} />
+        
+        <Route path="/sales-order" element={isAuthenticated ? <MainLayout title="Sales Order"/> : <Navigate to="/login"/>} />
+
         <Route path="/transactions" element={isAuthenticated ? <MainLayout title="Transactions" /> : <Navigate to="/login" />} />
         <Route path="/transactions-inquiry" element={isAuthenticated ? <MainLayout title="Transactions Inquiry" /> : <Navigate to="/login" />} />
         <Route path="/audit-logs" element={isAuthenticated ? <MainLayout title="Audit Logs" /> : <Navigate to="/login" />} />

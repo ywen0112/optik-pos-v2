@@ -12,6 +12,8 @@
   "dependencies": {
     "@shadcn/ui": "^0.0.4",
     "axios": "^1.8.4",
+    "devextreme": "^23.2.4",
+    "devextreme-react": "^23.2.4",
     "lucide-react": "^0.479.0",
     "react": "^19.0.0",
     "react-datepicker": "^8.2.1",
@@ -21,6 +23,7 @@
     "react-select": "^5.10.1",
     "react-select-async-paginate": "^0.7.9",
     "react-spinners": "^0.15.0",
+    "react-switch": "^7.1.0",
     "tailwind-scrollbar-hide": "^2.0.0"
   },
   "devDependencies": {

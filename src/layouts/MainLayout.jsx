@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+
 import SideBar from "./SideBar";
 import HeaderBar from "./HeaderBar";
 import Dashboard from "../pages/Dashboard";
@@ -16,6 +17,8 @@ import LocationMaintenance from "../pages/MasterData/LocationMaintenance";
 import ItemMaintenance from "../pages/MasterData/ItemMaintenance";
 import UserProfile from "../pages/UserProfile"
 
+import SalesOrder from "../pages/Transactions/SalesOrder"
+
 const MainLayout = ({ title }) => {
   const location = useLocation();
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -26,6 +29,8 @@ const MainLayout = ({ title }) => {
         return <UserProfile />
       case "/dashboard":
         return <Dashboard />;
+      case "/sales-order":
+        return <SalesOrder/>
       case "/transactions":
         return <Transactions />;
       case "/transactions-inquiry":

@@ -1,6 +1,8 @@
+@import '../node_modules/devextreme/dist/css/dx.light.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
 :root {
   font-family: 'Nunito', sans-serif; 

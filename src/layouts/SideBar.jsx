@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Clock, Briefcase, FileText, UserCheck, Building, BarChart2, Wrench, ChevronDown, ChevronRight, 
-  Users, KeyRound, User2, Landmark, Package, MapPin, BadgePercent, UserCog,
+import { FileText, UserCheck,Wrench, ChevronDown, ChevronRight,
   Gauge,
   Receipt,
   FileSearch,
@@ -166,7 +165,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     { name: "Transaction", icon: <Receipt size={20} />, 
       children: [
         { name: "Cash Sale", icon: <UserCheck size={20} />, path: "/transactions" },
-        { name: "Sales Order", icon: <UserCheck size={20} />, path: "/transactions" },
+        { name: "Sales Order", icon: <UserCheck size={20} />, path: "/sales-order" },
         { name: "Purchase Invoice", icon: <UserCheck size={20} />, path: "/transactions" },
         { name: "Stock Adjustment", icon: <UserCheck size={20} />, path: "/transactions" },
         { name: "Goods Transit", icon: <UserCheck size={20} />, path: "/transactions" },
