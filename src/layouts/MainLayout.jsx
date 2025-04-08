@@ -15,7 +15,8 @@ import DebtorMaintenance from "../pages/MasterData/DebtorMaintenance";
 import CreditorMaintenance from "../pages/MasterData/CreditorMaintenance";
 import LocationMaintenance from "../pages/MasterData/LocationMaintenance";
 import ItemMaintenance from "../pages/MasterData/ItemMaintenance";
-import UserProfile from "../pages/UserProfile"
+import UserProfile from "../pages/UserProfile";
+import MainMenuPage from "../pages/MasterData/MainMenuPage";
 
 import SalesOrder from "../pages/Transactions/SalesOrder"
 
@@ -31,9 +32,9 @@ const MainLayout = ({ title }) => {
         return <Dashboard />;
       case "/sales-order":
         return <SalesOrder/>
-      case "/transactions":
+      case "/cash-sale":
         return <Transactions />;
-      case "/transactions-inquiry":
+      case "/sales-inquiry":
         return <TransactionsInquiry />;
       case "/audit-logs":
         return <AuditLogs />;
@@ -57,6 +58,8 @@ const MainLayout = ({ title }) => {
         return <div className="text-secondary">Member Maintenance Page in Maintenance ...</div>;
       case "/maintenances/pwp":
         return <div className="text-secondary">PWP Maintenance Page in Maintenance</div>;
+      case "/master-data":
+        return <MainMenuPage />
       default:
         return <Dashboard />;
     }

@@ -164,32 +164,32 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     { name: "Dashboard", icon: <Gauge size={20} />, path: "/dashboard" },
     { name: "Transaction", icon: <Receipt size={20} />, 
       children: [
-        { name: "Cash Sale", icon: <UserCheck size={20} />, path: "/transactions" },
+        { name: "Cash Sale", icon: <UserCheck size={20} />, path: "/cash-sale" },
         { name: "Sales Order", icon: <UserCheck size={20} />, path: "/sales-order" },
-        { name: "Purchase Invoice", icon: <UserCheck size={20} />, path: "/transactions" },
-        { name: "Stock Adjustment", icon: <UserCheck size={20} />, path: "/transactions" },
-        { name: "Goods Transit", icon: <UserCheck size={20} />, path: "/transactions" },
+        { name: "Purchase Invoice", icon: <UserCheck size={20} />, path: "/prurchase-invoice" },
+        { name: "Stock Adjustment", icon: <UserCheck size={20} />, path: "/stock-adjustment" },
+        { name: "Goods Transit", icon: <UserCheck size={20} />, path: "/good-transit" },
       ]
     },
     { name: "Inquiry", icon: <FileSearch size={20} />, 
       children: [
-        { name: "Sales Inquiry", icon: <UserCheck size={20} />, path: "/transactions-inquiry" },
-        { name: "Products Inquiry", icon: <UserCheck size={20} />, path: "/transactions-inquiry" },
+        { name: "Sales Inquiry", icon: <UserCheck size={20} />, path: "/sales-inquiry" },
+        { name: "Products Inquiry", icon: <UserCheck size={20} />, path: "/products-inquiry" },
       ]
     },
     { name: "Reports", icon: <FileText size={20} />,
       children: [
-        { name: "Counter Session Report", icon: <UserCheck size={20} />, path: "/reports" },
-        { name: "Daily Closing Summary Report", icon: <UserCheck size={20} />, path: "/reports" },
-        { name: "Outstanding Balance Report", icon: <UserCheck size={20} />, path: "/reports" },
-        { name: "Uncollected Order List", icon: <UserCheck size={20} />, path: "/reports" },
-        { name: "Commission Reprot", icon: <UserCheck size={20} />, path: "/reports" },
+        { name: "Counter Session Report", icon: <UserCheck size={20} />, path: "/counter-session-report" },
+        { name: "Daily Closing Summary Report", icon: <UserCheck size={20} />, path: "/daily-closing-summay-report" },
+        { name: "Outstanding Balance Report", icon: <UserCheck size={20} />, path: "/outstanding-report" },
+        { name: "Uncollected Order List", icon: <UserCheck size={20} />, path: "/uncollected-order-list" },
+        { name: "Commission Reprot", icon: <UserCheck size={20} />, path: "/commision-report" },
       ]
     },
     { name: "Tools", icon: <Wrench size={20} />, 
       children: [
         { name: "Audit Logs", icon: <ScrollText size={20} />, path: "/audit-logs" },
-        { name: "Close Counter", icon: <UserCheck size={20} />, path: "/audit-logs" },
+        { name: "Close Counter", icon: <UserCheck size={20} />, path: "/close-counter" },
       ]
     }
   ];
