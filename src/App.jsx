@@ -41,16 +41,19 @@ const App = () => {
         <Route path="/sales-order" element={isAuthenticated ? <MainLayout title="Sales Order"/> : <Navigate to="/login"/>} />
         <Route path="/sales-inquiry" element={isAuthenticated ? <MainLayout title="Sales Inquiry" /> : <Navigate to="/login" />} />
         <Route path="/audit-logs" element={isAuthenticated ? <MainLayout title="Audit Logs" /> : <Navigate to="/login" />} />
-        <Route path="/company-profile" element={isAuthenticated ? <MainLayout title="Company Profile" /> : <Navigate to="/login" />} />
         <Route path="/reports" element={isAuthenticated ? <MainLayout title="Reports" /> : <Navigate to="/login" />} />
 
         <Route path="/master-data" element={isAuthenticated ? <MainLayout title="Master Data" /> : <Navigate to="/login" />} />
-        <Route path="/maintenances/user" element={isAuthenticated ? <MainLayout title="User Maintenance" /> : <Navigate to="/login" />} />
-        <Route path="/maintenances/access-right" element={isAuthenticated ? <MainLayout title="Access Right Maintenance" /> : <Navigate to="/login" />} />
-        <Route path="/maintenances/debtor" element={isAuthenticated ? <MainLayout title="Debtor Maintenance" /> : <Navigate to="/login" />} />
-        <Route path="/maintenances/creditor" element={isAuthenticated ? <MainLayout title="Creditor Maintenance" /> : <Navigate to="/login" />} />
-        <Route path="/maintenances/item" element={isAuthenticated ? <MainLayout title="Item Maintenance" /> : <Navigate to="/login" />} />
-        <Route path="/maintenances/location" element={isAuthenticated ? <MainLayout title="Location Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/customer" element={isAuthenticated ? <MainLayout title="Debtor Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/supplier" element={isAuthenticated ? <MainLayout title="Creditor Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/product" element={isAuthenticated ? <MainLayout title="Item Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/location" element={isAuthenticated ? <MainLayout title="Location Maintenance" /> : <Navigate to="/login" />} />
+        
+        <Route path="/item-opening" element={isAuthenticated ? <MainLayout title="Item Opening" /> : <Navigate to="/login" />} />
+        <Route path="/user" element={isAuthenticated ? <MainLayout title="User Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/user-role" element={isAuthenticated ? <MainLayout title="User Role Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/company-profile" element={isAuthenticated ? <MainLayout title="Company Profile" /> : <Navigate to="/login" />} />
+
         <Route path="/maintenances/member" element={isAuthenticated ? <MainLayout title="Member Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/maintenances/pwp" element={isAuthenticated ? <MainLayout title="PWP Maintenance" /> : <Navigate to="/login" />} />
 

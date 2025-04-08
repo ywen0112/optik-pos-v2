@@ -3,21 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { User, Menu, LayoutDashboard, Settings } from "lucide-react";
 import Profile from "../pages/Profile";
 import UserProfileMenu from "../modals/UserProfileMenuModal";
+import SettingsMenuModal from "../modals/SettingsMenuModal";
 
 const HeaderBar = ({ currentPage, onToggleSidebar }) => {
   const [showProfileMenu, setProfileMenu] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const navigate = useNavigate();
+
+  const masterDataPages = {
+    "/location": "Location",
+    "/customer": "Customer",
+    "/supplier": "Supplier",
+    "/product": "Product",
+  };
 
   const buildBreadcrumb = () => {
     const path = location.pathname;
-    const segments = path.split("/").filter(Boolean);
 
-    if (path.startsWith("/maintenances/") && segments.length === 2) {
-      const childName = segments[1]
-        .split("-")
-        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-        .join(" ");
-
+    if (masterDataPages[path]) {
       return (
         <div className="flex items-center text-secondary space-x-1 cursor-default">
           <span
@@ -27,7 +30,7 @@ const HeaderBar = ({ currentPage, onToggleSidebar }) => {
             Master Data
           </span>
           <span>/</span>
-          <span className="font-semibold">{childName}</span>
+          <span className="font-semibold">{masterDataPages[path]}</span>
         </div>
       );
     }
@@ -41,6 +44,8 @@ const HeaderBar = ({ currentPage, onToggleSidebar }) => {
 
   return (
     <div className="w-full min-h-12 bg-white flex justify-between items-center px-8 shadow-md">
+      <SettingsMenuModal isOpen={showSettingsMenu} onClose={() => setShowSettingsMenu(false)} />
+      
       <div className="flex items-center">
         <Menu
           className="text-secondary w-6 h-6 cursor-pointer mr-4"
@@ -60,9 +65,13 @@ const HeaderBar = ({ currentPage, onToggleSidebar }) => {
           setProfileMenu(false);
         }}
       />
-        <Settings
-          className="text-secondary w-6 h-6 cursor-pointer"
-        />
+      <Settings
+        className="text-secondary w-6 h-6 cursor-pointer"
+        onClick={() => {
+          setShowSettingsMenu((prev) => !prev);
+          setProfileMenu(false);
+        }}
+      />
         <div className="text-lg font-bold text-secondary">UserName</div>
         <User
           className="text-secondary w-6 h-6 cursor-pointer"

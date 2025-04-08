@@ -7,7 +7,7 @@ import { FileText, UserCheck,Wrench, ChevronDown, ChevronRight,
   ScrollText
 } from "lucide-react";
 import ErrorModal from "../modals/ErrorModal";
-import { CheckCounterSession, GetCompany } from "../apiconfig";
+import { CheckCounterSession } from "../apiconfig";
 import ClipLoader from "react-spinners/ClipLoader";
 
 const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
@@ -109,46 +109,12 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
 
       const data = await response.json();
       if (data.success) {
-        navigate("/transactions", { state: { counterSession: data.data } });
+        navigate("/cash-sale", { state: { counterSession: data.data } });
       } else {
         throw new Error(data.errorMessage || "Failed to check counter session.");
       }
     } catch (error) {
       setErrorModal({ title: "Counter Session Error", message: error.message });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCompanyProfileClick = async () => {
-    setIsLoading(true);
-
-    const requestBody = {
-      customerId: Number(customerId),
-      userId,
-      locationId,
-      id: ""
-    };
-
-    try {
-      const response = await fetch(GetCompany, {
-        method: "POST",
-        headers: {
-          "Accept": "text/plain",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        navigate("/company-profile", { state: { company: data.data } });
-      } else {
-        throw new Error(data.errorMessage || "Failed to fetch company profile.");
-      }
-    } catch (error) {
-      setErrorModal({ title: "Company Profile Error", message: error.message });
     } finally {
       setIsLoading(false);
     }
@@ -164,7 +130,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     { name: "Dashboard", icon: <Gauge size={20} />, path: "/dashboard" },
     { name: "Transaction", icon: <Receipt size={20} />, 
       children: [
-        { name: "Cash Sale", icon: <UserCheck size={20} />, path: "/cash-sale" },
+        { name: "Cash Sale", icon: <UserCheck size={20} />, path: "/cash-sale", onClick: () => handleTransactionsClick() },
         { name: "Sales Order", icon: <UserCheck size={20} />, path: "/sales-order" },
         { name: "Purchase Invoice", icon: <UserCheck size={20} />, path: "/prurchase-invoice" },
         { name: "Stock Adjustment", icon: <UserCheck size={20} />, path: "/stock-adjustment" },
@@ -287,10 +253,14 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
                             ${location.pathname === child.path
                               ? "bg-yellow-100 text-secondary font-semibold"
                               : "hover:bg-gray-600"}`}
-                          onClick={() => {
-                            setActiveMenu(child.path);
-                            navigate(child.path);
-                          }}
+                            onClick={() => {
+                              setActiveMenu(child.path);
+                              if (child.onClick) {
+                                child.onClick();
+                              } else {
+                                navigate(child.path);
+                              }
+                            }}
                         >
                           {child.icon}
                           {visible && <span>{child.name}</span>}
