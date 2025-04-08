@@ -16,6 +16,7 @@ import LocationMaintenance from "../pages/MasterData/LocationMaintenance";
 import ItemMaintenance from "../pages/MasterData/ItemMaintenance";
 import UserProfile from "../pages/UserProfile";
 import MainMenuPage from "../pages/MasterData/MainMenuPage";
+import ItemOpening from "../pages/Settings/ItemOpening";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -37,17 +38,17 @@ const MainLayout = ({ title }) => {
         return <CompanyProfile />;
       case "/reports":
         return <Reports />;
-      case "/maintenances/user":
+      case "/user":
         return <UserMaintenance />;
-      case "/maintenances/access-right":
+      case "/user-role":
         return <AccessRightMaintenance />;
-      case "/maintenances/debtor":
+      case "/customer":
         return <DebtorMaintenance />;
-      case "/maintenances/creditor":
+      case "/supplier":
         return <CreditorMaintenance />;
-      case "/maintenances/item":
+      case "/product":
         return <ItemMaintenance />;
-      case "/maintenances/location":
+      case "/location":
         return <LocationMaintenance />;
       case "/maintenances/member":
         return <div className="text-secondary">Member Maintenance Page in Maintenance ...</div>;
@@ -55,6 +56,8 @@ const MainLayout = ({ title }) => {
         return <div className="text-secondary">PWP Maintenance Page in Maintenance</div>;
       case "/master-data":
         return <MainMenuPage />
+      case "/item-opening":
+        return <ItemOpening />
       default:
         return <Dashboard />;
     }
