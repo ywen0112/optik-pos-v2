@@ -49,7 +49,6 @@ const Transactions = () => {
     }
     else if (activeTab === "Sales Invoice") {
       fetchNewSalesInvoice();
-      console.log(localStorage.getItem("salesId"));
     }
     else if (activeTab === "Purchases Invoice") {
       fetchNewPurchasesInvoice();
