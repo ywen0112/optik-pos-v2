@@ -20,6 +20,7 @@ import MainMenuPage from "../pages/MasterData/MainMenuPage";
 import ItemOpening from "../pages/Settings/ItemOpening";
 
 import SalesOrder from "../pages/Transactions/SalesOrder"
+import PaymentMethod from "../pages/MasterData/PaymentMethod";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -69,6 +70,8 @@ const MainLayout = ({ title }) => {
         return <MainMenuPage />
       case "/item-opening":
         return <ItemOpening />
+      case "/payment-method":
+        return <PaymentMethod />
       default:
         return <Dashboard />;
     }
