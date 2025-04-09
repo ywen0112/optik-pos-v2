@@ -5,7 +5,7 @@ import SideBar from "./SideBar";
 import HeaderBar from "./HeaderBar";
 import Dashboard from "../pages/Dashboard";
 import Transactions from "../pages/Transactions";
-import TransactionsInquiry from "../pages/TransactionsInquiry";
+import TransactionsInquiry from "../pages/Inquiry/TransactionsInquiry";
 import AuditLogs from "../pages/AuditLogs";
 import CompanyProfile from "../pages/Settings/CompanyProfile";
 import Reports from "../pages/Reports";
@@ -21,6 +21,7 @@ import ItemOpening from "../pages/Settings/ItemOpening";
 
 import SalesOrder from "../pages/Transactions/SalesOrder"
 import PaymentMethod from "../pages/MasterData/PaymentMethod";
+import ProductInquiry from "../pages/Inquiry/ProductInquiry";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -72,6 +73,8 @@ const MainLayout = ({ title }) => {
         return <ItemOpening />
       case "/payment-method":
         return <PaymentMethod />
+      case "/products-inquiry":
+        return <ProductInquiry />
       default:
         return <Dashboard />;
     }

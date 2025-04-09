@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { User, Menu, LayoutDashboard, Settings } from "lucide-react";
 import Profile from "../pages/Profile";
 import UserProfileMenu from "../modals/UserProfileMenuModal";
@@ -9,6 +9,12 @@ const HeaderBar = ({ currentPage, onToggleSidebar }) => {
   const [showProfileMenu, setProfileMenu] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    setShowSettingsMenu(false); 
+    setProfileMenu(false); 
+  }, [location.pathname]);
 
   const masterDataPages = {
     "/location": "Location",

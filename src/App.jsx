@@ -39,7 +39,6 @@ const App = () => {
         <Route path="/dashboard" element={isAuthenticated ? <MainLayout title="Dashboard" /> : <Navigate to="/login" />} />
         <Route path="/cash-sale" element={isAuthenticated ? <MainLayout title="Cash Sale" /> : <Navigate to="/login" />} />
         <Route path="/sales-order" element={isAuthenticated ? <MainLayout title="Sales Order"/> : <Navigate to="/login"/>} />
-        <Route path="/sales-inquiry" element={isAuthenticated ? <MainLayout title="Sales Inquiry" /> : <Navigate to="/login" />} />
         <Route path="/purchase-invoice" element={isAuthenticated ? <MainLayout title="Purchase Invoice" /> : <Navigate to="/login" />} />
         <Route path="/stock-adjustment" element={isAuthenticated ? <MainLayout title="Stock Adjustment" /> : <Navigate to="/login" />} />
         <Route path="/good-transit" element={isAuthenticated ? <MainLayout title="Goods Transit" /> : <Navigate to="/login" />} />
@@ -57,6 +56,9 @@ const App = () => {
         <Route path="/user" element={isAuthenticated ? <MainLayout title="User Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/user-role" element={isAuthenticated ? <MainLayout title="User Role Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/company-profile" element={isAuthenticated ? <MainLayout title="Company Profile" /> : <Navigate to="/login" />} />
+
+        <Route path="/sales-inquiry" element={isAuthenticated ? <MainLayout title="Sales Inquiry" /> : <Navigate to="/login" />} />
+        <Route path="/products-inquiry" element={isAuthenticated ? <MainLayout title="Products Inquiry" /> : <Navigate to="/login" />} />
 
         <Route path="/maintenances/member" element={isAuthenticated ? <MainLayout title="Member Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/maintenances/pwp" element={isAuthenticated ? <MainLayout title="PWP Maintenance" /> : <Navigate to="/login" />} />
