@@ -130,32 +130,32 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     { name: "Dashboard", icon: <Gauge size={20} />, path: "/dashboard" },
     { name: "Transaction", icon: <Receipt size={20} />, 
       children: [
-        { name: "Cash Sale", icon: <UserCheck size={20} />, path: "/cash-sale", onClick: () => handleTransactionsClick() },
-        { name: "Sales Order", icon: <UserCheck size={20} />, path: "/sales-order" },
-        { name: "Purchase Invoice", icon: <UserCheck size={20} />, path: "/purchase-invoice" },
-        { name: "Stock Adjustment", icon: <UserCheck size={20} />, path: "/stock-adjustment" },
-        { name: "Goods Transit", icon: <UserCheck size={20} />, path: "/good-transit" },
+        { name: "Cash Sale", shortLabel: "CS", path: "/cash-sale", onClick: () => handleTransactionsClick() },
+        { name: "Sales Order", shortLabel: "SO", path: "/sales-order" },
+        { name: "Purchase Invoice", shortLabel: "PI", path: "/purchase-invoice" },
+        { name: "Stock Adjustment", shortLabel: "SA", path: "/stock-adjustment" },
+        { name: "Goods Transit", shortLabel: "GT", path: "/good-transit" },
       ]
     },
     { name: "Inquiry", icon: <FileSearch size={20} />, 
       children: [
-        { name: "Sales Inquiry", icon: <UserCheck size={20} />, path: "/sales-inquiry" },
-        { name: "Products Inquiry", icon: <UserCheck size={20} />, path: "/products-inquiry" },
+        { name: "Sales Inquiry", shortLabel: "SI", path: "/sales-inquiry" },
+        { name: "Products Inquiry", shortLabel: "PI", path: "/products-inquiry" },
       ]
     },
     { name: "Reports", icon: <FileText size={20} />,
       children: [
-        { name: "Counter Session Report", icon: <UserCheck size={20} />, path: "/counter-session-report" },
-        { name: "Daily Closing Summary Report", icon: <UserCheck size={20} />, path: "/daily-closing-summay-report" },
-        { name: "Outstanding Balance Report", icon: <UserCheck size={20} />, path: "/outstanding-report" },
-        { name: "Uncollected Order List", icon: <UserCheck size={20} />, path: "/uncollected-order-list" },
-        { name: "Commission Reprot", icon: <UserCheck size={20} />, path: "/commision-report" },
+        { name: "Counter Session Report",shortLabel: "CT", path: "/counter-session-report" },
+        { name: "Daily Closing Summary Report", shortLabel: "CL", path: "/daily-closing-summay-report" },
+        { name: "Outstanding Balance Report", shortLabel: "OR", path: "/outstanding-report" },
+        { name: "Uncollected Order List", shortLabel: "UO", path: "/uncollected-order-list" },
+        { name: "Commission Reprot", shortLabel: "CM", path: "/commision-report" },
       ]
     },
     { name: "Tools", icon: <Wrench size={20} />, 
       children: [
-        { name: "Audit Logs", icon: <ScrollText size={20} />, path: "/audit-logs" },
-        { name: "Close Counter", icon: <UserCheck size={20} />, path: "/close-counter" },
+        { name: "Audit Logs", shortLabel: "AL", path: "/audit-logs" },
+        { name: "Close Counter", shortLabel: "CC", path: "/close-counter" },
       ]
     }
   ];
@@ -262,8 +262,11 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
                               }
                             }}
                         >
-                          {child.icon}
-                          {visible && <span>{child.name}</span>}
+                         {visible ? (
+                            <span>{child.name}</span>
+                          ) : (
+                            <span className="text-xs font-bold">{child.shortLabel}</span>
+                          )}
                         </li>
                       ))}
                     </ul>
