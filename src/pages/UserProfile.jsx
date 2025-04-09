@@ -26,7 +26,7 @@ const UserProfile = () => {
                     <div className="bg-white p-10 shadow rounded w-full">
                         <div className="grid grid-cols-4 gap-2 h-max">
                             <div className="col-end-5 flex flex-row-reverse">
-                                <button className="bg-primary w-1/2">Save</button>
+                                <button className="bg-green-600 w-1/2">Save</button>
                             </div>
                             
                         </div>

@@ -95,7 +95,7 @@ const ChangePasswordModal = ({ isOpen, onCancel, onSave }) => {
                     />
                     <div className="grid grid-cols-2 mt-5">
                             <button className="bg-red-600 m-1 rounded" onClick={CancelChangePassword}>Cancel</button>
-                            <button className="bg-primary m-1 rounded" onClick={SaveNewPassword}>Save</button>
+                            <button className="bg-green-600 m-1 rounded" onClick={SaveNewPassword}>Save</button>
                     </div>
                 </div>
             </div>
