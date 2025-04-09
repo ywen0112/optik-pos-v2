@@ -96,7 +96,7 @@ const MainLayout = ({ title }) => {
       <SideBar visible={sidebarVisible} />
       <div className="flex flex-col flex-1 bg-gray-100">
         <HeaderBar currentPage={title} onToggleSidebar={() => setSidebarVisible(!sidebarVisible)} />
-        <div className="flex-grow py-2 px-4">{renderContent()}</div>
+        <div className="flex-grow py-2 px-4 overflow-y-auto">{renderContent()}</div>
       </div>
     </div>
   );
