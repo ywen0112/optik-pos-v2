@@ -53,7 +53,7 @@ const ChangePasswordModal = ({ isOpen, onCancel, onSave }) => {
     return (
         <>
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-40">
-                <div className=" h-max w-1/4 p-6 bg-white">
+                <div className=" h-max md:w-1/4 sm:w-3/4 p-6 bg-white">
                     <div className="text-black text-2xl">
                         Change Password
                     </div>

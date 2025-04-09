@@ -4,10 +4,19 @@ import { EditCompany, SaveCompany } from "../../apiconfig";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
+import { UploadCloud } from "lucide-react";
 
 const CompanyProfile = () => {
   const location = useLocation();
   const company = location.state?.company;
+
+
+  const [companyAddress, setContact1] = useState("")
+  const [contact1, setContact2] = useState("")
+  const [contact2, setCompanyAddress] = useState("")
+  const [email, setEmail] = useState("")
+  const [logoB64, setLogoB64] = useState("")
+
   const [initialCompany, setInitialCompany] = useState(company);
   const [editData, setEditData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -92,51 +101,110 @@ const CompanyProfile = () => {
     }
   };
 
-  return (
-    <div className="flex justify-center h-fit w-full bg-gray-100 p-6">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-2xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm text-secondary">
-          {[
-            "registrationNo",
-            "phone1",
-            "phone2",
-            "fax",
-            "email",
-            "address",
-            "postcode",
-            "city",
-            "state",
-            "country",
-          ].map((field) => (
-            <div key={field}>
-              <strong className="capitalize">{field.replace(/([A-Z])/g, ' $1')}:</strong>
-              {isEditing ? (
-                <input
-                  type="text"
-                  name={field}
-                  value={editData[field] || ""}
-                  onChange={handleChange}
-                  className="w-full mt-1 p-1 border rounded bg-white"
-                />
-              ) : (
-                <div>{initialCompany[field] || "N/A"}</div>
-              )}
-            </div>
-          ))}
-        </div>
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-        <div className="mt-6 flex justify-end gap-4">
-          {!isEditing ? (
-            <button onClick={handleEditClick} className="px-4 py-1 border rounded text-sm bg-blue-100 text-blue-700 hover:bg-blue-200">Edit</button>
-          ) : (
-            <>
-              <button onClick={handleCancelEdit} className="px-4 py-1 border rounded text-sm bg-gray-200 text-gray-700 hover:bg-gray-300">Cancel Edit</button>
-              <button onClick={handleSave} className="px-4 py-1 border rounded text-sm bg-green-200 text-green-700 hover:bg-green-300">Save</button>
-            </>
-          )}
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result.split(",")[1]; // remove the prefix
+      setLogoB64(base64String);
+    };
+    reader.readAsDataURL(file);
+  };
+
+
+  return (
+    <>
+      <div className="p-6 h-full">
+        <div className="bg-white rounded h-full ">
+          <div className="text-black text-2xl p-6">Company Name</div>
+          <div className="p-4 grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 text-black">
+              <div>Business Register No.</div>
+              <input
+                type="text"
+                value="A-0001"
+                placeholder="Business Registration No"
+                className="bg-gray-300 text-black p-2 rounded w-full"
+              />
+              <div>TIN No.</div>
+              <input
+                type="text"
+                value="TIN-00001"
+                placeholder="TIN Number"
+                className="bg-gray-300 text-black p-2 rounded w-full"
+              />
+              <div>Main Currency</div>
+              <input
+                type="text"
+                value="RM"
+                placeholder="Main Currency"
+                className="bg-gray-300 text-black p-2 rounded w-full"
+              />
+              <div>Business Activity</div>
+              <input
+                type="text"
+                value="Optical Retailer"
+                placeholder="Business Activity"
+                className="bg-gray-300 text-black p-2 rounded w-full"
+              />
+              <div>Address</div>
+              <textarea
+                style={{ resize: 'none' }}
+                type="Text"
+                placeholder="Company Address"
+                className="bg-gray-300 text-black p-2 rounded w-full"
+                rows={4}
+                value={companyAddress}
+
+                onChange={(e) => setCompanyAddress(e.target.value)}
+              />
+              <div>Contact 1</div>
+              <input
+                type="tel"
+                value={contact1}
+                onChange={(e) => setContact1(e.target.value)}
+                placeholder="Contact No 1"
+                className="bg-gray-300 text-black p-2 rounded w-full"
+              />
+              <div>Contact 2</div>
+              <input
+                type="tel"
+                value={contact2}
+                onChange={(e) => setContact2(e.target.value)}
+                placeholder="Contact No 2"
+                className="bg-gray-300 text-black p-2 rounded w-full"
+              />
+              <div>Email</div>
+              <input
+                type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Company Email"
+                className="bg-gray-300 text-black p-2 rounded w-full"
+              />
+            </div>
+            <div className="bg-black ml-80 w-40 h-40 flex justify-center rounded-full items-center relative overflow-hidden group">
+              <img
+                src={`data:image/png;base64,${logoB64}`}
+                className="w-full h-full rounded-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <UploadCloud className="text-white w-8 h-8" />
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                onChange={(e) => handleLogoChange(e)}
+              />
+            </div>
+
+
+          </div>
         </div>
       </div>
-
       <ConfirmationModal
         isOpen={showConfirm}
         title="Confirm Save"
@@ -158,7 +226,7 @@ const CompanyProfile = () => {
         message={notificationModal.message}
         onClose={() => setNotificationModal({ isOpen: false, title: "", message: "" })}
       />
-    </div>
+    </>
   );
 };
 
