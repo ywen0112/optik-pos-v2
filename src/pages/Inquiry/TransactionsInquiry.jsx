@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, FileText, Ban, CheckCircle, DollarSign } from "lucide-react";
-import { GetCounterSessionRecords, GetCounterSummaryReport, GetCashTransactionsRecords, VoidCashTransaction, GetSales, GetPurchases, VoidSales, VoidPurchases} from "../apiconfig";
-import ErrorModal from "../modals/ErrorModal";
-import ConfirmationModal from "../modals/ConfirmationModal";
-import PaymentModal from "../modals/PaymentModal";
-import ReportSelectionModal from "../modals/ReportSelectionModel";
+import { GetCounterSessionRecords, GetCounterSummaryReport, GetCashTransactionsRecords, VoidCashTransaction, GetSales, GetPurchases, VoidSales, VoidPurchases} from "../../apiconfig";
+import ErrorModal from "../../modals/ErrorModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
+import PaymentModal from "../../modals/PaymentModal";
+import ReportSelectionModal from "../../modals/ReportSelectionModel";
 
 const TransactionsInquiry = () => {
   const [activeTab, setActiveTab] = useState("Counter Session");
