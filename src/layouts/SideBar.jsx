@@ -132,7 +132,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
       children: [
         { name: "Cash Sale", icon: <UserCheck size={20} />, path: "/cash-sale", onClick: () => handleTransactionsClick() },
         { name: "Sales Order", icon: <UserCheck size={20} />, path: "/sales-order" },
-        { name: "Purchase Invoice", icon: <UserCheck size={20} />, path: "/prurchase-invoice" },
+        { name: "Purchase Invoice", icon: <UserCheck size={20} />, path: "/purchase-invoice" },
         { name: "Stock Adjustment", icon: <UserCheck size={20} />, path: "/stock-adjustment" },
         { name: "Goods Transit", icon: <UserCheck size={20} />, path: "/good-transit" },
       ]

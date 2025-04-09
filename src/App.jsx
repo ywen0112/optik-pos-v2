@@ -40,6 +40,9 @@ const App = () => {
         <Route path="/cash-sale" element={isAuthenticated ? <MainLayout title="Cash Sale" /> : <Navigate to="/login" />} />
         <Route path="/sales-order" element={isAuthenticated ? <MainLayout title="Sales Order"/> : <Navigate to="/login"/>} />
         <Route path="/sales-inquiry" element={isAuthenticated ? <MainLayout title="Sales Inquiry" /> : <Navigate to="/login" />} />
+        <Route path="/purchase-invoice" element={isAuthenticated ? <MainLayout title="Purchase Invoice" /> : <Navigate to="/login" />} />
+        <Route path="/stock-adjustment" element={isAuthenticated ? <MainLayout title="Stock Adjustment" /> : <Navigate to="/login" />} />
+        <Route path="/good-transit" element={isAuthenticated ? <MainLayout title="Goods Transit" /> : <Navigate to="/login" />} />
         <Route path="/audit-logs" element={isAuthenticated ? <MainLayout title="Audit Logs" /> : <Navigate to="/login" />} />
         <Route path="/reports" element={isAuthenticated ? <MainLayout title="Reports" /> : <Navigate to="/login" />} />
 

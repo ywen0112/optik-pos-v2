@@ -32,11 +32,17 @@ const MainLayout = ({ title }) => {
       case "/dashboard":
         return <Dashboard />;
       case "/sales-order":
-        return <SalesOrder/>
+        return <SalesOrder />
       case "/cash-sale":
         return <Transactions />;
       case "/sales-inquiry":
         return <TransactionsInquiry />;
+      case "/purchase-invoice":
+        return <Transactions />;
+      case "/stock-adjustment":
+        return <Transactions />;
+      case "/good-transit":
+        return <Transactions />;
       case "/audit-logs":
         return <AuditLogs />;
       case "/company-profile":
@@ -77,16 +83,16 @@ const MainLayout = ({ title }) => {
       }
     };
 
-    handleResize(); 
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <div className="flex h-screen w-screen">
-      <SideBar visible={sidebarVisible}/>
+      <SideBar visible={sidebarVisible} />
       <div className="flex flex-col flex-1 bg-gray-100">
-        <HeaderBar currentPage={title} onToggleSidebar={() => setSidebarVisible(!sidebarVisible)}/>
+        <HeaderBar currentPage={title} onToggleSidebar={() => setSidebarVisible(!sidebarVisible)} />
         <div className="flex-grow py-2 px-4">{renderContent()}</div>
       </div>
     </div>

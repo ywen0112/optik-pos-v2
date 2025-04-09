@@ -8,37 +8,46 @@ import DataGrid, {
     Button,
     Selection,
     FilterRow,
-    Scrolling
+    Scrolling,
+    SearchPanel
 } from 'devextreme-react/data-grid';
 import DropDownBox from 'devextreme-react/drop-down-box';
 import Switch from 'react-switch';
+import DatePicker from "react-datepicker";
+import SalesOrderItemTable from "../../Components/DataGrid/SalesOrderItemDataGrid";
 
 
 const initialData = [
-    { id: 1, itemCode: 'A100', description: 'Widget', uom: 'pcs', qty: 10, unitPrice: 5.0, discAmt: 0.1},
-    { id: 2, itemCode: 'B200', description: 'Gadget', uom: 'pcs', qty: 5, unitPrice: 12.5, discAmt: 0.05},
-    { id: 3, itemCode: 'C100', description: 'Widget', uom: 'pcs', qty: 10, unitPrice: 5.0, discAmt: 0.1},
-    { id: 4, itemCode: 'D200', description: 'Gadget', uom: 'pcs', qty: 5, unitPrice: 12.5, discAmt: 0.05},
+    { id: 1, itemCode: 'A100', description: 'Widget', uom: 'pcs', qty: 10, unitPrice: 5.0},
+    { id: 2, itemCode: 'B200', description: 'Gadget', uom: 'pcs', qty: 5, unitPrice: 12.5},
+    { id: 3, itemCode: 'C100', description: 'WidgetBox', uom: 'pcs', qty: 10, unitPrice: 15.0},
+    { id: 4, itemCode: 'D200', description: 'GadgetBox', uom: 'pcs', qty: 5, unitPrice: 22.5},
 ];
 
 const customerData = [
-    {id:1, Code:'300-001', Name:'abc'},
-    {id:2, Code:'300-002', Name:'abcd'},
-    {id:3, Code:'300-003', Name:'abcde'},
+    { id: 1, Code: '300-001', Name: 'abc' },
+    { id: 2, Code: '300-002', Name: 'abcd' },
+    { id: 3, Code: '300-003', Name: 'abcde' },
 ]
 
-const gridBoxDisplayExpr = (item) => item && `${item.Code}`;
-
-const gridColumns = ["Code", "Name"]
+const CustomerGridBoxDisplayExpr = (item) => item && `${item.Code}`;
+const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.Name}(${item.Code})`;
+const PractionerGridBoxDisplayExpr = (item) => item && `${item.Name}(${item.Code})`;
+const CustomerGridColumns = ["Code", "Name"]
 
 const SalesOrder = () => {
-    const ItemDataGridRef = useRef(null)
-    const [date, setDate] = useState(() =>
-        new Date().toISOString().slice(0, 10)
-    );
-    const [data, setData] = useState(initialData);
+    const [date, setDate] = useState(new Date());
     const [nextVisit, setNextVisit] = useState('');
     const [selectedInterval, setSelectedInterval] = useState(null);
+    const [CustomerGridBoxValue, setCustomerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
+    const [isCustomerGridBoxOpened, setIsCustomerGridBoxOpened] = useState(false);
+    const [isSalesPersonGridBoxOpened, setIsSalePersonGridBoxOpened] = useState(false);
+    const [SalesPersonGridBoxValue, setSalesPersonGridBoxValue] = useState({ id: "", Code: "", Name: "" });
+    const [isPractionerGridBoxOpened, setIsPractionerGridBoxOpened] = useState(false);
+    const [PractionerGridBoxValue, setPractionerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
+    const [SalesItemTableData, setSalesItemTableData] = useState([]);
+    const [currentSalesTotal, setCurrentSalesTotal] = useState(0);
+
 
     const intervals = [
         { label: '1 mth', months: 1 },
@@ -62,100 +71,165 @@ const SalesOrder = () => {
         setNextVisit(calcDate(date, months));
     };
 
-    const onRowRemoving = (rowKey) => {
-        const dataGrid = ItemDataGridRef.current.instance;
-        const rowIndex = dataGrid.getRowIndexByKey(rowKey);
-        if (rowIndex !== -1) {
-        dataGrid.deleteRow(rowIndex);
-        }
-    };
-
     useEffect(() => {
         if (selectedInterval !== null) {
             setNextVisit(calcDate(date, selectedInterval));
         }
     }, [date]);
 
-    const onEditorPreparing = (e) => {
-        if (e.parentType === 'dataRow' && e.dataField === 'itemCode') {
-            // Configure as dropdown
-            e.editorOptions.dataSource = initialData;
-            e.editorOptions.valueExpr = 'id';
-            e.editorOptions.displayExpr = 'itemCode';
-    
-            // Preserve the default onValueChanged handler
-            const defaultOnValueChanged = e.editorOptions.onValueChanged;
-    
-            // When user picks one, fill the other fields
-            e.editorOptions.onValueChanged = (args) => {
-                // Call the default handler to ensure the DataGrid is notified of the change
-                defaultOnValueChanged && defaultOnValueChanged(args);
-    
-                const item = initialData.find(i => i.id === args.value);
-                if (item) {
-                    const grid = e.component;
-                    const rowIndex = e.row.rowIndex;
-    
-                    // Update other fields in the row
-                    grid.cellValue(rowIndex, 'description', item.description);
-                    grid.cellValue(rowIndex, 'uom', item.uom);
-                    grid.cellValue(rowIndex, 'unitPrice', item.unitPrice);
-                    grid.cellValue(rowIndex, 'discAmt', item.discAmt);
-                }
-            };
+    const CustomerDataGridOnSelectionChanged = useCallback((e) => {
+        const selected = e.selectedRowsData?.[0];
+        if (selected) {
+            setCustomerGridBoxValue(selected);
+            setIsCustomerGridBoxOpened(false);
+        }
+    }, []);
+
+    const CustomerDataGridRender = useCallback(
+        () => (
+            <DataGrid
+                dataSource={customerData}
+                columns={CustomerGridColumns}
+                hoverStateEnabled={true}
+                showBorders={false}
+                selectedRowKeys={CustomerGridBoxValue.id}
+                onSelectionChanged={CustomerDataGridOnSelectionChanged}
+                height="100%"
+            >
+                <Selection mode="single" />
+                <Scrolling mode="virtual" />
+                <Paging
+                    enabled={true}
+                    pageSize={10}
+                />
+                <SearchPanel
+                    visible={true}
+                    onTextChange={(e) => { console.log(e) }}
+                    width="100%"
+                    highlightSearchText={true}
+                />
+            </DataGrid>
+        ),
+        [CustomerGridBoxValue, CustomerDataGridOnSelectionChanged],
+    );
+
+    const handleCustomerGridBoxValueChanged = (e) => {
+        if (!e.value) {
+            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
         }
     };
 
-    const [gridBoxValue, setGridBoxValue] = useState([3]);
-    const [isGridBoxOpened, setIsGridBoxOpened] = useState(false);
-    
-  
-    
-    const dataGridOnSelectionChanged = useCallback((e) => {
-      setGridBoxValue(e.selectedRowKeys);
-      setIsGridBoxOpened(false);
+    const onCustomerGridBoxOpened = useCallback((e) => {
+        if (e.name === 'opened') {
+            setIsCustomerGridBoxOpened(e.value);
+        }
     }, []);
-  
-  
-  
-    
-  
-    const dataGridRender = useCallback(
-      () => (
-        <DataGrid
-          dataSource={customerData}
-          columns={gridColumns}
-          hoverStateEnabled={true}
-          showBorders={true}
-          selectedRowKeys={gridBoxValue}
-          onSelectionChanged={dataGridOnSelectionChanged}
-          height="100%"
-        >
-          <Selection mode="single" />
-          <Scrolling mode="virtual" />
-          <Paging
-            enabled={true}
-            pageSize={10}
-          />
-          <FilterRow visible={true} />
-        </DataGrid>
-      ),
-      [gridBoxValue, dataGridOnSelectionChanged],
+
+    const SalesPersonDataGridOnSelectionChanged = useCallback((e) => {
+        const selected = e.selectedRowsData?.[0];
+        if (selected) {
+            setSalesPersonGridBoxValue(selected);
+            setIsSalePersonGridBoxOpened(false);
+        }
+    }, []);
+
+    const SalesPersonDataGridRender = useCallback(
+        () => (
+            <DataGrid
+                dataSource={customerData}
+                columns={CustomerGridColumns}
+                hoverStateEnabled={true}
+                showBorders={false}
+                selectedRowKeys={SalesPersonGridBoxValue.id}
+                onSelectionChanged={SalesPersonDataGridOnSelectionChanged}
+                height="100%"
+            >
+                <Selection mode="single" />
+                <Scrolling mode="virtual" />
+                <Paging
+                    enabled={true}
+                    pageSize={10}
+                />
+                <SearchPanel
+                    visible={true}
+                    onTextChange={(e) => { console.log(e) }}
+                    width="100%"
+                    highlightSearchText={true}
+                />
+            </DataGrid>
+        ),
+        [SalesPersonGridBoxValue, SalesPersonDataGridOnSelectionChanged],
     );
-  
-    
-  
-    const syncDataGridSelection = useCallback((e) => {
-        console.log(e.value[0].Code)
-      setGridBoxValue(e.value);
+
+    const handleSalesPersonGridBoxValueChanged = (e) => {
+        if (!e.value) {
+            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+        }
+    };
+
+    const onSalesPersonGridBoxOpened = useCallback((e) => {
+        if (e.name === 'opened') {
+            setIsSalePersonGridBoxOpened(e.value);
+        }
     }, []);
-  
-    const onGridBoxOpened = useCallback((e) => {
-      if (e.name === 'opened') {
-        setIsGridBoxOpened(e.value);
-      }
+
+    const PractionerDataGridOnSelectionChanged = useCallback((e) => {
+        const selected = e.selectedRowsData?.[0];
+        if (selected) {
+            setPractionerGridBoxValue(selected);
+            setIsPractionerGridBoxOpened(false);
+        }
     }, []);
-  
+
+    const PractionerDataGridRender = useCallback(
+        () => (
+            <DataGrid
+                dataSource={customerData}
+                columns={CustomerGridColumns}
+                hoverStateEnabled={true}
+                showBorders={false}
+                selectedRowKeys={PractionerGridBoxValue.id}
+                onSelectionChanged={PractionerDataGridOnSelectionChanged}
+                height="100%"
+            >
+                <Selection mode="single" />
+                <Scrolling mode="virtual" />
+                <Paging
+                    enabled={true}
+                    pageSize={10}
+                />
+                <SearchPanel
+                    visible={true}
+                    onTextChange={(e) => { console.log(e) }}
+                    width="100%"
+                    highlightSearchText={true}
+                />
+            </DataGrid>
+        ),
+        [PractionerGridBoxValue, PractionerDataGridOnSelectionChanged],
+    );
+
+    const handlePractionerGridBoxValueChanged = (e) => {
+        if (!e.value) {
+            setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
+        }
+    };
+
+    const onPractionerGridBoxOpened = useCallback((e) => {
+        if (e.name === 'opened') {
+            setIsPractionerGridBoxOpened(e.value);
+        }
+    }, []);
+
+    const handleSalesItemChange = (updatedData) =>{
+        const totalAmount = updatedData.reduce((sum, item)=>{
+            if(item.amount){
+                return sum + item.amount
+            }
+            return sum;
+        }, 0);
+        setCurrentSalesTotal(totalAmount);
+    };
 
     return (
         <>
@@ -164,25 +238,27 @@ const SalesOrder = () => {
                 <div className="space-y-2">
                     {/* Customer */}
                     <div className="grid grid-cols-[auto,1fr] items-center gap-1">
-                        <label htmlFor="customer" className="font-medium">
+                        <label htmlFor="customer" className="font-medium text-black" >
                             Customer
                         </label>
                         <div className="flex justify-end items-center gap-1">
                             <DropDownBox
-                            className="border rounded p-1 w-1/2"
-                                value={gridBoxValue}
-                                opened={isGridBoxOpened}
+                                id="CustomerSelection"
+                                className="border rounded p-1 w-1/2"
+                                value={CustomerGridBoxValue.id}
+                                opened={isCustomerGridBoxOpened}
+                                openOnFieldClick={true}
                                 valueExpr='id'
-                                deferRendering={false}
-                                displayExpr={gridBoxDisplayExpr}
+                                displayExpr={CustomerGridBoxDisplayExpr}
                                 placeholder="Select Customer"
                                 showClearButton={true}
+                                onValueChanged={handleCustomerGridBoxValueChanged}
                                 dataSource={customerData}
-                                onValueChanged={syncDataGridSelection}
-                                contentRender={dataGridRender}
+                                onOptionChanged={onCustomerGridBoxOpened}
+                                contentRender={CustomerDataGridRender}
                             />
-                            
-                            <button className="flex justify-center items-center w-3 h-3">...</button>
+
+                            <button className="flex justify-center items-center w-3 h-3 text-black hover:bg-secondary hover:text-primary">...</button>
                         </div>
                     </div>
 
@@ -193,19 +269,21 @@ const SalesOrder = () => {
                             id="CustomerName"
                             name="CustomerName"
                             rows={1}
-                            className="border rounded p-1 w-full resize-none"
+                            className="border rounded p-1 w-full resize-none bg-white text-black"
                             placeholder="Name"
+                            onChange={() => { }}
+                            value={CustomerGridBoxValue.Name}
                         />
                     </div>
 
                     {/* Remark */}
                     <div className="grid grid-cols-2 items-start gap-1">
-                        <label htmlFor="remark" className="font-medium">Remark</label>
+                        <label htmlFor="remark" className="font-medium text-black">Remark</label>
                         <textarea
                             id="remark"
                             name="remark"
                             rows={3}
-                            className="border rounded p-1 w-full resize-none"
+                            className="border rounded p-1 w-full resize-none bg-white"
                             placeholder="Enter remarks…"
                         />
                     </div>
@@ -214,46 +292,47 @@ const SalesOrder = () => {
                 {/* ——— Right column ——— */}
                 <div className="space-y-2">
                     {/* Date */}
-                    <div className="grid grid-cols-2 items-center gap-1">
+                    <div className="grid grid-cols-2 items-center gap-1 text-black">
                         <label htmlFor="date" className="font-medium">Date</label>
-                        <input
-                            type="date"
-                            id="date"
-                            name="date"
-                            className="border rounded p-1 w-full"
-                            value={date}
-                            onChange={e => setDate(e.target.value)}
+                        <DatePicker
+                            selected={date}
+                            id="SalesDate"
+                            name="SalesDate"
+                            dateFormat="dd-MM-yyyy"
+                            className="border rounded p-1 w-full bg-white"
+                            onChange={e => setDate(e.toISOString().slice(0, 10))}
                         />
+
                     </div>
 
                     {/* Ref No. */}
                     <div className="grid grid-cols-2 items-center gap-1">
-                        <label htmlFor="refNo" className="font-medium">Ref No.</label>
+                        <label htmlFor="refNo" className="font-medium text-black">Ref No.</label>
                         <input
                             type="text"
                             id="refNo"
                             name="refNo"
-                            className="border rounded p-1 w-full"
+                            className="border rounded p-1 w-full bg-white"
                             placeholder="Ref No"
                         />
                     </div>
 
                     {/* Next Visit */}
                     <div className="grid grid-cols-2 items-start gap-1">
-                        <label htmlFor="nextVisit" className="font-medium">Next Visit</label>
+                        <label htmlFor="nextVisit" className="font-medium text-black">Next Visit</label>
                         <div className="flex flex-col space-y-1 w-full">
-                            <input
-                                type="date"
+                            <DatePicker
+                                selected={nextVisit}
                                 id="nextVisit"
                                 name="nextVisit"
-                                className="border rounded p-1 w-full"
-                                value={nextVisit}
+                                dateFormat="dd-MM-yyyy"
+                                placeholderText="dd-MM-yyyy"
+                                className="border rounded p-1 w-full bg-white text-black"
                                 onChange={e => {
                                     setSelectedInterval(null);
-                                    setNextVisit(e.target.value);
+                                    setNextVisit(e);
                                 }}
                             />
-
                             <div className="flex flex-wrap space-x-1">
                                 {intervals.map(intv => (
                                     <button
@@ -279,95 +358,51 @@ const SalesOrder = () => {
                     {/* Sales Person */}
                     <div className="grid grid-cols-2 items-center gap-1">
                         <label htmlFor="salesPerson" className="font-medium">Sales Person</label>
-                        <select
-                            id="SalesPerson"
-                            name="SalesPerson"
+                        <DropDownBox
+                            id="SalesPersonSelection"
                             className="border rounded p-1 w-full"
-                            defaultValue=""
-                        >
-                            <option value="" disabled>Select Sales Person</option>
-                        </select>
+                            value={SalesPersonGridBoxValue.id}
+                            opened={isSalesPersonGridBoxOpened}
+                            openOnFieldClick={true}
+                            valueExpr='id'
+                            displayExpr={SalesPersonGridBoxDisplayExpr}
+                            placeholder="Select Sales Person"
+                            showClearButton={true}
+                            onValueChanged={handleSalesPersonGridBoxValueChanged}
+                            dataSource={customerData}
+                            onOptionChanged={onSalesPersonGridBoxOpened}
+                            contentRender={SalesPersonDataGridRender}
+                        />
                     </div>
 
                     {/* Practitioner */}
                     <div className="grid grid-cols-2 items-center gap-1">
                         <label htmlFor="practitioner" className="font-medium">Practitioner</label>
-                        <select
-                            id="practioner"
-                            name="practioner"
+                        <DropDownBox
+                            id="PractionerSelection"
                             className="border rounded p-1 w-full"
-                            defaultValue=""
-                        >
-                            <option value="" disabled>Select Practioner</option>
-                        </select>
+                            value={PractionerGridBoxValue.id}
+                            opened={isPractionerGridBoxOpened}
+                            openOnFieldClick={true}
+                            valueExpr='id'
+                            displayExpr={PractionerGridBoxDisplayExpr}
+                            placeholder="Select Practioner"
+                            showClearButton={true}
+                            onValueChanged={handlePractionerGridBoxValueChanged}
+                            dataSource={customerData}
+                            onOptionChanged={onPractionerGridBoxOpened}
+                            contentRender={PractionerDataGridRender}
+                        />
                     </div>
                 </div>
             </div>
 
             {/* DataGrid */}
             <div className="mt-3 bg-white shadow rounded">
-                <DataGrid
-                    ref={ItemDataGridRef}
-                    height={245}
-                    scrolling={{ mode: 'standard', showScrollbar: 'always' }}
-                    className="p-5"
-                    dataSource={[]}
-                    showBorders
-                    showRowLines
-                    onRowRemoving={onRowRemoving}
-                    onEditorPreparing={onEditorPreparing}
-                >
-                    <Paging enabled={false} />
-
-                    {/* allow editing, deleting, and keep a “new” row always at bottom */}
-                    <Editing
-                        mode="row"
-                        allowUpdating
-                        allowDeleting
-                        allowAdding
-                        newRowPosition="bottom"
-                    />
-
-                    <ColumnFixing enabled />
-                    <ColumnChooser enabled mode="select" title="Choose Columns" />
-                    <Column
-                        dataField="itemCode"
-                        caption="Item Code"
-                        lookup={{
-                            dataSource: initialData,
-                            valueExpr: 'id',
-                            displayExpr: 'itemCode',
-                        }}                        
-                    />
-                    <Column dataField="description" caption="Description" />
-                    <Column dataField="uom" caption="UOM" />
-                    <Column dataField="qty" caption="Qty" dataType="number" />
-                    <Column dataField="unitPrice" caption="Unit Price" dataType="number" />
-                    <Column
-                        dataField="isDiscByPercent"
-                        caption="Disc By Percent"
-                        dataType="boolean"
-                        width={150}
-                        cellRender={(cellData) => (
-                            <Switch
-                                checked={cellData.value}
-                                onChange={() =>{}}
-                                uncheckedIcon={<div style={{ padding: 2, fontSize: 12, color: "white", justifyContent: "center" }}>RM</div>}
-                                checkedIcon={<div style={{ padding: 2, fontSize: 12, color: "white", justifyContent: "center"}}>%</div>}
-                                draggable={false}
-                            />
-                        )}
-                    />
-                    <Column dataField="discAmt" caption="Disc Amnt" dataType="number" />
-                    <Column dataField="amount" caption="Amount" dataType="number" />
-
-                    <Column type="buttons" caption="Action">
-                        <Button name="delete" />
-                    </Column>
-                </DataGrid>
+                <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange}/>
             </div>
 
-            {/* Additional Section */}
+            {/* Eye Power Section */}
             
         </>
     )
