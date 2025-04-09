@@ -139,23 +139,23 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     },
     { name: "Inquiry", icon: <FileSearch size={20} />, 
       children: [
-        { name: "Sales Inquiry", shortLabel: "SI", path: "/sales-inquiry" },
-        { name: "Products Inquiry", shortLabel: "PI", path: "/products-inquiry" },
+        { name: "Sales Inquiry", shortLabel: "1", path: "/sales-inquiry" },
+        { name: "Products Inquiry", shortLabel: "2", path: "/products-inquiry" },
       ]
     },
     { name: "Reports", icon: <FileText size={20} />,
       children: [
-        { name: "Counter Session Report",shortLabel: "CT", path: "/counter-session-report" },
-        { name: "Daily Closing Summary Report", shortLabel: "CL", path: "/daily-closing-summay-report" },
-        { name: "Outstanding Balance Report", shortLabel: "OR", path: "/outstanding-report" },
-        { name: "Uncollected Order List", shortLabel: "UO", path: "/uncollected-order-list" },
-        { name: "Commission Reprot", shortLabel: "CM", path: "/commision-report" },
+        { name: "Counter Session Report",shortLabel: "1", path: "/counter-session-report" },
+        { name: "Daily Closing Summary Report", shortLabel: "2", path: "/daily-closing-summay-report" },
+        { name: "Outstanding Balance Report", shortLabel: "3", path: "/outstanding-report" },
+        { name: "Uncollected Order List", shortLabel: "4", path: "/uncollected-order-list" },
+        { name: "Commission Reprot", shortLabel: "5", path: "/commision-report" },
       ]
     },
     { name: "Tools", icon: <Wrench size={20} />, 
       children: [
-        { name: "Audit Logs", shortLabel: "AL", path: "/audit-logs" },
-        { name: "Close Counter", shortLabel: "CC", path: "/close-counter" },
+        { name: "Audit Logs", shortLabel: "1", path: "/audit-logs" },
+        { name: "Close Counter", shortLabel: "2", path: "/close-counter" },
       ]
     }
   ];
