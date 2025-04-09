@@ -51,7 +51,8 @@ const App = () => {
         <Route path="/supplier" element={isAuthenticated ? <MainLayout title="Creditor Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/product" element={isAuthenticated ? <MainLayout title="Item Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/location" element={isAuthenticated ? <MainLayout title="Location Maintenance" /> : <Navigate to="/login" />} />
-        
+        <Route path="/payment-method" element={isAuthenticated ? <MainLayout title="Payment Method" /> : <Navigate to="/login" />} />
+
         <Route path="/item-opening" element={isAuthenticated ? <MainLayout title="Item Opening" /> : <Navigate to="/login" />} />
         <Route path="/user" element={isAuthenticated ? <MainLayout title="User Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/user-role" element={isAuthenticated ? <MainLayout title="User Role Maintenance" /> : <Navigate to="/login" />} />
