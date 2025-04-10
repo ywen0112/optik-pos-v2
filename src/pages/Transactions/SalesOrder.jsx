@@ -15,6 +15,7 @@ import DropDownBox from 'devextreme-react/drop-down-box';
 import Switch from 'react-switch';
 import DatePicker from "react-datepicker";
 import SalesOrderItemTable from "../../Components/DataGrid/SalesOrderItemDataGrid";
+import ConfirmationModal from "../../modals/ConfirmationModal";
 
 
 const initialData = [
@@ -267,6 +268,7 @@ const SalesOrder = () => {
         "Prescribed RX": { opticalHeight: "", segmentHeight: "", dominantLeft: false, dominantRight: false },
         "Actual RX": { opticalHeight: "", segmentHeight: "", dominantLeft: false, dominantRight: false }
     });
+    const [showCopyModal, setShowCopyModal] = useState(false);
 
     const handleEyePowerChange = (tab, field, value) => {
         setEyePowerData(prev => ({
@@ -277,6 +279,24 @@ const SalesOrder = () => {
             }
         }));
     };
+
+    const handleCopyRxData = () => {
+        const sourceTab = activeRxTab;
+        const targetTab = activeRxTab === "Prescribed RX" ? "Actual RX" : "Prescribed RX";
+    
+        setEyePowerData((prev) => ({
+            ...prev,
+            [targetTab]: { ...prev[sourceTab] }
+        }));
+    
+        const copiedRx = JSON.parse(JSON.stringify(rxValues[sourceTab]));
+        setRxValues((prev) => ({
+            ...prev,
+            [targetTab]: copiedRx
+        }));
+    
+        setShowCopyModal(false);
+    };    
 
     //Eye Power RX
     const [activeRxMode, setActiveRxMode] = useState("Distance");
@@ -369,7 +389,7 @@ const SalesOrder = () => {
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <div className="grid grid-cols-[auto,1fr] items-center gap-1">
-                        <label htmlFor="customer" className="font-medium text-black" >
+                        <label htmlFor="customer" className="font-medium text-secondary" >
                             Customer
                         </label>
                         <div className="flex justify-end items-center gap-1">
@@ -390,7 +410,7 @@ const SalesOrder = () => {
                             />
 
                             <button
-                                className="flex justify-center items-center w-3 h-3 text-black hover:bg-grey-500 hover:text-primary"
+                                className="flex justify-center items-center w-3 h-3 text-secondary hover:bg-grey-500 hover:text-primary"
                                 onClick={() => setShowCustomerModal(true)}
                             >
                                 ...</button>
@@ -446,7 +466,7 @@ const SalesOrder = () => {
                             id="CustomerName"
                             name="CustomerName"
                             rows={1}
-                            className="border rounded p-1 w-full resize-none bg-white text-black"
+                            className="border rounded p-1 w-full resize-none bg-white text-secondary"
                             placeholder="Name"
                             onChange={() => { }}
                             value={CustomerGridBoxValue.Name}
@@ -454,7 +474,7 @@ const SalesOrder = () => {
                     </div>
 
                     <div className="grid grid-cols-2 items-start gap-1">
-                        <label htmlFor="remark" className="font-medium text-black">Remark</label>
+                        <label htmlFor="remark" className="font-medium text-secondary">Remark</label>
                         <textarea
                             id="remark"
                             name="remark"
@@ -466,7 +486,7 @@ const SalesOrder = () => {
                 </div>
 
                 <div className="space-y-2">
-                    <div className="grid grid-cols-2 items-center gap-1 text-black">
+                    <div className="grid grid-cols-2 items-center gap-1 text-secondary">
                         <label htmlFor="date" className="font-medium">Date</label>
                         <DatePicker
                             selected={date}
@@ -480,7 +500,7 @@ const SalesOrder = () => {
                     </div>
 
                     <div className="grid grid-cols-2 items-center gap-1">
-                        <label htmlFor="refNo" className="font-medium text-black">Ref No.</label>
+                        <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
                         <input
                             type="text"
                             id="refNo"
@@ -491,7 +511,7 @@ const SalesOrder = () => {
                     </div>
 
                     <div className="grid grid-cols-2 items-start gap-1">
-                        <label htmlFor="nextVisit" className="font-medium text-black">Next Visit</label>
+                        <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
                         <div className="flex flex-col space-y-1 w-full">
                             <DatePicker
                                 selected={nextVisit}
@@ -499,7 +519,7 @@ const SalesOrder = () => {
                                 name="nextVisit"
                                 dateFormat="dd-MM-yyyy"
                                 placeholderText="dd-MM-yyyy"
-                                className="border rounded p-1 w-full bg-white text-black"
+                                className="border rounded p-1 w-full bg-white text-secondary"
                                 onChange={e => {
                                     setSelectedInterval(null);
                                     setNextVisit(e);
@@ -528,7 +548,7 @@ const SalesOrder = () => {
 
 
                     <div className="grid grid-cols-2 items-center gap-1">
-                        <label htmlFor="salesPerson" className="font-medium">Sales Person</label>
+                        <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
                         <DropDownBox
                             id="SalesPersonSelection"
                             className="border rounded p-1 w-full"
@@ -547,7 +567,7 @@ const SalesOrder = () => {
                     </div>
 
                     <div className="grid grid-cols-2 items-center gap-1">
-                        <label htmlFor="practitioner" className="font-medium">Practitioner</label>
+                        <label htmlFor="practitioner" className="font-medium text-secondary">Practitioner</label>
                         <DropDownBox
                             id="PractionerSelection"
                             className="border rounded p-1 w-full"
@@ -574,18 +594,43 @@ const SalesOrder = () => {
             <div className="mt-4 p-2 bg-white shadow rounded w-full">
                 <div className="mb-4 flex space-x-4 w-full">
                     {["Prescribed RX", "Actual RX"].map((tab) => (
-                        <button
-                            key={tab}
-                            className={`flex-1 relative text-center px-4 py-2 font-medium border-b-2 ${activeRxTab === tab
-                                    ? "text-secondary after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:border-b-2 after:border-primary after:bg-white"
-                                    : "text-gray-500 hover:text-black"
+                        <div key={tab} className="relative flex-1">
+                            <button
+                                className={`w-full flex justify-center items-center gap-1 px-4 py-2 font-medium border-b-2 text-center relative ${
+                                    activeRxTab === tab
+                                        ? "text-secondary after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:border-b-2 after:border-primary after:bg-white"
+                                        : "text-gray-500 hover:text-secondary"
                                 }`}
-                            onClick={() => setActiveRxTab(tab)}
-                        >
-                            {tab}
-                        </button>
+                                onClick={() => {
+                                    setActiveRxTab(tab);
+                                    setActiveRxMode("Distance");
+                                }}
+                            >
+                                {tab}
+                            </button>
+
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); 
+                                    setActiveRxTab(tab);
+                                    setShowCopyModal(true);
+                                }}
+                                title={`Copy ${tab} to ${tab === "Prescribed RX" ? "Actual RX" : "Prescribed RX"}`}
+                                className="text-secondary bg-gray-100 absolute top-1/3 right-2 -translate-y-1/2 text-sm px-2 py-1 border rounded hover:text-primary"
+                            >
+                                ...
+                            </button>
+                        </div>
                     ))}
                 </div>
+
+                <ConfirmationModal
+                    isOpen={showCopyModal}
+                    title="Copy RX Data"
+                    message={`This will copy all RX data from "${activeRxTab}" to the other tab. Continue?`}
+                    onConfirm={handleCopyRxData}
+                    onCancel={() => setShowCopyModal(false)}
+                />
 
                 {activeRxTab === "Prescribed RX" && <div className="grid grid-cols-[auto,1fr,auto,1fr,auto,auto] items-center gap-3 w-full">
                     <label className="font-medium text-sm text-secondary">Optical Height</label>
