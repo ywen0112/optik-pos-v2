@@ -45,6 +45,14 @@ const App = () => {
         <Route path="/audit-logs" element={isAuthenticated ? <MainLayout title="Audit Logs" /> : <Navigate to="/login" />} />
         <Route path="/reports" element={isAuthenticated ? <MainLayout title="Reports" /> : <Navigate to="/login" />} />
 
+        <Route path="/counter-session-report" element={isAuthenticated ? <MainLayout title="Counter Session Report" /> : <Navigate to="/login" />} />
+        <Route path="/daily-closing-summay-report" element={isAuthenticated ? <MainLayout title="Daily Closing Summary Report" /> : <Navigate to="/login" />} />
+        <Route path="/outstanding-report" element={isAuthenticated ? <MainLayout title="Outstanding Balance Report" /> : <Navigate to="/login" />} />
+        <Route path="/uncollected-order-list" element={isAuthenticated ? <MainLayout title="Uncollected Order List" /> : <Navigate to="/login" />} />
+        <Route path="/commision-report" element={isAuthenticated ? <MainLayout title="Commission Report" /> : <Navigate to="/login" />} />
+
+        <Route path="/close-counter" element={isAuthenticated ? <MainLayout title="Close Counter" /> : <Navigate to="/login" />} />
+
         <Route path="/master-data" element={isAuthenticated ? <MainLayout title="Master Data" /> : <Navigate to="/login" />} />
         <Route path="/customer" element={isAuthenticated ? <MainLayout title="Debtor Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/supplier" element={isAuthenticated ? <MainLayout title="Creditor Maintenance" /> : <Navigate to="/login" />} />

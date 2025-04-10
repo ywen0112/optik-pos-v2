@@ -149,7 +149,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
         { name: "Daily Closing Summary Report", shortLabel: "2", path: "/daily-closing-summay-report" },
         { name: "Outstanding Balance Report", shortLabel: "3", path: "/outstanding-report" },
         { name: "Uncollected Order List", shortLabel: "4", path: "/uncollected-order-list" },
-        { name: "Commission Reprot", shortLabel: "5", path: "/commision-report" },
+        { name: "Commission Report", shortLabel: "5", path: "/commision-report" },
       ]
     },
     { name: "Tools", icon: <Wrench size={20} />, 

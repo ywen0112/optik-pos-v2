@@ -51,6 +51,18 @@ const MainLayout = ({ title }) => {
         return <CompanyProfile />;
       case "/reports":
         return <Reports />;
+      case "/counter-session-report":
+        return <Reports />;
+      case "/daily-closing-summay-report":
+        return <Reports />;
+      case "/outstanding-report":
+        return <Reports />;
+      case "/uncollected-order-list":
+        return <Reports />;
+      case "/commision-report":
+        return <Reports />;
+      case "/close-counter":
+        return <Reports />;
       case "/user":
         return <UserMaintenance />;
       case "/user-role":
