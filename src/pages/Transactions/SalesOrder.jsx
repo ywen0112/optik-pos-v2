@@ -296,6 +296,7 @@ const SalesOrder = () => {
         }));
     
         setShowCopyModal(false);
+        setActiveRxTab(targetTab);
     };    
 
     //Eye Power RX

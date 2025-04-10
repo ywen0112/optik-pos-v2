@@ -118,8 +118,8 @@ const CompanyProfile = () => {
     <>
       <div className="p-6 h-full">
         <div className="bg-white rounded h-full ">
-          <div className="text-black text-2xl p-6">Company Name</div>
-          <div className="p-4 grid grid-cols-2 gap-4">
+          <div className="text-black text-xl p-6">Company Name</div>
+          <div className="p-4 grid grid-cols-2 gap-4 text-sm">
             <div className="grid grid-cols-2 gap-4 text-black">
               <div>Business Register No.</div>
               <input
