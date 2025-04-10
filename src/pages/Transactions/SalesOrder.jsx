@@ -374,7 +374,6 @@ const SalesOrder = () => {
                         </label>
                         <div className="flex justify-end items-center gap-1">
                             <DropDownBox
-                                width={341}
                                 id="CustomerSelection"
                                 className="border rounded p-1 w-1/2"
                                 value={CustomerGridBoxValue.id}
@@ -588,7 +587,7 @@ const SalesOrder = () => {
                     ))}
                 </div>
 
-                <div className="grid grid-cols-[auto,1fr,auto,1fr,auto,auto] items-center gap-3 w-full">
+                {activeRxTab === "Prescribed RX" && <div className="grid grid-cols-[auto,1fr,auto,1fr,auto,auto] items-center gap-3 w-full">
                     <label className="font-medium text-sm text-secondary">Optical Height</label>
                     <input
                         type="text"
@@ -638,7 +637,7 @@ const SalesOrder = () => {
                             Right
                         </label>
                     </div>
-                </div>
+                </div>}
 
                 <div className="mt-6 space-y-2">
                     <div className="flex space-x-2">
@@ -751,7 +750,7 @@ const SalesOrder = () => {
                             { label: "Balance", value: balance }
                         ].map(({ label, value }) => (
                             <div key={label} className="flex flex-col">
-                                <label className="mb-1">{label}</label>
+                                <label className="mb-1 font-extrabold text-sm">{label}</label>
                                 {label === "Rounding Adj" ? (
                                     <input
                                     type="number"
@@ -762,11 +761,11 @@ const SalesOrder = () => {
                                       const parsed = parseFloat(rounding);
                                       setRounding(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
                                     }}
-                                    className="border rounded px-1 py-1 bg-white min-w-[100px] text-right"
+                                    className="border rounded px-1 py-3 bg-white min-w-[100px] min-h-10 text-sm text-right"
                                   />
                                   
                                 ) : (
-                                    <div className="border rounded px-5 py-1 bg-gray-100 min-w-[100px] text-right">
+                                    <div className="border rounded px-5 py-3 bg-gray-100 min-w-[100px] text-sm min-h-10 text-right">
                                         {value.toFixed(2)}
                                     </div>
                                 )}

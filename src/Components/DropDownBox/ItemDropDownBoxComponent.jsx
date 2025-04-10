@@ -9,7 +9,7 @@ import DataGrid, {
 const ItemDropDownBoxComponent = ({data, value, onValueChanged = () => {} }) => {
     const [items, setItems] = useState(data ? data : []);
     const [currentValue, setCurrentValue] = useState(value || '');
-    const [dropDownOpen, setDropDownOpen] = useState(false);
+    const [dropDownOpen, setDropDownOpen] = useState(true);
     const gridRef = useRef(null);
   
     useEffect(() => {
