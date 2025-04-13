@@ -43,7 +43,7 @@ const HeaderBar = ({ currentPage, onToggleSidebar }) => {
     }
 
     return (
-      <div className="text-secondary font-bold text-xl">
+      <div className="text-secondary font-bold text-2xl">
         {currentPage || "Untitled"}
       </div>
     );

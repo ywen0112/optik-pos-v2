@@ -6,10 +6,11 @@ import DataGrid, {
     Column,
   } from 'devextreme-react/data-grid';
 
+  const dropDownOptions = { width: 300 };
+
 const ItemDropDownBoxComponent = ({data, value, onValueChanged = () => {} }) => {
     const [items, setItems] = useState(data ? data : []);
     const [currentValue, setCurrentValue] = useState(value || '');
-    const [dropDownOpen, setDropDownOpen] = useState(true);
     const gridRef = useRef(null);
   
     useEffect(() => {
@@ -34,14 +35,12 @@ const ItemDropDownBoxComponent = ({data, value, onValueChanged = () => {} }) => 
       if (typeof onValueChanged === 'function') {
         onValueChanged(selected.id); // ← clean call
       }
-      setDropDownOpen(false);
     };
   
     return (
       <DropDownBox
         value={currentValue}
-        opened={dropDownOpen}
-        width={300}
+        dropDownOptions= {dropDownOptions}
         onOpened={() => setDropDownOpen(true)}
         onClosed={() => setDropDownOpen(false)}
         displayExpr="itemCode"
@@ -70,3 +69,10 @@ const ItemDropDownBoxComponent = ({data, value, onValueChanged = () => {} }) => 
 
   export default ItemDropDownBoxComponent
   
+
+  const initialData = [
+    { id: 1, itemCode: 'A100', description: 'Widget', uom: 'pcs', qty: 10, unitPrice: 5.0 },
+    { id: 2, itemCode: 'B200', description: 'Gadget', uom: 'pcs', qty: 5, unitPrice: 12.5 },
+    { id: 3, itemCode: 'C100', description: 'WidgetBox', uom: 'pcs', qty: 10, unitPrice: 15.0 },
+    { id: 4, itemCode: 'D200', description: 'GadgetBox', uom: 'pcs', qty: 5, unitPrice: 22.5 },
+  ];

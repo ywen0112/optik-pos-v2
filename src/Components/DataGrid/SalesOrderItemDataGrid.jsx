@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import DataGrid, {
+  Lookup,
   Paging,
   Editing,
   Column,
@@ -7,7 +8,6 @@ import DataGrid, {
   ColumnFixing,
   Button
 } from 'devextreme-react/data-grid';
-import Switch from 'react-switch';
 
 import ItemDropDownBoxComponent from '../DropDownBox/ItemDropDownBoxComponent';
 
@@ -20,6 +20,7 @@ const initialData = [
 
 const SalesOrderItemTable = ({ data, onDataChange }) => {
   const [itemDataGridData, setItemDataGridData] = useState(data);
+  const [itemQty, setItemQty] = useState(1);
 
   useEffect(() => {
     setItemDataGridData(data);
@@ -103,7 +104,8 @@ const SalesOrderItemTable = ({ data, onDataChange }) => {
             }}
           />
         )}
-      />
+      >
+      </Column>
       <Column dataField="id" visible={false} />
       <Column dataField="description" caption="Description" />
       <Column dataField="uom" caption="UOM" />
@@ -111,6 +113,8 @@ const SalesOrderItemTable = ({ data, onDataChange }) => {
         dataField="qty"
         caption="Qty"
         dataType="number"
+        value = {itemQty}
+        onValueChanged = {(e) => setItemQty(e.target.value)}
       />
       <Column dataField="unitPrice" caption="Unit Price" dataType="number" />
       <Column
@@ -118,38 +122,8 @@ const SalesOrderItemTable = ({ data, onDataChange }) => {
         dataField="isDiscByPercent"
         caption="Disc By Percent"
         dataType="boolean"
-        cellRender={(cellData) => (
-          <Switch
-            height={20}
-            checked={cellData.value}
-            onChange={() => { }}
-            uncheckedIcon={
-              <div
-                style={{
-                  padding: 2,
-                  fontSize: 12,
-                  color: 'white',
-                  justifyContent: 'center'
-                }}
-              >
-                RM
-              </div>
-            }
-            checkedIcon={
-              <div
-                style={{
-                  padding: 2,
-                  fontSize: 12,
-                  color: 'white',
-                  justifyContent: 'center'
-                }}
-              >
-                %
-              </div>
-            }
-            draggable={false}
-          />
-        )}
+        
+        
       />
       <Column dataField="discAmt" caption="Disc Amnt" dataType="number" value={0}/>
       <Column dataField="amount"

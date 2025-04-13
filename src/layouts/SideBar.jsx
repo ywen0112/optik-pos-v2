@@ -4,7 +4,16 @@ import { FileText, UserCheck,Wrench, ChevronDown, ChevronRight,
   Gauge,
   Receipt,
   FileSearch,
-  ScrollText
+  ScrollText,
+  FilePen,
+  FileBox,
+  Monitor,
+  NotepadText,
+  FileX,
+  PackageX,
+  Calculator,
+  MonitorX,
+  ClipboardX
 } from "lucide-react";
 import ErrorModal from "../modals/ErrorModal";
 import { CheckCounterSession } from "../apiconfig";
@@ -139,23 +148,23 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     },
     { name: "Inquiry", icon: <FileSearch size={20} />, 
       children: [
-        { name: "Sales Inquiry", shortLabel: "1", path: "/sales-inquiry" },
-        { name: "Products Inquiry", shortLabel: "2", path: "/products-inquiry" },
+        { name: "Sales Inquiry", icon: <FilePen size={20}/>, path: "/sales-inquiry" },
+        { name: "Products Inquiry", icon: <FileBox size={20}/>, path: "/products-inquiry" },
       ]
     },
     { name: "Reports", icon: <FileText size={20} />,
       children: [
-        { name: "Counter Session Report",shortLabel: "1", path: "/counter-session-report" },
-        { name: "Daily Closing Summary Report", shortLabel: "2", path: "/daily-closing-summay-report" },
-        { name: "Outstanding Balance Report", shortLabel: "3", path: "/outstanding-report" },
-        { name: "Uncollected Order List", shortLabel: "4", path: "/uncollected-order-list" },
-        { name: "Commission Report", shortLabel: "5", path: "/commision-report" },
+        { name: "Counter Session Report", icon: <Monitor size={20}/> , path: "/counter-session-report" },
+        { name: "Daily Closing Summary Report", icon: <NotepadText size={20}/>, path: "/daily-closing-summay-report" },
+        { name: "Outstanding Balance Report", icon: <FileX size={20}/>, path: "/outstanding-report" },
+        { name: "Uncollected Order List", icon: <PackageX size={20}/>, path: "/uncollected-order-list" },
+        { name: "Commission Report", icon: <Calculator size={20}/>, path: "/commision-report" },
       ]
     },
     { name: "Tools", icon: <Wrench size={20} />, 
       children: [
-        { name: "Audit Logs", shortLabel: "1", path: "/audit-logs" },
-        { name: "Close Counter", shortLabel: "2", path: "/close-counter" },
+        { name: "Audit Logs", icon: <ClipboardX size={20}/>, path: "/audit-logs" },
+        { name: "Close Counter", icon: <MonitorX size={20}/>, path: "/close-counter" },
       ]
     }
   ];
@@ -265,7 +274,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
                          {visible ? (
                             <span>{child.name}</span>
                           ) : (
-                            <span className="text-xs font-bold">{child.shortLabel}</span>
+                            <span className="text-xs font-bold">{child.shortLabel ?? child.icon}</span>
                           )}
                         </li>
                       ))}

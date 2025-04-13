@@ -60,7 +60,7 @@ const SalesOrder = () => {
         { label: '3 mth', months: 3 },
         { label: '6 mth', months: 6 },
         { label: '9 mth', months: 9 },
-        { label: '1 yr', months: 12 },
+        { label: '1 yr.', months: 12 },
     ];
 
     const calcDate = (base, addMonths) => {
@@ -275,7 +275,8 @@ const SalesOrder = () => {
             ...prev,
             [tab]: {
                 ...prev[tab],
-                [field]: value
+                dominantLeft: field === "dominantLeft" ? value : false,
+                dominantRight: field === "dominantRight" ? value : false
             }
         }));
     };
@@ -283,21 +284,21 @@ const SalesOrder = () => {
     const handleCopyRxData = () => {
         const sourceTab = activeRxTab;
         const targetTab = activeRxTab === "Prescribed RX" ? "Actual RX" : "Prescribed RX";
-    
+
         setEyePowerData((prev) => ({
             ...prev,
             [targetTab]: { ...prev[sourceTab] }
         }));
-    
+
         const copiedRx = JSON.parse(JSON.stringify(rxValues[sourceTab]));
         setRxValues((prev) => ({
             ...prev,
             [targetTab]: copiedRx
         }));
-    
+
         setShowCopyModal(false);
         setActiveRxTab(targetTab);
-    };    
+    };
 
     //Eye Power RX
     const [activeRxMode, setActiveRxMode] = useState("Distance");
@@ -389,32 +390,43 @@ const SalesOrder = () => {
         <>
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <div className="grid grid-cols-[auto,1fr] items-center gap-1">
+                    <div className="items-center gap-1">
                         <label htmlFor="customer" className="font-medium text-secondary" >
                             Customer
                         </label>
-                        <div className="flex justify-end items-center gap-1">
-                            <DropDownBox
-                                id="CustomerSelection"
-                                className="border rounded p-1 w-1/2"
-                                value={CustomerGridBoxValue.id}
-                                opened={isCustomerGridBoxOpened}
-                                openOnFieldClick={true}
-                                valueExpr='id'
-                                displayExpr={CustomerGridBoxDisplayExpr}
-                                placeholder="Select Customer"
-                                showClearButton={true}
-                                onValueChanged={handleCustomerGridBoxValueChanged}
-                                dataSource={customerData}
-                                onOptionChanged={onCustomerGridBoxOpened}
-                                contentRender={CustomerDataGridRender}
-                            />
+                        <div className="justify-self-start w-full">
 
-                            <button
-                                className="flex justify-center items-center w-3 h-3 text-secondary hover:bg-grey-500 hover:text-primary"
-                                onClick={() => setShowCustomerModal(true)}
-                            >
-                                ...</button>
+                            <div className="flex justify-end gap-2">
+                                <DropDownBox
+                                    id="CustomerSelection"
+                                    className="border rounded p-1 w-1/2 h-[34px]"
+                                    value={CustomerGridBoxValue.id}
+                                    opened={isCustomerGridBoxOpened}
+                                    openOnFieldClick={true}
+                                    valueExpr='id'
+                                    displayExpr={CustomerGridBoxDisplayExpr}
+                                    placeholder="Select Customer"
+                                    showClearButton={true}
+                                    onValueChanged={handleCustomerGridBoxValueChanged}
+                                    dataSource={customerData}
+                                    onOptionChanged={onCustomerGridBoxOpened}
+                                    contentRender={CustomerDataGridRender}
+                                />
+                                <textarea
+                                    id="CustomerName"
+                                    name="CustomerName"
+                                    rows={1}
+                                    className="border rounded p-2 w-full h-[34px] resize-none bg-white text-secondary"
+                                    placeholder="Name"
+                                    onChange={() => { }}
+                                    value={CustomerGridBoxValue.Name}
+                                />
+                                <button
+                                    className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
+                                    onClick={() => setShowCustomerModal(true)}
+                                >
+                                    ...</button>
+                            </div>
                         </div>
                     </div>
 
@@ -461,98 +473,84 @@ const SalesOrder = () => {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-2 items-center gap-1">
-                        <label htmlFor="customer" className="font-medium"></label>
-                        <textarea
-                            id="CustomerName"
-                            name="CustomerName"
-                            rows={1}
-                            className="border rounded p-1 w-full resize-none bg-white text-secondary"
-                            placeholder="Name"
-                            onChange={() => { }}
-                            value={CustomerGridBoxValue.Name}
-                        />
-                    </div>
 
-                    <div className="grid grid-cols-2 items-start gap-1">
+                    <div className="items-start gap-1">
                         <label htmlFor="remark" className="font-medium text-secondary">Remark</label>
+                        <div></div>
                         <textarea
                             id="remark"
                             name="remark"
-                            rows={3}
-                            className="border rounded p-1 w-full resize-none bg-white"
+                            rows={4}
+                            className="border rounded p-1 w-full resize-none bg-white justify-self-end"
                             placeholder="Enter remarks…"
                         />
                     </div>
                 </div>
-
-                <div className="space-y-2">
-                    <div className="grid grid-cols-2 items-center gap-1 text-secondary">
-                        <label htmlFor="date" className="font-medium">Date</label>
-                        <DatePicker
-                            selected={date}
-                            id="SalesDate"
-                            name="SalesDate"
-                            dateFormat="dd-MM-yyyy"
-                            className="border rounded p-1 w-full bg-white"
-                            onChange={e => setDate(e.toISOString().slice(0, 10))}
-                        />
-
-                    </div>
-
-                    <div className="grid grid-cols-2 items-center gap-1">
+                <div className="grid grid-cols-2 items-center gap-1">
+                    <div className="flex flex-col gap-1">
                         <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
                         <input
                             type="text"
                             id="refNo"
                             name="refNo"
-                            className="border rounded p-1 w-full bg-white"
+                            className="border rounded p-1 w-full bg-white h-[34px]"
                             placeholder="Ref No"
                         />
                     </div>
+                    <div className="flex flex-col gap-1">
+                        <label htmlFor="date" className="font-medium text-secondary">Date</label>
+                        <DatePicker
+                            selected={date}
+                            id="SalesDate"
+                            name="SalesDate"
+                            dateFormat="dd-MM-yyyy"
+                            className="border rounded p-1 w-full bg-white h-[34px]"
+                            onChange={e => setDate(e.toISOString().slice(0, 10))}
+                        />
 
-                    <div className="grid grid-cols-2 items-start gap-1">
+                    </div>
+                    <div></div>
+                    <div className="flex flex-col items-start gap-1">
                         <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
-                        <div className="flex flex-col space-y-1 w-full">
+                        <div className="flex flex-col space-y-1 w-full z-50">
                             <DatePicker
                                 selected={nextVisit}
                                 id="nextVisit"
                                 name="nextVisit"
                                 dateFormat="dd-MM-yyyy"
                                 placeholderText="dd-MM-yyyy"
-                                className="border rounded p-1 w-full bg-white text-secondary"
+                                className="border rounded p-1 w-full bg-white text-secondary h-[34px]"
                                 onChange={e => {
                                     setSelectedInterval(null);
                                     setNextVisit(e);
                                 }}
-                            />
-                            <div className="flex flex-wrap space-x-1">
-                                {intervals.map(intv => (
-                                    <button
-                                        key={intv.months}
-                                        type="button"
-                                        className={`
-                                                text-sm px-2 py-0.5 rounded border
+                            >
+                                <div className="ml-3 justify-center space-x-1">
+                                    {intervals.map(intv => (
+                                        <button
+                                            key={intv.months}
+                                            type="button"
+                                            className={`
+                                                text-sm px-1 py-0.5 rounded border w-9
                                                 ${selectedInterval === intv.months
-                                                ? 'bg-slate-700 text-white'
-                                                : 'bg-white text-gray-700'
-                                            }
+                                                    ? 'bg-slate-700 text-white'
+                                                    : 'bg-white text-gray-700'
+                                                }
                                         `}
-                                        onClick={() => pickInterval(intv.months)}
-                                    >
-                                        {intv.label}
-                                    </button>
-                                ))}
-                            </div>
+                                            onClick={() => pickInterval(intv.months)}
+                                        >
+                                            {intv.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </DatePicker>
                         </div>
                     </div>
-
-
-                    <div className="grid grid-cols-2 items-center gap-1">
+                    <div className="flex flex-col gap-1">
                         <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
                         <DropDownBox
                             id="SalesPersonSelection"
-                            className="border rounded p-1 w-full"
+                            className="border rounded w-full"
                             value={SalesPersonGridBoxValue.id}
                             opened={isSalesPersonGridBoxOpened}
                             openOnFieldClick={true}
@@ -566,12 +564,11 @@ const SalesOrder = () => {
                             contentRender={SalesPersonDataGridRender}
                         />
                     </div>
-
-                    <div className="grid grid-cols-2 items-center gap-1">
+                    <div className="flex flex-col gap-1">
                         <label htmlFor="practitioner" className="font-medium text-secondary">Practitioner</label>
                         <DropDownBox
                             id="PractionerSelection"
-                            className="border rounded p-1 w-full"
+                            className="border rounded w-full"
                             value={PractionerGridBoxValue.id}
                             opened={isPractionerGridBoxOpened}
                             openOnFieldClick={true}
@@ -585,6 +582,7 @@ const SalesOrder = () => {
                             contentRender={PractionerDataGridRender}
                         />
                     </div>
+
                 </div>
             </div>
 
@@ -592,16 +590,15 @@ const SalesOrder = () => {
                 <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} />
             </div>
 
-            <div className="mt-4 p-2 bg-white shadow rounded w-full">
+            <div className="mt-3 p-2 bg-white shadow rounded w-full">
                 <div className="mb-4 flex space-x-4 w-full">
                     {["Prescribed RX", "Actual RX"].map((tab) => (
                         <div key={tab} className="relative flex-1">
                             <button
-                                className={`w-full flex justify-center items-center gap-1 px-4 py-2 font-medium border-b-2 text-center relative ${
-                                    activeRxTab === tab
-                                        ? "text-secondary after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:border-b-2 after:border-primary after:bg-white"
-                                        : "text-gray-500 hover:text-secondary"
-                                }`}
+                                className={`w-full flex justify-center items-center gap-1 px-4 py-2 font-medium border-b-2 text-center relative ${activeRxTab === tab
+                                    ? "text-secondary after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:border-b-2 after:border-primary after:bg-white"
+                                    : "text-gray-500 hover:text-secondary"
+                                    }`}
                                 onClick={() => {
                                     setActiveRxTab(tab);
                                     setActiveRxMode("Distance");
@@ -612,7 +609,7 @@ const SalesOrder = () => {
 
                             <button
                                 onClick={(e) => {
-                                    e.stopPropagation(); 
+                                    e.stopPropagation();
                                     setActiveRxTab(tab);
                                     setShowCopyModal(true);
                                 }}
@@ -633,7 +630,7 @@ const SalesOrder = () => {
                     onCancel={() => setShowCopyModal(false)}
                 />
 
-                {activeRxTab === "Prescribed RX" && <div className="grid grid-cols-[auto,1fr,auto,1fr,auto,auto] items-center gap-3 w-full">
+                {activeRxTab === "Prescribed RX" && <div className="grid grid-cols-[10%,15%,10%,15%,20%,auto] items-center gap-3 w-full">
                     <label className="font-medium text-sm text-secondary">Optical Height</label>
                     <input
                         type="text"
@@ -656,10 +653,10 @@ const SalesOrder = () => {
                         }
                     />
 
-                    <div className="flex items-center space-x-2 col-span-2">
+                    <div className="flex items-center space-x-2 col-span-2 ">
                         <span className="font-medium text-sm text-secondary">Dominant Eye:</span>
 
-                        <label className="inline-flex items-center text-secondary text-xs">
+                        <label className="inline-flex items-center text-secondary ">
                             <input
                                 type="checkbox"
                                 className="mr-1 accent-white bg-white"
@@ -671,7 +668,7 @@ const SalesOrder = () => {
                             Left
                         </label>
 
-                        <label className="inline-flex items-center text-secondary text-xs">
+                        <label className="inline-flex items-center text-secondary ">
                             <input
                                 type="checkbox"
                                 className="mr-1 accent-white bg-white"
@@ -685,20 +682,20 @@ const SalesOrder = () => {
                     </div>
                 </div>}
 
-                <div className="mt-6 space-y-2">
+                <div className=" space-y-2">
                     <div className="flex space-x-2">
-                        {["Distance", "Reading"].map((mode) => (
+                        {/* {["Distance", "Reading"].map((mode) => (
                             <button
                                 key={mode}
                                 onClick={() => setActiveRxMode(mode)}
                                 className={`px-4 py-1 border rounded text-sm font-medium ${activeRxMode === mode
-                                        ? "bg-primary text-white"
-                                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                                    ? "bg-primary text-white"
+                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                                     }`}
                             >
                                 {mode}
                             </button>
-                        ))}
+                        ))} */}
                     </div>
 
                     <div className="overflow-x-auto">
@@ -747,27 +744,27 @@ const SalesOrder = () => {
                 </div>
             </div>
 
-            <div className="w-full mt-6 bg-white shadow rounded p-4 mb-4">
+            <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4">
                 <div className="w-full grid grid-cols-3 gap-6 items-start text-sm text-secondary font-medium">
                     <div className="flex flex-col">
-                        <label className="mb-1">Security Deposit</label>
+                        <label className="mb-1 text-2xl">Security Deposit</label>
                         <input
                             type="text"
-                            className="border rounded px-2 py-1 bg-white text-secondary w-44"
+                            className="border rounded px-2 py-1 bg-white text-xl text-secondary w-44"
                             value={securityDeposit}
                             onChange={(e) => handleSecurityDepositChange(e.target.value)}
                             placeholder="0.00"
                         />
                         <label className="mb-1 invisible">Payment</label>
-                        <button className="bg-primary text-white px-2 py-1 w-20 rounded hover:bg-primary/90 mt-[2px]">
+                        <button className="bg-primary text-white w-44  px-2 py-1 text-xl rounded hover:bg-primary/90 mt-[2px]">
                             Payment
                         </button>
                     </div>
 
                     <div className="flex flex-col">
-                        <label className="mb-1">Status</label>
+                        <label className="mb-1 text-2xl">Status</label>
                         <div className="flex flex-col space-y-1">
-                            <label className="text-xs">
+                            <label className="text-xl">
                                 <input
                                     type="checkbox"
                                     checked={statusReady}
@@ -776,7 +773,7 @@ const SalesOrder = () => {
                                 />
                                 Ready
                             </label>
-                            <label className="text-xs">
+                            <label className="text-xl">
                                 <input
                                     type="checkbox"
                                     checked={statusCollected}
@@ -788,30 +785,30 @@ const SalesOrder = () => {
                         </div>
                     </div>
 
-                    <div className="flex flex-col space-y-1 text-xs">
+                    <div className="flex flex-col space-y-1">
                         {[
                             { label: "Subtotal", value: currentSalesTotal },
                             { label: "Rounding Adj", value: rounding },
                             { label: "Total", value: total },
                             { label: "Balance", value: balance }
                         ].map(({ label, value }) => (
-                            <div key={label} className="flex flex-col">
-                                <label className="mb-1 font-extrabold text-sm">{label}</label>
+                            <div key={label} className="grid grid-cols-[auto,30%] gap-1">
+                                <label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{label}</label>
                                 {label === "Rounding Adj" ? (
                                     <input
-                                    type="number"
-                                    step="0.01"
-                                    value={rounding}
-                                    onChange={(e) => setRounding(e.target.value)}
-                                    onBlur={() => {
-                                      const parsed = parseFloat(rounding);
-                                      setRounding(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
-                                    }}
-                                    className="border rounded px-1 py-3 bg-white min-w-[100px] min-h-10 text-sm text-right"
-                                  />
-                                  
+                                        type="number"
+                                        step="0.01"
+                                        value={rounding}
+                                        onChange={(e) => setRounding(e.target.value)}
+                                        onBlur={() => {
+                                            const parsed = parseFloat(rounding);
+                                            setRounding(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
+                                        }}
+                                        className=" border rounded px-1 py-2 bg-white w-full min-h-5 text-right "
+                                    />
+
                                 ) : (
-                                    <div className="border rounded px-5 py-3 bg-gray-100 min-w-[100px] text-sm min-h-10 text-right">
+                                    <div className="border rounded px-5 py-2 bg-gray-100 w-full min-h-5 text-right">
                                         {value.toFixed(2)}
                                     </div>
                                 )}
@@ -820,7 +817,15 @@ const SalesOrder = () => {
                     </div>
 
                 </div>
+
+
             </div>
+
+            {/* <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4"> */}
+            <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 mt-[2px]">
+                Save
+            </button>
+            {/* </div> */}
         </>
     )
 }

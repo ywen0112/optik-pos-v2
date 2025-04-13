@@ -5,18 +5,30 @@
 
 
 :root {
-  font-family: 'Nunito', sans-serif; 
+  font-family: 'Roboto', sans-serif; 
   line-height: 1.5;
   font-weight: 400;
+  font-size: 13.3px;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87); 
+  background-color: #242424; */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+/* 
+.pageTitle{
+  font-family: 'Special Gothic Condensed One', sans-serif;
+  line-height: 1.5;
+  font-size: x-large;
+  font-weight: 1000;
+} */
+
+#SalesOrderItemTable{
+  font-family: 'Roboto', sans-serif;
 }
 
 a {
