@@ -49,7 +49,7 @@ const SalesOrderItemTable = ({ data, onDataChange }) => {
           // keep a reference to the grid instance & row
           const grid = e.component;
           const rowIndex = e.row.rowIndex;
-    
+
           // decorate the editorOptions
           e.editorOptions.onValueChanged = args => {
             // pick up the new & existing values
@@ -63,7 +63,7 @@ const SalesOrderItemTable = ({ data, onDataChange }) => {
             grid.cellValue(rowIndex, 'unitPrice', newPrice)
             grid.cellValue(rowIndex, 'isDiscByPercent', newDiscMethod)
             grid.cellValue(rowIndex, 'discAmt', newDiscAmt)
-            grid.cellValue(rowIndex, 'amount', (newQty * newPrice) - (newDiscMethod === true ? newDiscAmt/100 : newDiscAmt));
+            grid.cellValue(rowIndex, 'amount', (newQty * newPrice) - (newDiscMethod === true ? newDiscAmt / 100 : newDiscAmt));
           };
         }
       }}
@@ -106,15 +106,17 @@ const SalesOrderItemTable = ({ data, onDataChange }) => {
         )}
       >
       </Column>
-      <Column dataField="id" visible={false} />
+      <Column dataField="id" visible={false} allowExporting={false}
+        allowEditing={false}
+        showInColumnChooser={false} />
       <Column dataField="description" caption="Description" />
       <Column dataField="uom" caption="UOM" />
       <Column
         dataField="qty"
         caption="Qty"
         dataType="number"
-        value = {itemQty}
-        onValueChanged = {(e) => setItemQty(e.target.value)}
+        value={itemQty}
+        onValueChanged={(e) => setItemQty(e.target.value)}
       />
       <Column dataField="unitPrice" caption="Unit Price" dataType="number" />
       <Column
@@ -122,14 +124,14 @@ const SalesOrderItemTable = ({ data, onDataChange }) => {
         dataField="isDiscByPercent"
         caption="Disc By Percent"
         dataType="boolean"
-        
-        
+
+
       />
-      <Column dataField="discAmt" caption="Disc Amnt" dataType="number" value={0}/>
+      <Column dataField="discAmt" caption="Disc Amnt" dataType="number" value={0} />
       <Column dataField="amount"
         caption="Amount"
         dataType="number"
-         />
+      />
 
       <Column type="buttons" caption="Action">
         <Button name="edit" />

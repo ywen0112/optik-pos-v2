@@ -41,8 +41,6 @@ const ItemDropDownBoxComponent = ({data, value, onValueChanged = () => {} }) => 
       <DropDownBox
         value={currentValue}
         dropDownOptions= {dropDownOptions}
-        onOpened={() => setDropDownOpen(true)}
-        onClosed={() => setDropDownOpen(false)}
         displayExpr="itemCode"
         valueExpr="id"
         showClearButton

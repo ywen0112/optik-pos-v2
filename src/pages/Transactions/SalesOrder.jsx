@@ -512,7 +512,7 @@ const SalesOrder = () => {
                     <div></div>
                     <div className="flex flex-col items-start gap-1">
                         <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
-                        <div className="flex flex-col space-y-1 w-full z-50">
+                        <div className="flex flex-col space-y-1 w-full z-30">
                             <DatePicker
                                 selected={nextVisit}
                                 id="nextVisit"

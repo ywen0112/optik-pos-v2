@@ -13,11 +13,7 @@ import DataGrid, {
     Scrolling
 } from 'devextreme-react/data-grid';
 
-
-
 const pageSizes = [10, 25, 50, 100];
-
-
 
 const StandardDataGridComponent = ({
     height,
