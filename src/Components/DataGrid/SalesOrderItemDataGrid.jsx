@@ -18,7 +18,7 @@ const initialData = [
   { id: 4, itemCode: 'D200', description: 'GadgetBox', uom: 'pcs', qty: 5, unitPrice: 22.5 },
 ];
 
-const SalesOrderItemTable = ({ data, onDataChange }) => {
+const SalesOrderItemTable = ({ data, onDataChange, height=245 }) => {
   const [itemDataGridData, setItemDataGridData] = useState(data);
   const [itemQty, setItemQty] = useState(1);
 
@@ -37,7 +37,7 @@ const SalesOrderItemTable = ({ data, onDataChange }) => {
     <DataGrid
       id='SalesOrderItemTable'
       dataSource={itemDataGridData}
-      height={245}
+      height={height}
       scrolling={{ mode: 'standard', showScrollbar: 'always' }}
       className="p-5"
       showBorders

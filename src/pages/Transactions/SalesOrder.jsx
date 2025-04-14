@@ -16,6 +16,7 @@ import Switch from 'react-switch';
 import DatePicker from "react-datepicker";
 import SalesOrderItemTable from "../../Components/DataGrid/SalesOrderItemDataGrid";
 import ConfirmationModal from "../../modals/ConfirmationModal";
+import { Copy } from "lucide-react";
 
 
 const initialData = [
@@ -480,7 +481,7 @@ const SalesOrder = () => {
                         <textarea
                             id="remark"
                             name="remark"
-                            rows={4}
+                            rows={6}
                             className="border rounded p-1 w-full resize-none bg-white justify-self-end"
                             placeholder="Enter remarks…"
                         />
@@ -509,43 +510,6 @@ const SalesOrder = () => {
                         />
 
                     </div>
-                    <div></div>
-                    <div className="flex flex-col items-start gap-1">
-                        <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
-                        <div className="flex flex-col space-y-1 w-full z-30">
-                            <DatePicker
-                                selected={nextVisit}
-                                id="nextVisit"
-                                name="nextVisit"
-                                dateFormat="dd-MM-yyyy"
-                                placeholderText="dd-MM-yyyy"
-                                className="border rounded p-1 w-full bg-white text-secondary h-[34px]"
-                                onChange={e => {
-                                    setSelectedInterval(null);
-                                    setNextVisit(e);
-                                }}
-                            >
-                                <div className="ml-3 justify-center space-x-1">
-                                    {intervals.map(intv => (
-                                        <button
-                                            key={intv.months}
-                                            type="button"
-                                            className={`
-                                                text-sm px-1 py-0.5 rounded border w-9
-                                                ${selectedInterval === intv.months
-                                                    ? 'bg-slate-700 text-white'
-                                                    : 'bg-white text-gray-700'
-                                                }
-                                        `}
-                                            onClick={() => pickInterval(intv.months)}
-                                        >
-                                            {intv.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </DatePicker>
-                        </div>
-                    </div>
                     <div className="flex flex-col gap-1">
                         <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
                         <DropDownBox
@@ -564,6 +528,44 @@ const SalesOrder = () => {
                             contentRender={SalesPersonDataGridRender}
                         />
                     </div>
+                    <div className="flex flex-col row-span-2 self-start gap-1 mt-2">
+                        <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
+                        <div className="flex flex-col space-y-1 w-full z-30">
+                            <DatePicker
+                                selected={nextVisit}
+                                id="nextVisit"
+                                name="nextVisit"
+                                dateFormat="dd-MM-yyyy"
+                                placeholderText="dd-MM-yyyy"
+                                className="border rounded p-1 w-full bg-white text-secondary h-[34px]"
+                                onChange={e => {
+                                    setSelectedInterval(null);
+                                    setNextVisit(e);
+                                }}
+                            >
+                                
+                            </DatePicker>
+                        </div>
+                        <div className="ml-3 space-x-1">
+                                    {intervals.map(intv => (
+                                        <button
+                                            key={intv.months}
+                                            type="button"
+                                            className={`
+                                                text-sm px-1 py-0.5 rounded border w-16 h-10
+                                                ${selectedInterval === intv.months
+                                                    ? 'bg-slate-700 text-white'
+                                                    : 'bg-white text-gray-700'
+                                                }
+                                        `}
+                                            onClick={() => pickInterval(intv.months)}
+                                        >
+                                            {intv.label}
+                                        </button>
+                                    ))}
+                                </div>
+                    </div>
+                    
                     <div className="flex flex-col gap-1">
                         <label htmlFor="practitioner" className="font-medium text-secondary">Practitioner</label>
                         <DropDownBox
@@ -582,6 +584,8 @@ const SalesOrder = () => {
                             contentRender={PractionerDataGridRender}
                         />
                     </div>
+
+
 
                 </div>
             </div>
@@ -616,7 +620,7 @@ const SalesOrder = () => {
                                 title={`Copy ${tab} to ${tab === "Prescribed RX" ? "Actual RX" : "Prescribed RX"}`}
                                 className="text-secondary bg-gray-100 absolute top-1/3 right-2 -translate-y-1/2 text-sm px-2 py-1 border rounded hover:text-primary"
                             >
-                                ...
+                                <Copy size={20}/>
                             </button>
                         </div>
                     ))}
@@ -630,11 +634,11 @@ const SalesOrder = () => {
                     onCancel={() => setShowCopyModal(false)}
                 />
 
-                {activeRxTab === "Prescribed RX" && <div className="grid grid-cols-[10%,15%,10%,15%,20%,auto] items-center gap-3 w-full">
-                    <label className="font-medium text-sm text-secondary">Optical Height</label>
+                <div className="grid grid-cols-[10%,15%,10%,15%,20%,auto] items-center gap-3 w-full">
+                    <label className={activeRxTab === "Prescribed RX" ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary" }>Optical Height</label>
                     <input
                         type="text"
-                        className="border rounded px-2 py-1 bg-white text-secondary w-full"
+                        className={activeRxTab === "Prescribed RX" ? "border rounded px-2 py-1 bg-white text-secondary w-full" : "border rounded px-2 py-1 bg-white text-secondary w-full invisible"}
                         placeholder="Enter"
                         value={eyePowerData[activeRxTab].opticalHeight}
                         onChange={(e) =>
@@ -642,18 +646,18 @@ const SalesOrder = () => {
                         }
                     />
 
-                    <label className="font-medium text-sm text-secondary">Segment Height</label>
+                    <label className={activeRxTab === "Prescribed RX" ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary" }>Segment Height</label>
                     <input
                         type="text"
                         placeholder="Enter"
-                        className="border rounded px-2 py-1 bg-white text-secondary w-full"
+                        className={activeRxTab === "Prescribed RX" ? "border rounded px-2 py-1 bg-white text-secondary w-full" :"border rounded px-2 py-1 bg-white text-secondary w-full invisible"}
                         value={eyePowerData[activeRxTab].segmentHeight}
                         onChange={(e) =>
                             handleEyePowerChange(activeRxTab, "segmentHeight", e.target.value)
                         }
                     />
 
-                    <div className="flex items-center space-x-2 col-span-2 ">
+                    <div className={activeRxTab === "Prescribed RX" ? "flex items-center space-x-2 col-span-2 ": "invisible items-center space-x-2 col-span-2"}>
                         <span className="font-medium text-sm text-secondary">Dominant Eye:</span>
 
                         <label className="inline-flex items-center text-secondary ">
@@ -680,7 +684,7 @@ const SalesOrder = () => {
                             Right
                         </label>
                     </div>
-                </div>}
+                </div>
 
                 <div className=" space-y-2">
                     <div className="flex space-x-2">
@@ -698,8 +702,22 @@ const SalesOrder = () => {
                         ))} */}
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full border mt-2 text-sm">
+                    <div className="overflow-x-auto flex flex-row">
+                        <div className="px-2 py-4">
+                        {["Distance", "Reading"].map((mode) => (
+                            <button
+                                key={mode}
+                                onClick={() => setActiveRxMode(mode)}
+                                className={`px-4 py-1 border rounded text-sm font-medium ${activeRxMode === mode
+                                    ? "bg-primary text-white"
+                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                                    }`}
+                            >
+                                {mode}
+                            </button>
+                        ))}
+                        </div>
+                        <table className="min-w-[80%] border mt-2 text-sm">
                             <thead className="bg-gray-100 text-secondary">
                                 <tr>
                                     <th className="border px-2 py-1 text-left w-20">Eye</th>
@@ -745,26 +763,13 @@ const SalesOrder = () => {
             </div>
 
             <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4">
-                <div className="w-full grid grid-cols-3 gap-6 items-start text-sm text-secondary font-medium">
-                    <div className="flex flex-col">
-                        <label className="mb-1 text-2xl">Security Deposit</label>
-                        <input
-                            type="text"
-                            className="border rounded px-2 py-1 bg-white text-xl text-secondary w-44"
-                            value={securityDeposit}
-                            onChange={(e) => handleSecurityDepositChange(e.target.value)}
-                            placeholder="0.00"
-                        />
-                        <label className="mb-1 invisible">Payment</label>
-                        <button className="bg-primary text-white w-44  px-2 py-1 text-xl rounded hover:bg-primary/90 mt-[2px]">
-                            Payment
-                        </button>
-                    </div>
+                <div className="w-full grid grid-cols-2 gap-6 items-start text-sm text-secondary font-medium">
+
 
                     <div className="flex flex-col">
-                        <label className="mb-1 text-2xl">Status</label>
+                        <label className="mb-1 text-xl font-bold">Status</label>
                         <div className="flex flex-col space-y-1">
-                            <label className="text-xl">
+                            <label>
                                 <input
                                     type="checkbox"
                                     checked={statusReady}
@@ -773,7 +778,7 @@ const SalesOrder = () => {
                                 />
                                 Ready
                             </label>
-                            <label className="text-xl">
+                            <label>
                                 <input
                                     type="checkbox"
                                     checked={statusCollected}
@@ -820,12 +825,39 @@ const SalesOrder = () => {
 
 
             </div>
+            <div className="flex flex-row place-content-between">
+                <div className="flex flex-row">
+                <input
+                    type="text"
+                    placeholder="search"
+                    className="p-2 w-44 m-[2px]"
+                />
+            <button className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    Clear
+                </button>
+            
+                </div>
+            
+            <div className="w-ful flex flex-row justify-end">
 
-            {/* <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4"> */}
-            <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 mt-[2px]">
-                Save
-            </button>
-            {/* </div> */}
+                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    Collection
+                </button>
+                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    Payment
+                </button>
+                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    Save & Print
+                </button>
+                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    Save
+                </button>
+                
+                
+
+
+            </div>
+            </div>
         </>
     )
 }

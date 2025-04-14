@@ -22,6 +22,9 @@ import ItemOpening from "../pages/Settings/ItemOpening";
 import SalesOrder from "../pages/Transactions/SalesOrder"
 import PaymentMethod from "../pages/MasterData/PaymentMethod";
 import ProductInquiry from "../pages/Inquiry/ProductInquiry";
+import CashSales from "../pages/Transactions/CashSale";
+import PurchaseInvoice from "../pages/Transactions/PurchasesInvoice";
+import StockAdjustment from "../pages/Transactions/StockAdjustment";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -36,13 +39,13 @@ const MainLayout = ({ title }) => {
       case "/sales-order":
         return <SalesOrder />
       case "/cash-sale":
-        return <Transactions />;
+        return <CashSales />;
       case "/sales-inquiry":
         return <TransactionsInquiry />;
       case "/purchase-invoice":
-        return <Transactions />;
+        return <PurchaseInvoice />;
       case "/stock-adjustment":
-        return <Transactions />;
+        return <StockAdjustment />;
       case "/good-transit":
         return <Transactions />;
       case "/audit-logs":
