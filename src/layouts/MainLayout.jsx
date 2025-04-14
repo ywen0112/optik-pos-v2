@@ -25,6 +25,7 @@ import ProductInquiry from "../pages/Inquiry/ProductInquiry";
 import CashSales from "../pages/Transactions/CashSale";
 import PurchaseInvoice from "../pages/Transactions/PurchasesInvoice";
 import StockAdjustment from "../pages/Transactions/StockAdjustment";
+import GoodsTransit from "../pages/Transactions/GoodsTransit";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -47,7 +48,7 @@ const MainLayout = ({ title }) => {
       case "/stock-adjustment":
         return <StockAdjustment />;
       case "/good-transit":
-        return <Transactions />;
+        return <GoodsTransit />;
       case "/audit-logs":
         return <AuditLogs />;
       case "/company-profile":

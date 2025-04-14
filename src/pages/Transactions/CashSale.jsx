@@ -417,7 +417,7 @@ const CashSales = () => {
                                     id="CustomerName"
                                     name="CustomerName"
                                     rows={1}
-                                    className="border rounded p-2 w-full h-[34px] resize-none bg-white text-secondary"
+                                    className="border rounded p-2 w-full resize-none bg-white text-secondary"
                                     placeholder="Name"
                                     onChange={() => { }}
                                     value={CustomerGridBoxValue.Name}

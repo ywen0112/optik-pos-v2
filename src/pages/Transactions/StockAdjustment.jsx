@@ -49,6 +49,7 @@ const StockAdjustment = () => {
   const [PractionerGridBoxValue, setPractionerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
   const [SalesItemTableData, setSalesItemTableData] = useState([]);
   const [currentSalesTotal, setCurrentSalesTotal] = useState(0);
+  const [stockAdjustmentDesc, setStockAdjustmentDesc] = useState("");
 
   const [rounding, setRounding] = useState("0.00")
 
@@ -392,88 +393,25 @@ const StockAdjustment = () => {
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
           <div className="items-center gap-1">
-            <label htmlFor="supplier" className="font-medium text-secondary" >
-              Supplier
+            <label htmlFor="StockAdjustmentDesc" className="font-medium text-secondary" >
+              Description
             </label>
             <div className="justify-self-start w-full">
 
               <div className="flex justify-end gap-2">
-                <DropDownBox
-                  id="SupplierSelection"
-                  className="border rounded p-1 w-1/2 h-[34px]"
-                  value={CustomerGridBoxValue.id}
-                  opened={isCustomerGridBoxOpened}
-                  openOnFieldClick={true}
-                  valueExpr='id'
-                  displayExpr={CustomerGridBoxDisplayExpr}
-                  placeholder="Select Supplier"
-                  showClearButton={true}
-                  onValueChanged={handleCustomerGridBoxValueChanged}
-                  dataSource={customerData}
-                  onOptionChanged={onCustomerGridBoxOpened}
-                  contentRender={CustomerDataGridRender}
-                />
                 <textarea
                   id="CustomerName"
                   name="CustomerName"
                   rows={1}
-                  className="border rounded p-2 w-full h-[34px] resize-none bg-white text-secondary"
+                  className="border rounded p-2 w-full resize-none bg-white text-secondary"
                   placeholder="Name"
-                  onChange={() => { }}
-                  value={CustomerGridBoxValue.Name}
+                  onChange={(e) => setStockAdjustmentDesc(e.target.value)}
+                  value={stockAdjustmentDesc}
                 />
-                <button
-                  className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
-                  onClick={() => setShowCustomerModal(true)}
-                >
-                  ...</button>
+               
               </div>
             </div>
           </div>
-
-          {showCustomerModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-              <div className="bg-white p-6 rounded shadow-md w-96 space-y-4">
-                <h2 className="text-lg font-semibold text-gray-800">Add Supplier</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700">Code</label>
-                    <input
-                      type="text"
-                      value={getNextCustomerCode()}
-                      readOnly
-                      className="text-sm w-full border rounded px-2 py-1 bg-gray-100 text-gray-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700">Name</label>
-                    <input
-                      type="text"
-                      value={newCustomerName}
-                      onChange={(e) => setNewCustomerName(e.target.value)}
-                      className="w-full border rounded px-2 py-1 text-sm bg-white text-secondary"
-                      placeholder="Enter name"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 mt-4">
-                  <button
-                    onClick={handleSaveNewCustomer}
-                    className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setShowCustomerModal(false)}
-                    className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
 
           <div className="items-start gap-1">
             <label htmlFor="remark" className="font-medium text-secondary">Remark</label>
@@ -487,87 +425,22 @@ const StockAdjustment = () => {
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 items-center gap-1">
-          <div className="flex flex-col gap-1">
-            <label htmlFor="refNo" className="font-medium text-secondary">Supplier Ref</label>
-            <input
-              type="text"
-              id="supplierRef"
-              name="supplierRef"
-              className="border rounded p-1 w-full bg-white h-[34px]"
-              placeholder="Supplier Ref"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
-            <input
-              type="text"
-              id="refNo"
-              name="refNo"
-              className="border rounded p-1 w-full bg-white h-[34px]"
-              placeholder="Ref No"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="salesPerson" className="font-medium text-secondary">Purchase Person</label>
-            <DropDownBox
-              id="SalesPersonSelection"
-              className="border rounded w-full"
-              value={SalesPersonGridBoxValue.id}
-              opened={isSalesPersonGridBoxOpened}
-              openOnFieldClick={true}
-              valueExpr='id'
-              displayExpr={SalesPersonGridBoxDisplayExpr}
-              placeholder="Select Purchase Person"
-              showClearButton={true}
-              onValueChanged={handleSalesPersonGridBoxValueChanged}
-              dataSource={customerData}
-              onOptionChanged={onSalesPersonGridBoxOpened}
-              contentRender={SalesPersonDataGridRender}
-            />
-          </div>
-          <div className="flex flex-col gap-1">
+        <div className="grid grid-cols-1 items-center gap-1 justify-items-end content-start">
+          
+          <div className="flex flex-col gap-1 w-1/2 ">
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
               selected={date}
-              id="SalesDate"
-              name="SalesDate"
+              id="StockAdjustmentDate"
+              name="StockAdjustmentDate"
               dateFormat="dd-MM-yyyy"
               className="border rounded p-1 w-full bg-white h-[34px]"
               onChange={e => setDate(e.toISOString().slice(0, 10))}
             />
 
           </div>
-          <div className="flex flex-col gap-1 invisible">
-            <label htmlFor="salesPerson" className="font-medium text-secondary">Purchase Person</label>
-            <DropDownBox
-              id="SalesPersonSelection"
-              className="border rounded w-full"
-              value={SalesPersonGridBoxValue.id}
-              opened={isSalesPersonGridBoxOpened}
-              openOnFieldClick={true}
-              valueExpr='id'
-              displayExpr={SalesPersonGridBoxDisplayExpr}
-              placeholder="Select Purchase Person"
-              showClearButton={true}
-              onValueChanged={handleSalesPersonGridBoxValueChanged}
-              dataSource={customerData}
-              onOptionChanged={onSalesPersonGridBoxOpened}
-              contentRender={SalesPersonDataGridRender}
-            />
-          </div>
-          <div className="flex flex-col gap-1 invisible">
-            <label htmlFor="date" className="font-medium text-secondary">Date</label>
-            <DatePicker
-              selected={date}
-              id="SalesDate"
-              name="SalesDate"
-              dateFormat="dd-MM-yyyy"
-              className="border rounded p-1 w-full bg-white h-[34px]"
-              onChange={e => setDate(e.toISOString().slice(0, 10))}
-            />
-
-          </div>
+          
+          
           {/* <div className="flex flex-col row-span-2 self-start gap-1 mt-2">
                         <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
                         <div className="flex flex-col space-y-1 w-full z-30">
@@ -631,7 +504,7 @@ const StockAdjustment = () => {
       </div>
 
       <div className="mt-3 bg-white shadow rounded">
-        <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} height={370} />
+        <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} height={400} />
       </div>
 
       {/* <div className="mt-3 p-2 bg-white shadow rounded w-full">
