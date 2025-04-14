@@ -631,8 +631,7 @@ const StockAdjustment = () => {
       </div>
 
       <div className="mt-3 bg-white shadow rounded">
-        <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} height={379
-            0} />
+        <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} height={370} />
       </div>
 
       {/* <div className="mt-3 p-2 bg-white shadow rounded w-full">
