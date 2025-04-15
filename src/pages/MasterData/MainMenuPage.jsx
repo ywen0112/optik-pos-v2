@@ -7,10 +7,10 @@ const MainMenuPage = () => {
         <div className="grid grid-cols-1 gap-4 h-max">
             <div className="bg-white p-10 shadow rounded w-full">
                 <div className="mb-4">
-                    <FileChartColumn className="w-10 h-10 text-primary mb-2" strokeWidth={1}/>
-                    <h3 className="font-bold text-lg text-secondary">General</h3>
+                   
+                    <h3 className="font-black text-2xl text-secondary">General</h3>
                 </div>
-                <ul className="space-y-3 text-blue-600 text-sm">
+                <ul className="space-y-3 text-blue-600 text-[14px]">
                     <li><Link to="/location">Location</Link></li>
                     <li><Link to="/customer">Customer</Link></li>
                     <li><Link to="/supplier">Supplier</Link></li>

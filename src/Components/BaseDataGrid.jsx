@@ -16,6 +16,7 @@ import DataGrid, {
 const pageSizes = [10, 25, 50, 100];
 
 const StandardDataGridComponent = ({
+    ref,
     height,
     className,
     dataSource,
@@ -35,10 +36,13 @@ const StandardDataGridComponent = ({
     allowColumnReordering,
     allowColumnResizing,
     showBorders,
+    onLoading,
+    onOptionChanged,
     ...rest
 }) => {
     return (
         <DataGrid
+            ref={ref}
             height={height}
             className={className}
             dataSource={dataSource}
@@ -50,6 +54,7 @@ const StandardDataGridComponent = ({
             showRowLines
             hoverStateEnabled
             showBorders
+            onOptionChanged={onOptionChanged}
             onEditorPreparing={(e) => {
                 if (e.parentType === 'searchPanel') {
                     e.editorOptions.maxLength = 100;
@@ -81,7 +86,7 @@ const StandardDataGridComponent = ({
                 visible={pager}
             />
             <Paging enabled={pager} defaultPageSize={defaultPageSize} />
-            <LoadPanel enabled={false} />
+            <LoadPanel enabled={onLoading} />
             {children}
         </DataGrid>
     );

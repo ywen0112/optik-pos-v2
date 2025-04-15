@@ -6,7 +6,7 @@ const UserProfileMenu = ({isOpen, afterSelect}) => {
 
     return (
         <div className="absolute right-5 mt-40 w-40 bg-white border rounded-md shadow-lg z-10">
-            <ul className="py-1 text-sm text-gray-700">
+            <ul className="py-1 text-gray-700">
                 <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() =>{
                     navigate("/user-profile")
                     afterSelect(false)

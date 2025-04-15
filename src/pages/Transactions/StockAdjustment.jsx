@@ -419,7 +419,7 @@ const StockAdjustment = () => {
             <textarea
               id="remark"
               name="remark"
-              rows={6}
+              rows={4}
               className="border rounded p-1 w-full resize-none bg-white justify-self-end"
               placeholder="Enter remarks…"
             />
@@ -504,7 +504,7 @@ const StockAdjustment = () => {
       </div>
 
       <div className="mt-3 bg-white shadow rounded">
-        <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} height={400} />
+        <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} height={440} />
       </div>
 
       {/* <div className="mt-3 p-2 bg-white shadow rounded w-full">

@@ -548,7 +548,7 @@ const GoodsTransit = () => {
       </div>
 
       <div className="mt-3 bg-white shadow rounded">
-        <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} height={420} />
+        <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} height={440} />
       </div>
 
       {/* <div className="mt-3 p-2 bg-white shadow rounded w-full">
