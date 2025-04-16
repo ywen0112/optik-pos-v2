@@ -31,27 +31,27 @@ const SalesInquiry = () => {
 
   return (
     <div className="space-y-6 p-6 bg-white rounded shadow">
-      <div className="grid grid-cols-1 gap-6">
-        <div>
+      <div className="grid grid-cols-1 gap-2 w-1/2">
+        <div className="w-full">
           <label className="block text-secondary font-medium mb-1">Date Range</label>
-          <div className="flex items-center space-x-2">
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-2">
             <DatePicker
               selected={startDate}
               onChange={(date) => setStartDate(date)}
-              className="border rounded px-2 py-1 text-secondary"
+              className="border rounded px-2 py-1 text-secondary w-full"
               dateFormat="dd-MM-yyyy"
             />
-            <span className="text-secondary">to</span>
+            <span className="text-secondary self-center">to</span>
             <DatePicker
               selected={endDate}
               onChange={(date) => setEndDate(date)}
-              className="border rounded px-2 py-1 text-secondary"
+              className="border rounded px-2 py-1 text-secondary w-full"
               dateFormat="dd-MM-yyyy"
             />
           </div>
         </div>
 
-        <div className="w-1/2">
+        <div className="w-full">
           <label className="block text-secondary font-medium mb-1">Customer</label>
           <DropDownBox
             value={selectedCustomer?.id}
@@ -77,7 +77,7 @@ const SalesInquiry = () => {
           />
         </div>
 
-        <div className="w-1/2">
+        <div className="w-full">
           <label className="block text-secondary font-medium mb-1">Product</label>
           <ItemDropDownBoxComponent
             data={itemData}
