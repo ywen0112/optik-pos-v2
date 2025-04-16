@@ -143,9 +143,9 @@ const CreditorMaintenance = () => {
   };
 
   const confirmationMessageMap = {
-    add: "Are you sure you want to add this location?",
-    edit: "Are you sure you want to edit this location?",
-    delete: "Are you sure you want to delete this location?"
+    add: "Are you sure you want to add this supplier?",
+    edit: "Are you sure you want to edit this supplier?",
+    delete: "Are you sure you want to delete this supplier?"
   };
 
   return (
