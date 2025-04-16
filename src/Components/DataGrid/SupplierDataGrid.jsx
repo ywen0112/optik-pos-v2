@@ -3,38 +3,38 @@ import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 
 import StandardDataGridComponent from "../BaseDataGrid";
-import { GetLocationRecords } from "../../apiconfig";
+import { GetCreditorRecords } from "../../apiconfig";
 
 
-const LocationDataGrid = ({className, customerId, onError, onDelete, onEdit}) => {
-    const [location, setLocations] = useState([]);
+const SupplierDataGrid = ({className, customerId, onError, onDelete, onEdit}) => {
+    const [supplier, setSupplier] = useState([]);
     const [loading, setLoading] = useState(false);
     const [skip, setSkip] = useState(0)
     const [take, setTake] = useState(10)
 
-    const locationDataGridRef = useRef(null);
+    const supplierDataGridRef = useRef(null);
 
     useEffect(() => {
-        fetchLocations()
+        fetchSuppliers();
     }, [skip, take])
 
-    const fetchLocations = async () => {
+    const fetchSuppliers = async () => {
         setLoading(true);
     
         try {
-          const res = await fetch(GetLocationRecords, {
+          const res = await fetch(GetCreditorRecords, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ customerId: Number(customerId), keyword: "", Offset: skip, Limit: take })
           });
           const data = await res.json();
           if (data.success) {
-          const records = data.data.locationRecords || [];
+          const records = data.data.creditorsRecords || [];
           const total = data.data.totalRecords || 0;
     
-          setLocations(records);
+          setSupplier(records);
           
-          } else throw new Error(data.errorMessage || "Failed to fetch locations.");
+          } else throw new Error(data.errorMessage || "Failed to fetch suppliers.");
         } catch (error) {
             onError({ title: "Fetch Error", message: error.message });
         } finally {
@@ -44,7 +44,7 @@ const LocationDataGrid = ({className, customerId, onError, onDelete, onEdit}) =>
     
     const handlePagerChange = (e) =>{
         if (e.fullName === 'paging.pageSize' || e.fullName === 'paging.pageIndex') {
-            const gridInstance = locationDataGridRef.current.instance;
+            const gridInstance = supplierDataGridRef.current.instance;
       
             const pageSize = gridInstance.pageSize();
             const pageIndex = gridInstance.pageIndex(); 
@@ -57,9 +57,9 @@ const LocationDataGrid = ({className, customerId, onError, onDelete, onEdit}) =>
     }
     return (
         <StandardDataGridComponent
-            ref={locationDataGridRef}
+            ref={supplierDataGridRef}
             height={"100%"}
-            dataSource={location}
+            dataSource={supplier}
             className={className}
             searchPanel={true}
             pager={true}
@@ -73,12 +73,14 @@ const LocationDataGrid = ({className, customerId, onError, onDelete, onEdit}) =>
             onOptionChanged={handlePagerChange}            
         >
             <Column
-                dataField="locationCode"
+                dataField="creditorCode"
+                caption="Supplier Code"
                 allowEditing={false}
                 width={"10%"}
             />
             <Column
-                dataField="description"
+                dataField="companyName"
+                caption="Name"
                 width={"80%"}
             />
             <Column
@@ -129,4 +131,4 @@ const LocationDataGrid = ({className, customerId, onError, onDelete, onEdit}) =>
     )
 }
 
-export default LocationDataGrid
+export default SupplierDataGrid;
