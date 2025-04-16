@@ -51,7 +51,7 @@ const AddSupplierModal = ({
           {isEdit ? "Edit Supplier" : "Add Supplier"}
         </h3>
 
-        <div className="grid grid-cols-4 gap-4 text-xs">
+        <div className="grid grid-cols-4 gap-2 text-xs">
             <div className="col-span-4 flex justify-between items-center">
                 <label className="block">Customer Code</label>
                 <div className="flex items-center space-x-2">
@@ -78,7 +78,7 @@ const AddSupplierModal = ({
             </div>
 
           <div className="col-span-4">
-            <label className="block mb-4">Name</label>
+            <label className="block mb-2">Name</label>
             <input
               type="text"
               className="mr-2 border w-full h-[40px] px-2"
@@ -90,7 +90,7 @@ const AddSupplierModal = ({
           </div>
 
           <div className="col-span-2">
-            <label className="block mb-4">IC</label>
+            <label className="block mb-2">IC</label>
             <input
               type="text"
               className="mr-2 border w-full h-[40px] px-2"
@@ -102,7 +102,7 @@ const AddSupplierModal = ({
           </div>
 
           <div className="col-span-2">
-            <label className="block mb-4">D.O.B</label>
+            <label className="block mb-2">D.O.B</label>
             <input
               type="date"
               className="mr-2 border w-full h-[40px] px-2"
@@ -114,7 +114,7 @@ const AddSupplierModal = ({
           </div>
 
           <div className="col-span-2">
-            <label className="block mb-4">Billing Address</label>
+            <label className="block mb-2">Billing Address</label>
             <textarea
               rows={4}
               className="mr-2 border w-full h-[80px] px-2 py-1"
@@ -126,7 +126,7 @@ const AddSupplierModal = ({
           </div>
 
           <div className="col-span-2">
-            <label className="block mb-4">Remark</label>
+            <label className="block mb-2">Remark</label>
             <textarea
               rows={4}
               className="mr-2 border w-full h-[80px] px-2 py-1"
@@ -138,10 +138,10 @@ const AddSupplierModal = ({
           </div>
 
           <div className="col-span-1">
-            <label className="block mb-4">Phone</label>
+            <label className="block mb-2">Phone</label>
             <input
               type="text"
-              className="mr-2 border w-1/2 h-[40px] px-2"
+              className="mr-2 border w-full h-[40px] px-2"
               value={formData.phone1}
               onChange={(e) =>
                 setFormData({ ...formData, phone1: e.target.value })
@@ -150,7 +150,7 @@ const AddSupplierModal = ({
           </div>
 
           <div className="col-span-1">
-            <label className="block mb-4">Phone 2</label>
+            <label className="block mb-2">Phone 2</label>
             <input
               type="text"
               className="mr-2 border w-full h-[40px] px-2"
@@ -162,7 +162,7 @@ const AddSupplierModal = ({
           </div>
 
           <div className="col-span-2">
-            <label className="block mb-4">Email</label>
+            <label className="block mb-2">Email</label>
             <input
               type="email"
               className="mr-2 border w-full h-[40px] px-2"
