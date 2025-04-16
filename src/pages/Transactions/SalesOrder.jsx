@@ -17,7 +17,9 @@ import DatePicker from "react-datepicker";
 import SalesOrderItemTable from "../../Components/DataGrid/SalesOrderItemDataGrid";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import { Copy } from "lucide-react";
-
+import SalesPaymentModal from "../../modals/SalesPaymentModal";
+import ErrorModal from "../../modals/ErrorModal";
+import CustomerDataGrid from "../../Components/DataGrid/CustomerDataGrid";
 
 const initialData = [
     { id: 1, itemCode: 'A100', description: 'Widget', uom: 'pcs', qty: 10, unitPrice: 5.0 },
@@ -54,7 +56,7 @@ const SalesOrder = () => {
 
     const [showCustomerModal, setShowCustomerModal] = useState(false);
     const [newCustomerName, setNewCustomerName] = useState("");
-
+    const [errorModal, setErrorModal] = useState({ title: "", message: "" });
 
     const intervals = [
         { label: '1 mth', months: 1 },
@@ -84,41 +86,41 @@ const SalesOrder = () => {
         }
     }, [date]);
 
-    const CustomerDataGridOnSelectionChanged = useCallback((e) => {
-        const selected = e.selectedRowsData?.[0];
-        if (selected) {
-            setCustomerGridBoxValue(selected);
-            setIsCustomerGridBoxOpened(false);
-        }
-    }, []);
+    // const CustomerDataGridOnSelectionChanged = useCallback((e) => {
+    //     const selected = e.selectedRowsData?.[0];
+    //     if (selected) {
+    //         setCustomerGridBoxValue(selected);
+    //         setIsCustomerGridBoxOpened(false);
+    //     }
+    // }, []);
 
-    const CustomerDataGridRender = useCallback(
-        () => (
-            <DataGrid
-                dataSource={customerData}
-                columns={CustomerGridColumns}
-                hoverStateEnabled={true}
-                showBorders={false}
-                selectedRowKeys={CustomerGridBoxValue.id}
-                onSelectionChanged={CustomerDataGridOnSelectionChanged}
-                height="100%"
-            >
-                <Selection mode="single" />
-                <Scrolling mode="virtual" />
-                <Paging
-                    enabled={true}
-                    pageSize={10}
-                />
-                <SearchPanel
-                    visible={true}
-                    onTextChange={(e) => { console.log(e) }}
-                    width="100%"
-                    highlightSearchText={true}
-                />
-            </DataGrid>
-        ),
-        [CustomerGridBoxValue, CustomerDataGridOnSelectionChanged],
-    );
+    // const CustomerDataGridRender = useCallback(
+    //     () => (
+    //         <DataGrid
+    //             dataSource={customerData}
+    //             columns={CustomerGridColumns}
+    //             hoverStateEnabled={true}
+    //             showBorders={false}
+    //             selectedRowKeys={CustomerGridBoxValue.id}
+    //             onSelectionChanged={CustomerDataGridOnSelectionChanged}
+    //             height="100%"
+    //         >
+    //             <Selection mode="single" />
+    //             <Scrolling mode="virtual" />
+    //             <Paging
+    //                 enabled={true}
+    //                 pageSize={10}
+    //             />
+    //             <SearchPanel
+    //                 visible={true}
+    //                 onTextChange={(e) => { console.log(e) }}
+    //                 width="100%"
+    //                 highlightSearchText={true}
+    //             />
+    //         </DataGrid>
+    //     ),
+    //     [CustomerGridBoxValue, CustomerDataGridOnSelectionChanged],
+    // );
 
     const handleCustomerGridBoxValueChanged = (e) => {
         if (!e.value) {
@@ -387,6 +389,20 @@ const SalesOrder = () => {
     const total = currentSalesTotal + parseFloat(rounding);
     const balance = total - parseFloat(securityDeposit || 0);
 
+    //Payment Modal
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [paymentData, setPaymentData] = useState(null);
+
+    const handleOpenPaymentModal = () => {
+        setShowPaymentModal(true);
+    };
+
+    const handlePaymentConfirm = ({ data }) => {
+        setPaymentData(data); 
+        setShowPaymentModal(false);
+    };
+        
+
     return (
         <>
             <div className="grid grid-cols-2 gap-6">
@@ -411,8 +427,17 @@ const SalesOrder = () => {
                                     onValueChanged={handleCustomerGridBoxValueChanged}
                                     dataSource={customerData}
                                     onOptionChanged={onCustomerGridBoxOpened}
-                                    contentRender={CustomerDataGridRender}
-                                />
+                                    contentRender={() => (
+                                        <CustomerDataGrid
+                                          value={CustomerGridBoxValue}
+                                          dataSource={customerData}
+                                          onSelectionChanged={(selected) => {
+                                            setCustomerGridBoxValue(selected);
+                                            setIsCustomerGridBoxOpened(false);
+                                          }}
+                                        />
+                                      )}
+                                    />                                    
                                 <textarea
                                     id="CustomerName"
                                     name="CustomerName"
@@ -843,7 +868,8 @@ const SalesOrder = () => {
                 <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                     Collection
                 </button>
-                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
+                onClick={handleOpenPaymentModal}>
                     Payment
                 </button>
                 <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
@@ -853,9 +879,18 @@ const SalesOrder = () => {
                     Save
                 </button>
                 
-                
+                <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
 
-
+                <SalesPaymentModal
+                    isOpen={showPaymentModal}
+                    isEdit={!!paymentData}
+                    selectedPayment={paymentData}
+                    onConfirm={handlePaymentConfirm}
+                    onClose={() => setShowPaymentModal(false)}
+                    onError={(error) => {
+                        setErrorModal({ title: "Payment Error", message: error.message });
+                    }}
+                />
             </div>
             </div>
         </>
