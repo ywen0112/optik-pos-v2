@@ -88,7 +88,7 @@ const SalesInquiry = () => {
       </div>
 
       <div className="pt-6 flex space-x-4">
-        <button className="bg-primary text-white px-6 py-2 rounded">Inquiry</button>
+        <button className="bg-primary text-white px-6 py-2 rounded">Search</button>
         <button className="bg-primary text-white px-6 py-2 rounded">Preview</button>
         <button className="bg-primary text-white px-6 py-2 rounded">Export</button>
       </div>
