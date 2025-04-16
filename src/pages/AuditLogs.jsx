@@ -9,8 +9,8 @@ const AuditLogs = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
   const [eventType, setEventType] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(new Date().toISOString());
+  const [endDate, setEndDate] = useState(new Date().toISOString());
   const [eventOptions, setEventOptions] = useState([]);
   const [loadingEventTypes, setLoadingEventTypes] = useState(false);
   const [pagination, setPagination] = useState({ offset: 0, limit: 10, page: 1 });
@@ -172,12 +172,12 @@ const AuditLogs = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(95vh-100px)] p-6 bg-white rounded shadow-md w-full mx-auto">
+    <div className="flex flex-col h-[calc(95vh-50px)] p-6 bg-white rounded shadow-md w-full mx-auto">
     <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sticky top-0 z-10 bg-white pb-2">
         <div className="flex flex-col">
-          <label className="text-xs text-secondary font-semibold">User</label>
+          <label className="text-secondary font-semibold">User</label>
           <Select
             value={selectedUser}
             onChange={setSelectedUser}
@@ -190,7 +190,7 @@ const AuditLogs = () => {
         </div>
 
         <div className="flex flex-col">
-          <label className="text-xs text-secondary">Event Type</label>
+          <label className="text-secondary font-semibold">Event Type</label>
           <Select
             value={eventType}
             onChange={setEventType}
@@ -204,7 +204,7 @@ const AuditLogs = () => {
         </div>
 
         <div className="flex flex-col">
-          <label className="text-xs text-secondary">Start Date</label>
+          <label className="text-secondary font-semibold">Start Date</label>
           <DatePicker
             selected={startDate}
             onChange={(date) => setStartDate(date)}
@@ -215,7 +215,7 @@ const AuditLogs = () => {
         </div>
 
         <div className="flex flex-col">
-          <label className="text-xs text-secondary font-semibold">End Date</label>
+          <label className=" text-secondary font-semibold">End Date</label>
           <DatePicker
             selected={endDate}
             onChange={(date) => setEndDate(date)}
