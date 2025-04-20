@@ -201,12 +201,12 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
           <label className="text-sm">Select Company:</label>
           <select
             className="w-full bg-white p-1 rounded mt-2 text-secondary text-sm"
-            value={selectedCompany?.customerId || ""}
+            value={selectedCompany?.companyId || ""}
             onChange={handleCompanyChange}
           >
             {companyOptions.length > 0 ? (
               companyOptions.map((company) => (
-                <option key={company.customerId} value={company.customerId}>
+                <option key={company.companyId} value={company.companyId}>
                   {company.companyName}
                 </option>
               ))
