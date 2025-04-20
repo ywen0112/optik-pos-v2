@@ -35,7 +35,7 @@ const ChangePasswordModal = ({ isOpen, onCancel, onSave }) => {
     };
 
     const SaveNewPassword = () =>{
-        if(oldPassword === '' || newPassword === '' || confirmNewPassword === ''){
+        if(passwordMismatch || oldPassword === '' || newPassword === '' || confirmNewPassword === ''){
             return;
         }
         onSave(oldPassword, newPassword)
@@ -94,8 +94,8 @@ const ChangePasswordModal = ({ isOpen, onCancel, onSave }) => {
                         onChange={handleConfirmNewPassword}
                     />
                     <div className="grid grid-cols-2 mt-5">
-                            <button className="bg-red-600 m-1 rounded" onClick={CancelChangePassword}>Cancel</button>
-                            <button className="bg-green-600 m-1 rounded" onClick={SaveNewPassword}>Save</button>
+                            <button className="text-white bg-red-600 m-1 rounded" onClick={CancelChangePassword}>Cancel</button>
+                            <button className="text-white bg-green-600 m-1 rounded" onClick={SaveNewPassword}>Save</button>
                     </div>
                 </div>
             </div>

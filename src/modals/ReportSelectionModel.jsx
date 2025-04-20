@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { GetReportSelectionApi } from "../apiconfig";
-import { ReportBaseUrl } from "../apiconfig";
+import { GetReportSelectionApi } from "../api/apiconfig";
+import { ReportBaseUrl } from "../api/apiconfig";
 
 const ReportSelectionModal = ({ isOpen, onCancel, docId, customerId }) => {
     const [reports, setReports] = useState([]);

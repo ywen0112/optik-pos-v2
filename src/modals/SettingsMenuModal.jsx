@@ -1,40 +1,29 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, Users, ShieldCheck, PackageOpen } from "lucide-react";
-import { GetCompany } from "../apiconfig";
 import ErrorModal from "./ErrorModal";
 import ClipLoader from "react-spinners/ClipLoader";
+
+import { GetCompany } from "../api/companyapi";
 
 const SettingsMenuModal = ({ isOpen, onClose }) => {
 const navigate = useNavigate();
 const [isLoading, setIsLoading] = useState(false);
-const customerId = localStorage.getItem("customerId");
-const userId = localStorage.getItem("userId");
-const locationId = localStorage.getItem("locationId");
+const companyId = sessionStorage.getItem("companyId");
+const userId = sessionStorage.getItem("userId");
+const locationId = sessionStorage.getItem("locationId");
 const [errorModal, setErrorModal] = useState({ title: "", message: "" });
 
 const handleCompanyProfileClick = async () => {
 setIsLoading(true);
 
-const requestBody = {
-    customerId: Number(customerId),
-    userId,
-    locationId,
-    id: ""
-};
 
 try {
-    const response = await fetch(GetCompany, {
-    method: "POST",
-    headers: {
-        "Accept": "text/plain",
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestBody),
+    const data = await GetCompany({
+      companyId: companyId,
+      userId: userId,
+      id: companyId
     });
-
-    const data = await response.json();
-
     if (data.success) {
     navigate("/company-profile", { state: { company: data.data } });
     } else {

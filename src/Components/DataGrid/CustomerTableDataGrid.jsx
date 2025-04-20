@@ -3,7 +3,7 @@ import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 
 import StandardDataGridComponent from "../BaseDataGrid";
-import { GetDebtorRecords } from "../../apiconfig";
+import { GetDebtorRecords } from "../../api/apiconfig";
 
 
 const CustomerTableDataGrid = ({className, customerId, onError, onDelete, onEdit}) => {

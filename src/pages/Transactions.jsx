@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { OpenCounterSession, NewCashTransaction, NewSales, NewPurchases, NewCreditNote, NewCloseCounterSession, SaveCloseCounterSession } from "../apiconfig";
+import { OpenCounterSession, NewCashTransaction, NewSales, NewPurchases, NewCreditNote, NewCloseCounterSession, SaveCloseCounterSession } from "../api/apiconfig";
 import ErrorModal from "../modals/ErrorModal";
 import NotificationModal from "../modals/NotificationModal";
 import ConfirmationModal from "../modals/ConfirmationModal";
@@ -14,9 +14,9 @@ const Transactions = () => {
   const [counterSession, setCounterSession] = useState(initialSession || { isExist: false });
   const [openingBalance, setOpeningBalance] = useState("");
   const [activeTab, setActiveTab] = useState("Sales Invoice");
-  const customerId = localStorage.getItem("customerId");
-  const userId = localStorage.getItem("userId");
-  const locationId = localStorage.getItem("locationId");
+  const customerId = sessionStorage.getItem("customerId");
+  const userId = sessionStorage.getItem("userId");
+  const locationId = sessionStorage.getItem("locationId");
   const [loading, setLoading] = useState(false); 
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [notificationModal, setNotificationModal] = useState({ isOpen: false, title: "", message: "", onClose: null });
@@ -206,8 +206,8 @@ const Transactions = () => {
 
       const data = await response.json();
       if (data.success) {
-        localStorage.setItem("salesId", data.data.salesId);
-        // localStorage.setItem("salesDocNo", data.data.docNo);
+        sessionStorage.setItem("salesId", data.data.salesId);
+        // sessionStorage.setItem("salesDocNo", data.data.docNo);
       } else {
         throw new Error(data.errorMessage || "Failed to create new sales invoice.");
       }
@@ -236,7 +236,7 @@ const Transactions = () => {
 
       const data = await response.json();
       if (data.success) {
-        localStorage.setItem("purchaseId", data.data.purchaseId);
+        sessionStorage.setItem("purchaseId", data.data.purchaseId);
         // setDocNo(data.data.docNo);
       } else {
         throw new Error(data.errorMessage || "Failed to create new purchases invoice.");

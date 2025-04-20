@@ -5,7 +5,7 @@ import {
   EditLocation,
   SaveLocation,
   DeleteLocation
-} from "../../apiconfig";
+} from "../../api/apiconfig";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
@@ -13,9 +13,9 @@ import LocationDataGrid from "../../Components/DataGrid/LocationDataGrid";
 import UpdatelocationModal from "../../modals/MasterData/Location/AddLocationModal";
 
 const LocationMaintenance = () => {
-  const customerId = localStorage.getItem("customerId");
-  const userId = localStorage.getItem("userId");
-  const locationId = localStorage.getItem("locationId");
+  const customerId = sessionStorage.getItem("customerId");
+  const userId = sessionStorage.getItem("userId");
+  const locationId = sessionStorage.getItem("locationId");
 
   const [loading, setLoading] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });

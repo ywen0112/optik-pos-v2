@@ -16,18 +16,18 @@ import { FileText, UserCheck,Wrench, ChevronDown, ChevronRight,
   ClipboardX
 } from "lucide-react";
 import ErrorModal from "../modals/ErrorModal";
-import { CheckCounterSession } from "../apiconfig";
+import { CheckCounterSession } from "../api/apiconfig";
 import ClipLoader from "react-spinners/ClipLoader";
 
 const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
-  const customerId = localStorage.getItem("customerId");
-  const userId = localStorage.getItem("userId");
-  const locationId = localStorage.getItem("locationId");
+  const customerId = sessionStorage.getItem("customerId");
+  const userId = sessionStorage.getItem("userId");
+  const locationId = sessionStorage.getItem("locationId");
   const navigate = useNavigate();
   const location = useLocation();
 
   const [selectedCompany, setSelectedCompany] = useState(() => {
-    return JSON.parse(localStorage.getItem("selectedCompany")) || null;
+    return JSON.parse(sessionStorage.getItem("selectedCompany")) || null;
   });
 
   const [companyOptions, setCompanyOptions] = useState([]);
@@ -38,7 +38,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
 
   useEffect(() => {
     const storedCompanies = JSON.parse(sessionStorage.getItem("companies")) || [];
-    const storedSelectedCompany = JSON.parse(localStorage.getItem("selectedCompany")) || null;
+    const storedSelectedCompany = JSON.parse(sessionStorage.getItem("selectedCompany")) || null;
 
     if (storedCompanies.length > 0) {
       setCompanyOptions(storedCompanies);
@@ -48,7 +48,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
       } else {
         const defaultCompany = storedCompanies[0];
         setSelectedCompany(defaultCompany);
-        localStorage.setItem("selectedCompany", JSON.stringify(defaultCompany));
+        sessionStorage.setItem("selectedCompany", JSON.stringify(defaultCompany));
       }
     }
   }, []);
@@ -78,11 +78,11 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     if (newSelectedCompany) {
       try {
         setSelectedCompany(newSelectedCompany);
-        localStorage.setItem("selectedCompany", JSON.stringify(newSelectedCompany));
-        localStorage.setItem("userId", newSelectedCompany.userId);
-        localStorage.setItem("customerId", newSelectedCompany.customerId);
-        localStorage.setItem("locationId", newSelectedCompany.locationId);
-        localStorage.setItem("accessRights", JSON.stringify(newSelectedCompany.accessRight));
+        sessionStorage.setItem("selectedCompany", JSON.stringify(newSelectedCompany));
+        sessionStorage.setItem("userId", newSelectedCompany.userId);
+        sessionStorage.setItem("customerId", newSelectedCompany.customerId);
+        sessionStorage.setItem("locationId", newSelectedCompany.locationId);
+        sessionStorage.setItem("accessRights", JSON.stringify(newSelectedCompany.accessRight));
   
         onSelectCompany(newSelectedCompany.customerId);
         navigate("/dashboard");

@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Pencil, Trash2, Eye } from "lucide-react";
-import { GetAccessRightRecords, NewAccessRight, EditAccessRight, SaveAccessRight, DeleteAccessRight } from "../../apiconfig";
+import { GetAccessRightRecords, NewAccessRight, EditAccessRight, SaveAccessRight, DeleteAccessRight } from "../../api/apiconfig";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 
 const AccessRightMaintenance = () => {
-  const customerId = localStorage.getItem("customerId");
-  const userId = localStorage.getItem("userId");
-  const locationId = localStorage.getItem("locationId");
+  const customerId = sessionStorage.getItem("customerId");
+  const userId = sessionStorage.getItem("userId");
+  const locationId = sessionStorage.getItem("locationId");
   const [loading, setLoading] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
@@ -17,15 +17,15 @@ const AccessRightMaintenance = () => {
   const [viewMode, setViewMode] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [deleteTarget, setDeleteTarget ] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [formAction, setFormAction] = useState(null);
   const [pagination, setPagination] = useState({
-      currentPage: 1,
-      itemsPerPage: 10,
-      totalItems: 0,
+    currentPage: 1,
+    itemsPerPage: 10,
+    totalItems: 0,
   });
-  
-    
+
+
   useEffect(() => {
     fetchAccessRights();
   }, [pagination.currentPage]);
@@ -51,15 +51,15 @@ const AccessRightMaintenance = () => {
       });
       const data = await res.json();
       if (data.success) {
-      const records = data.data.accessRightsRecords || [];
-      const total = data.data.totalRecords || 0;
+        const records = data.data.accessRightsRecords || [];
+        const total = data.data.totalRecords || 0;
 
-      setAccessRights(records);
-      setPagination((prev) => ({
-        ...prev,
-        totalItems: total,
-      }));
-    }
+        setAccessRights(records);
+        setPagination((prev) => ({
+          ...prev,
+          totalItems: total,
+        }));
+      }
       else throw new Error(data.errorMessage || "Failed to fetch access rights.");
     } catch (error) {
       setErrorModal({ title: "Fetch Error", message: error.message });
@@ -174,11 +174,11 @@ const AccessRightMaintenance = () => {
   const handleCheckboxChange = (idx, actionType) => {
     const updated = { ...selectedAccessRight };
     const action = updated.accessRightActions[idx];
-  
+
     if (actionType === "allow") {
       const newAllowState = !action.allow;
       action.allow = newAllowState;
-  
+
       // If it's an allow-only module, update view/add/edit/delete behind the scenes
       if (allowOnlyModules.includes(action.module)) {
         action.view = newAllowState;
@@ -194,12 +194,12 @@ const AccessRightMaintenance = () => {
     } else {
       // Toggle the specific permission
       action[actionType] = !action[actionType];
-  
+
       // Recalculate allow based on other permissions
       const { view, add, edit, delete: del } = action;
       action.allow = view || add || edit || del;
     }
-  
+
     updated.accessRightActions[idx] = action;
     setSelectedAccessRight(updated);
   };
@@ -212,7 +212,7 @@ const AccessRightMaintenance = () => {
     setDeleteTarget(id);
     setConfirmModal({ isOpen: true, action: "delete" });
   };
-  
+
 
   const confirmAction = async () => {
     setSaving(true);
@@ -270,7 +270,7 @@ const AccessRightMaintenance = () => {
     edit: "Confirm Edit",
     delete: "Confirm Delete"
   };
-  
+
   const confirmationMessageMap = {
     add: "Are you sure you want to add this user role?",
     edit: "Are you sure you want to edit this user role?",
@@ -292,11 +292,11 @@ const AccessRightMaintenance = () => {
 
       <div className="text-right">
         <button
-            className="bg-secondary text-white px-4 py-1 rounded text-xs hover:bg-secondary/90 transition" onClick={handleAddNew}
-            >
-            Add User Role
+          className="bg-secondary text-white px-4 py-1 rounded text-xs hover:bg-secondary/90 transition" onClick={handleAddNew}
+        >
+          Add User Role
         </button>
-     </div>
+      </div>
       <div className="mt-2 bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
           <p className="text-center py-4 text-gray-500">Loading...</p>
@@ -315,13 +315,13 @@ const AccessRightMaintenance = () => {
                   <td className="pl-4 p-2">
                     {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}
                   </td>
-                  <td className="p-1">{accessRight.description === "" ? "-" : accessRight.description }</td>
+                  <td className="p-1">{accessRight.description === "" ? "-" : accessRight.description}</td>
                   <td className="p-1 flex space-x-1">
                     <button className="text-blue-600 bg-transparent pl-0" onClick={() => handleOpenModal(accessRight, "view")}>
-                      <Eye size={14} /> 
+                      <Eye size={14} />
                     </button>
-                    <button className="text-yellow-500 bg-transparent pl-0" onClick={() => handleOpenModal(accessRight, "edit")}> 
-                      <Pencil size={14} /> 
+                    <button className="text-yellow-500 bg-transparent pl-0" onClick={() => handleOpenModal(accessRight, "edit")}>
+                      <Pencil size={14} />
                     </button>
                     <button className="bg-transparent text-red-500 pl-0" onClick={() => handleDeleteClick(accessRight.accessRightId)}>
                       <Trash2 size={14} />
@@ -341,40 +341,38 @@ const AccessRightMaintenance = () => {
           {pagination.totalItems}
         </span>
         <div className="flex">
-        <button
-          onClick={() => handlePageChange(pagination.currentPage - 1)}
-          disabled={pagination.currentPage === 1}
-          className={`px-2 py-1 bg-white border rounded ${
-            pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer"
-          }`}
-        >
-          ←
-        </button>
+          <button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1}
+            className={`px-2 py-1 bg-white border rounded ${pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer"
+              }`}
+          >
+            ←
+          </button>
 
-        <button
-          onClick={() => handlePageChange(pagination.currentPage + 1)}
-          disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems}
-          className={`px-2 py-1 bg-white border rounded ${
-            pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-gray-100 cursor-pointer"
-          }`}
-        >
-          →
-        </button>
+          <button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems}
+            className={`px-2 py-1 bg-white border rounded ${pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-100 cursor-pointer"
+              }`}
+          >
+            →
+          </button>
         </div>
       </div>
 
       {selectedAccessRight && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[600px] max-h-[90vh] overflow-y-auto text-secondary text-xs scrollbar-hide">
-          <h3 className="text-lg font-semibold mb-4">
-            {viewMode
-              ? "View User Role"
-              : formAction === "edit"
-              ? "Edit User Role"
-              : "Add User Role"}
-          </h3>         
+            <h3 className="text-lg font-semibold mb-4">
+              {viewMode
+                ? "View User Role"
+                : formAction === "edit"
+                  ? "Edit User Role"
+                  : "Add User Role"}
+            </h3>
             <div className="mb-4">
               <label className="block mb-1">User Role</label>
               <input
@@ -399,93 +397,96 @@ const AccessRightMaintenance = () => {
                   </tr>
                 </thead>
                 <tbody>
-                {selectedAccessRight.accessRightActions.map((action, idx) => {
-                  const isAllowOnly = allowOnlyModules.includes(action.module);
-                  return (
-                    <tr key={idx} className="border-t">
-                      <td className="p-2">{action.module}</td>
-                      
-                      <td className="p-2 text-center">
-                        <label className="inline-block relative w-4 h-4">
-                          <input
-                            type="checkbox"
-                            checked={action.allow}
-                            disabled={viewMode}
-                            onChange={() => handleCheckboxChange(idx, "allow")}
-                            className="peer sr-only"
-                          />
-                          <div
-                            className={`w-4 h-4 rounded border flex items-center justify-center 
+                  {selectedAccessRight.accessRightActions.map((action, idx) => {
+                    const isAllowOnly = allowOnlyModules.includes(action.module);
+                    return (
+                      <tr key={idx} className="border-t">
+                        <td className="p-2">{action.module}</td>
+
+                        <td className="p-2 text-center">
+                          <label className="inline-block relative w-4 h-4">
+                            <input
+                              type="checkbox"
+                              checked={action.allow}
+                              disabled={viewMode}
+                              onChange={() => handleCheckboxChange(idx, "allow")}
+                              className="peer sr-only"
+                            />
+                            <div
+                              className={`w-4 h-4 rounded border flex items-center justify-center 
                               ${viewMode ? "cursor-default" : "cursor-pointer"} 
                               ${action.allow ? "bg-secondary border-secondary" : "bg-white border-gray-300"}`}
-                          >
-                            {action.allow && (
-                              <svg
-                                className="w-3 h-3 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="3"
-                                viewBox="0 0 24 24"
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                        </label>
-                      </td>
+                            >
+                              {action.allow && (
+                                <svg
+                                  className="w-3 h-3 text-white"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+                          </label>
+                        </td>
 
-                      {["view", "add", "edit", "delete"].map((type) => (
-                        <td key={type} className="p-2 text-center">
-                          {!isAllowOnly && (
-                            <label className="inline-block relative w-4 h-4">
-                              <input
-                                type="checkbox"
-                                checked={action[type]}
-                                disabled={viewMode}
-                                onChange={() => handleCheckboxChange(idx, type)}
-                                className="peer sr-only"
-                              />
-                              <div
-                                className={`w-4 h-4 rounded border flex items-center justify-center 
+                        {["view", "add", "edit", "delete"].map((type) => (
+                          <td key={type} className="p-2 text-center">
+                            {!isAllowOnly && (
+                              <label className="inline-block relative w-4 h-4">
+                                <input
+                                  type="checkbox"
+                                  checked={action[type]}
+                                  disabled={viewMode}
+                                  onChange={() => handleCheckboxChange(idx, type)}
+                                  className="peer sr-only"
+                                />
+                                <div
+                                  className={`w-4 h-4 rounded border flex items-center justify-center 
                                   ${viewMode ? "cursor-default" : "cursor-pointer"} 
                                   ${action[type] ? "bg-secondary border-secondary" : "bg-white border-gray-300"}`}
-                              >
-                                {action[type] && (
-                                  <svg
-                                    className="w-3 h-3 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="3"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                  </svg>
-                                )}
-                              </div>
-                            </label>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
+                                >
+                                  {action[type] && (
+                                    <svg
+                                      className="w-3 h-3 text-white"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="3"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                </div>
+                              </label>
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                  {accessRights.length === 0 && !loading && (
+                    <tr><td colSpan="3" className="text-center py-4 text-gray-500">No access rights found.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
-             <div className="mt-6 flex justify-end space-x-2">
+            <div className="mt-6 flex justify-end space-x-2">
               {!viewMode && (
-                <button 
-                className="px-4 py-1 rounded text-sm bg-green-500 text-white" 
-                onClick={() => {
-                  if (!selectedAccessRight.description.trim()) {
-                    setErrorModal({
-                      title: "Validation Error",
-                      message: "User Role is required.",
-                    });
-                    return;
-                  }
-                  setConfirmModal({ isOpen: true, action: formAction });
-                }}
+                <button
+                  className="px-4 py-1 rounded text-sm bg-green-500 text-white"
+                  onClick={() => {
+                    if (!selectedAccessRight.description.trim()) {
+                      setErrorModal({
+                        title: "Validation Error",
+                        message: "User Role is required.",
+                      });
+                      return;
+                    }
+                    setConfirmModal({ isOpen: true, action: formAction });
+                  }}
                 >Save</button>
               )}
               <button className="px-4 py-1 rounded text-sm bg-red-500 text-white" onClick={() => setSelectedAccessRight(null)}>Close</button>
@@ -493,9 +494,7 @@ const AccessRightMaintenance = () => {
           </div>
         </div>
       )}
-      {accessRights.length === 0 && !loading && (
-        <tr><td colSpan="3" className="text-center py-4 text-gray-500">No access rights found.</td></tr>
-      )}
+
     </div>
   );
 };

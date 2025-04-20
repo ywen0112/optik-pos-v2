@@ -12,7 +12,7 @@
 //   SaveEyePower,
 //   DeleteEyePower,
 //   NewEyePower
-// } from "../../apiconfig";
+// } from "../../api/apiconfig";
 // import ErrorModal from "../../modals/ErrorModal";
 // import NotificationModal from "../../modals/NotificationModal";
 // import ConfirmationModal from "../../modals/ConfirmationModal";
@@ -21,9 +21,9 @@
 // import "react-datepicker/dist/react-datepicker.css";
 
 // const DebtorMaintenance = () => {
-//   const customerId = localStorage.getItem("customerId");
-//   const userId = localStorage.getItem("userId");
-//   const locationId = localStorage.getItem("locationId");
+//   const customerId = sessionStorage.getItem("customerId");
+//   const userId = sessionStorage.getItem("userId");
+//   const locationId = sessionStorage.getItem("locationId");
 
 //   const [loading, setLoading] = useState(false);
 //   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
@@ -1150,7 +1150,7 @@ import {
   EditDebtor,
   SaveDebtor,
   DeleteDebtor
-} from "../../apiconfig";
+} from "../../api/apiconfig";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
@@ -1158,9 +1158,9 @@ import CustomerTableDataGrid from "../../Components/DataGrid/CustomerTableDataGr
 import AddSupplierModal from "../../modals/MasterData/Supplier/AddSupplierModal";
 
 const DebtorMaintenance = () => {
-  const customerId = localStorage.getItem("customerId");
-  const userId = localStorage.getItem("userId");
-  const locationId = localStorage.getItem("locationId");
+  const customerId = sessionStorage.getItem("customerId");
+  const userId = sessionStorage.getItem("userId");
+  const locationId = sessionStorage.getItem("locationId");
 
   const [loading, setLoading] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });

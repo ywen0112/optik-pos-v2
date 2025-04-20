@@ -1,7 +1,5 @@
 export const ApiBaseUrl = "https://optikposwebsiteapi.absplt.com/";
-// export const ApiBaseUrl = "http://localhost:1014/";
 export const ReportBaseUrl = "https://report.absplt.com/";
-// export const ReportBaseUrl = "https://localhost:7254/";
 
 //Users
 export const UsersApi = `${ApiBaseUrl}Users/`;
@@ -128,3 +126,42 @@ export const GetAllAuditChangeType = `${AuditLogApi}GetAllAuditChangeType`;
 //Report
 export const ReportApi = `${ApiBaseUrl}Report/`;
 export const GetReportSelectionApi = `${ReportApi}GetReportsSelection`
+
+export const getRequest = async (url) => {
+    try{
+        const response = await fetch(`${url}`,{
+            method: 'GET',
+            headers:{
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if(!response.ok) throw new Error(`GET Error: ${response.statusText}`);
+
+        const data = await response.json();
+        return data;
+    }catch(error){
+        console.error('GET request failed: ', error);
+        throw error;
+    }
+};
+
+export const postRequest = async(url, body) =>{
+    try{
+        const response = await fetch(`${url}`, {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json',
+            },
+            body: body,
+        });
+
+        if(!response.ok) throw new Error(`POST Error: ${response.statusText}`);
+        
+        const data = await response.json();
+        return data;
+    } catch(error){
+        console.error('POST request failed: ', error);
+        throw error;
+    }
+};

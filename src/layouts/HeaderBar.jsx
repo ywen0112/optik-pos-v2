@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { User, Menu, LayoutDashboard, Settings } from "lucide-react";
-import Profile from "../pages/Profile";
+
 import UserProfileMenu from "../modals/UserProfileMenuModal";
 import SettingsMenuModal from "../modals/SettingsMenuModal";
 
@@ -10,11 +10,14 @@ const HeaderBar = ({ currentPage, onToggleSidebar }) => {
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const userName = JSON.parse(sessionStorage.getItem("selectedCompany")).userName;
 
   useEffect(() => {
     setShowSettingsMenu(false); 
     setProfileMenu(false); 
   }, [location.pathname]);
+
+  
 
   const masterDataPages = {
     "/location": "Location",
@@ -79,7 +82,7 @@ const HeaderBar = ({ currentPage, onToggleSidebar }) => {
           setProfileMenu(false);
         }}
       />
-        <div className="text-lg font-bold text-secondary">UserName</div>
+        <div className="text-lg font-bold text-secondary">{userName}</div>
         <User
           className="text-secondary w-6 h-6 cursor-pointer"
           title="Profile"

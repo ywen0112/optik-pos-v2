@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Select from "react-select";
-import { SaveSalesPayment, SavePurchasePayment } from "../apiconfig";
+import { SaveSalesPayment, SavePurchasePayment } from "../api/apiconfig";
 import ErrorModal from "./ErrorModal";
 import ConfirmationModal from "./ConfirmationModal";
 
@@ -185,9 +185,9 @@ const handleConfirmPayment = async () => {
 
   const payload = {
     actionData: {
-      customerId: Number(localStorage.getItem("customerId")),
-      userId: localStorage.getItem("userId"),
-      locationId: localStorage.getItem("locationId"),
+      customerId: Number(sessionStorage.getItem("customerId")),
+      userId: sessionStorage.getItem("userId"),
+      locationId: sessionStorage.getItem("locationId"),
       id: "",
     },
     isFirstPayment: true,

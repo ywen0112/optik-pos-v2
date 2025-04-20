@@ -1,9 +1,9 @@
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+
 import ErrorModal from "../modals/ErrorModal";
 import logo from "../assets/logo_white.png";
-import axios from "axios";
-import { GetUserLogins } from "../apiconfig";
-import { Eye, EyeOff } from "lucide-react";
+import { LoginUser } from "../api/userapi";
 
 const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
@@ -16,15 +16,14 @@ const Login = ({ onLoginSuccess }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post(`${GetUserLogins}`, {
-        userEmail: email,
-        password: password,
+      const response = await LoginUser({
+        userEmailAddress: email,
+        userPassword: password,
       });
-      
-      if (response.data.success) {
-        onLoginSuccess(response.data.data); 
+      if (response.success) {
+        onLoginSuccess(response.data); 
       } else {
-        throw new Error(response.data.errorMessage);
+        throw new Error(response.errorMessage);
       }
     } catch (error) {
       setErrorModal({ title: "Login Error",  message: error.message });    

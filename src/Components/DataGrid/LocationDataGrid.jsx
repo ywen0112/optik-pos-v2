@@ -3,7 +3,7 @@ import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 
 import StandardDataGridComponent from "../BaseDataGrid";
-import { GetLocationRecords } from "../../apiconfig";
+import { GetLocationRecords } from "../../api/apiconfig";
 
 
 const LocationDataGrid = ({className, customerId, onError, onDelete, onEdit}) => {

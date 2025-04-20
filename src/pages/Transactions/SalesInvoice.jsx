@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
-import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales, SaveSalesPayment, GetDebtorPreviousEyeProfile, NewEyePower, SaveEyePower, GetJobSheetForm, ReportBaseUrl, NewSales } from "../../apiconfig";
+import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords, SaveSales, SaveSalesPayment, GetDebtorPreviousEyeProfile, NewEyePower, SaveEyePower, GetJobSheetForm, ReportBaseUrl, NewSales } from "../../api/apiconfig";
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
 
 const SalesInvoice = ({ setCounterSession }) => {
-  const customerId = localStorage.getItem("customerId");
-  const userId = localStorage.getItem("userId");
-  const locationId = localStorage.getItem("locationId");
-  const salesId = localStorage.getItem("salesId");
-  // const salesDocNo = localStorage.getItem("salesDocNo");
+  const customerId = sessionStorage.getItem("customerId");
+  const userId = sessionStorage.getItem("userId");
+  const locationId = sessionStorage.getItem("locationId");
+  const salesId = sessionStorage.getItem("salesId");
+  // const salesDocNo = sessionStorage.getItem("salesDocNo");
   const [debtorOptions, setDebtorOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [agentOptions, setAgentOptions] = useState([]);
@@ -806,8 +806,8 @@ const SalesInvoice = ({ setCounterSession }) => {
   
         const data = await response.json();
         if (data.success) {
-          localStorage.setItem("salesId", data.data.salesId);
-          // localStorage.setItem("salesDocNo", data.data.docNo);
+          sessionStorage.setItem("salesId", data.data.salesId);
+          // sessionStorage.setItem("salesDocNo", data.data.docNo);
         } else {
           throw new Error(data.errorMessage || "Failed to create new sales invoice.");
         }

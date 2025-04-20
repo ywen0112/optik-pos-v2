@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { GetUsers, GetAllAuditChangeType, GetAuditLog } from "../apiconfig";
+import { GetUsers, GetAllAuditChangeType, GetAuditLog } from "../api/apiconfig";
 import ErrorModal from "../modals/ErrorModal";
+import { GetUserRecords } from "../api/userapi";
+import { GetAllChangeTyp, GetAuditLogs } from "../api/auditlogapi";
 
 const AuditLogs = () => {
   const [users, setUsers] = useState([]);
@@ -17,7 +19,7 @@ const AuditLogs = () => {
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const customerId = localStorage.getItem("customerId");
+  const companyId = sessionStorage.getItem("companyId");
 
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
 
@@ -28,15 +30,12 @@ const AuditLogs = () => {
 
   const fetchUsers = async () => {
     try{
-    const res = await fetch(GetUsers, {
-      method: "POST",
-      headers: {
-        Accept: "text/plain",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ customerId: Number(customerId), keyword: "", offset: 0, limit: 9999 }),
+    const data = await GetUserRecords({
+      companyId: companyId,
+      keyword: "",
+      offset: 0,
+      limit: 9999,
     });
-    const data = await res.json();
     if (data.success) {
       const options = data.data.userRecords?.map((agent) => ({
         value: agent.userId,
@@ -54,12 +53,10 @@ const AuditLogs = () => {
   const fetchEventTypes = async () => {
     setLoadingEventTypes(true);
     try {
-      const res = await fetch(`${GetAllAuditChangeType}?customerId=${customerId}`,
-        { method: "GET",
-          headers: { accept: "text/plain" } 
-        }
-      );
-      const data = await res.json();
+      
+      const data = await GetAllChangeTyp({
+        companyId: companyId,
+      });
       if (data.success) {
         const formatted = data.data.map((type) => ({
           value: type,
@@ -83,24 +80,16 @@ const AuditLogs = () => {
     const localISOTime = new Date(now - offsetMillis).toISOString().slice(0, 19);
 
     try {
-      const res = await fetch(GetAuditLog, {
-        method: "POST",
-        headers: {
-          Accept: "text/plain",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          customerId,
-          userId: selectedUser?.value || "",
-          keyword: "",
-          eventType: eventType?.value || "",
-          fromDate: startDate ? new Date(startDate).toISOString() : null,
-          toDate: endDate ? new Date(endDate).toISOString() : localISOTime,
-          offset: pagination.offset,
-          limit: pagination.limit,
-        }),
+      const data = await GetAuditLogs({
+        companyId: companyId,
+        fromDate: startDate ? new Date(startDate).toISOString() : null,
+        toDate: endDate ? new Date(endDate).toISOString() : localISOTime,
+        userId: selectedUser?.value  || "",
+        eventType: eventType?.value || "",
+        keyword: "",
+        offset: pagination.offset,
+        limit: pagination.limit,
       });
-      const data = await res.json();
       if (data.success) {
         setAuditLogs(data.data || []);
       } else {

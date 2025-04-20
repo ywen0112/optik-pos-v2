@@ -16,7 +16,7 @@ const UserProfileMenu = ({isOpen, afterSelect}) => {
                 }}>Help</li>
                 <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
                     sessionStorage.clear()
-                    localStorage.clear()
+                    sessionStorage.clear()
                     navigate("/login")
                 }}>Logout</li>
             </ul>

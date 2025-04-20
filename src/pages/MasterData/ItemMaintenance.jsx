@@ -3,16 +3,16 @@ import { Eye, Trash2, Pencil } from "lucide-react";
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
-import { GetItemRecords, EditItem, GetItemGroup, GetItemType, NewItem, NewItemDetail, SaveItem, DeleteItem } from "../../apiconfig";
+import { GetItemRecords, EditItem, GetItemGroup, GetItemType, NewItem, NewItemDetail, SaveItem, DeleteItem } from "../../api/apiconfig";
 import Select from "react-select";
 
 import ProductDataGrid from "../../Components/DataGrid/ProductDataGrid"
 import UpdateProductModal from "../../modals/MasterData/Product/AddProductModal";
 
 const ItemMaintenance = () => {
-    const customerId = localStorage.getItem("customerId");
-    const userId = localStorage.getItem("userId");
-    const locationId = localStorage.getItem("locationId");
+    const customerId = sessionStorage.getItem("customerId");
+    const userId = sessionStorage.getItem("userId");
+    const locationId = sessionStorage.getItem("locationId");
 
     const productDataGridRef = useRef(null);
 

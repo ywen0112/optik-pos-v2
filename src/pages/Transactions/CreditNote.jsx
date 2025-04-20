@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 import { Trash2 } from "lucide-react";
-import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords } from "../../apiconfig";
+import { GetDebtorRecords, GetLocationRecords, GetUsers, GetItemRecords } from "../../api/apiconfig";
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 
 const CreditNote = ({ creditNoteId, docNo, counterSession, setCounterSession }) => {
-  const customerId = localStorage.getItem("customerId");
-  const userId = localStorage.getItem("userId");
-  const locationId = localStorage.getItem("locationId");
+  const customerId = sessionStorage.getItem("customerId");
+  const userId = sessionStorage.getItem("userId");
+  const locationId = sessionStorage.getItem("locationId");
   const [debtorOptions, setDebtorOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [agentOptions, setAgentOptions] = useState([]);

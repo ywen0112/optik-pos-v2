@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { RegisterUser } from "./apiconfig"; 
+import { Eye, EyeOff } from "lucide-react";
+
+import { RegisterUser } from "./api/userapi";
 import ErrorModal from "./modals/ErrorModal"; 
 import NotificationModal from "./modals/NotificationModal";
-import { Eye, EyeOff } from "lucide-react";
 import logo from "./assets/logo_white.png";
 
 const UserRegistrationPage = () => {
@@ -17,11 +18,9 @@ const UserRegistrationPage = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const customerId = searchParams.get("CustomerId");
+  const companyId = searchParams.get("CompanyId");
   const userEmail = searchParams.get("UserEmail");
   const companyName = searchParams.get("CompanyName") || "";
-  const isOwner = searchParams.get("IsOwner")?.toLowerCase() === "true";
-  const accessRightId = searchParams.get("AccessRightId");
 
   const handleRegister = async () => {
     if (!userName || !password) {
@@ -31,24 +30,14 @@ const UserRegistrationPage = () => {
 
     setLoading(true);
     try {
-      const payload = {
-        customerId: Number(customerId),
-        editorUserId: "",
-        companyName,
-        userName,
-        userEmail,
+     
+      const result = await RegisterUser({
+        companyId: companyId,
+        userName: userName,
+        userEmailAddress: userEmail,
         userPassword: password,
-        accessRightId,
-        isOwner,
-      };
-
-      const response = await fetch(RegisterUser, {
-        method: "POST",
-        headers: { Accept: "text/plain", "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
       });
 
-      const result = await response.json();
       if (result.success) {
         setNotifyModal({ isOpen: true, message: "Registration successful. You can now login." });
       } else {

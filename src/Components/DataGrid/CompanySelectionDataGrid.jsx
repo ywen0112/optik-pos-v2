@@ -9,12 +9,11 @@ const CompanySelectionDataGrid = ({ companies }) => {
     const navigate = useNavigate();
     
     const handleCompanySelect = (company) => {
-        localStorage.setItem("userId", company.userId);
-        localStorage.setItem("customerId", company.customerId);
-        localStorage.setItem("locationId", company.locationId);
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("accessRights", JSON.stringify(company.accessRight));
-        localStorage.setItem("selectedCompany", JSON.stringify(company));
+        sessionStorage.setItem("userId", company.userId);
+        sessionStorage.setItem("companyId", company.companyId);
+        sessionStorage.setItem("isLoggedIn", "true");
+        sessionStorage.setItem("accessRights", JSON.stringify(company.accessRight));
+        sessionStorage.setItem("selectedCompany", JSON.stringify(company));
 
         navigate("/dashboard");
     };

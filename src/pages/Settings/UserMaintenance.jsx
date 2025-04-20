@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Pencil, Trash2, Eye } from "lucide-react";
-import { GetUsers, GetLocationRecords, GetAccessRightRecords, UpdateUser, DeleteUser, InviteUser } from "../../apiconfig";
+import Select from "react-select";
+
+import { GetLocationRecords, GetAccessRightRecords } from "../../api/apiconfig";
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
-import Select from "react-select";
+import { GetUserRecords, SaveUserUpdate, InviteUser, DeleteUser } from "../../api/userapi";
 
 const UserMaintenance = () => {
-  const customerId = localStorage.getItem("customerId");
-  const userId = localStorage.getItem("userId");
+  const companyId = sessionStorage.getItem("companyId");
+  const userId = sessionStorage.getItem("userId");
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
@@ -28,49 +30,33 @@ const UserMaintenance = () => {
   const [pagination, setPagination] = useState({
     currentPage: 1,
     itemsPerPage: 10,
-    totalItems: 0,
   });
 
   useEffect(() => {
     fetchUsers();
-    fetchAccessRights();
-    fetchLocations();
+    // fetchAccessRights();
+    // fetchLocations();
   }, [pagination.currentPage]);
 
   const fetchUsers = async () => {
     setLoading(true);
     const offset = (pagination.currentPage - 1) * pagination.itemsPerPage;
 
-    const requestBody = {
-      customerId: Number(customerId),
-      keyword: "",
-      offset,
-      limit: pagination.itemsPerPage,
-    };
-
     try {
-      const response = await fetch(GetUsers, {
-        method: "POST",
-        headers: {
-          "Accept": "text/plain",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
+      const response = await GetUserRecords({
+        companyId: companyId,
+        keyword: "",
+        offset: offset,
+        limit: pagination.itemsPerPage,
       });
-
-      const data = await response.json();
-
-      if (data.success) {
-        const records = data.data.userRecords || [];
-        const total = data.data.totalRecords || 0;
-
+      if (response.success) {
+        const records = response.data || [];
         setUsers(records);
         setPagination((prev) => ({
           ...prev,
-          totalItems: total,
         }));
       } else {
-        throw new Error(data.errorMessage || "Failed to fetch users.");
+        throw new Error(response.errorMessage || "Failed to fetch users.");
       }
     } catch (error) {
       setErrorModal({ title: "Fetch Error", message: error.message });
@@ -81,19 +67,19 @@ const UserMaintenance = () => {
 
   const fetchAccessRights = async () => {
 
-    try{
-    const res = await fetch(GetAccessRightRecords, {
-      method: "POST",
-      headers: {
-        Accept: "text/plain",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ customerId: Number(customerId), keyword: "", offset: 0, limit: 9999 }),
-    });
-    const data = await res.json();
-    if (data.success) {
+    try {
+      const res = await fetch(GetAccessRightRecords, {
+        method: "POST",
+        headers: {
+          Accept: "text/plain",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ customerId: Number(customerId), keyword: "", offset: 0, limit: 9999 }),
+      });
+      const data = await res.json();
+      if (data.success) {
         setAccessRights(data.data.accessRightsRecords || [])
-    } else {
+      } else {
         throw new Error(data.errorMessage || "Failed to fetch access right.");
       }
     } catch (error) {
@@ -103,18 +89,18 @@ const UserMaintenance = () => {
 
   const fetchLocations = async () => {
     try {
-    const res = await fetch(GetLocationRecords, {
-      method: "POST",
-      headers: {
-        Accept: "text/plain",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ customerId: Number(customerId), keyword: "", offset: 0, limit: 9999 }),
-    });
-    const data = await res.json();
-    if (data.success) {
+      const res = await fetch(GetLocationRecords, {
+        method: "POST",
+        headers: {
+          Accept: "text/plain",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ customerId: Number(customerId), keyword: "", offset: 0, limit: 9999 }),
+      });
+      const data = await res.json();
+      if (data.success) {
         setLocations(data.data.locationRecords || [])
-    } else {
+      } else {
         throw new Error(data.errorMessage || "Failed to fetch locations.");
       }
     } catch (error) {
@@ -148,22 +134,20 @@ const UserMaintenance = () => {
 
     try {
       if (confirmModal.type === "update") {
-        const payload = {
-          customerId: Number(customerId),
-          userId: user.userId,
-          editorUserId: user.userId,
-          accessRightId: selectedAccess?.accessRightId || null,
-          locationId: selectedLocation?.locationId || null,
+
+        const actionData = {
+          companyId: companyId,
+          userId: userId,
+          id: user.userId,
         };
-        const response = await fetch(UpdateUser, {
-          method: "POST",
-          headers: {
-            Accept: "text/plain",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
+
+        const result = await SaveUserUpdate({
+            actionData: actionData,
+            userId: user.userId,
+            userName: user.userName,
+            userEmailAddress: user.userEmailAddress,
+            userRoleId: user.userRoleId,
         });
-        const result = await response.json();
         if (result.success) {
           setNotifyModal({ isOpen: true, message: "User updated successfully!" });
           setEditUser(null);
@@ -172,21 +156,11 @@ const UserMaintenance = () => {
           throw new Error(result.errorMessage || "Failed to update user.");
         }
       } else if (confirmModal.type === "delete") {
-        const payload = {
-          customerId: Number(customerId),
-          userId: user.userId,
+        const result = await DeleteUser({
+          companyId: companyId,
+          userId: userId,
           id: user.userId,
-          locationId: selectedLocation?.locationId || null,
-        };
-        const response = await fetch(DeleteUser, {
-          method: "POST",
-          headers: {
-            Accept: "text/plain",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
         });
-        const result = await response.json();
         if (result.success) {
           setNotifyModal({ isOpen: true, message: "User deleted successfully!" });
           fetchUsers();
@@ -195,24 +169,14 @@ const UserMaintenance = () => {
         }
       }
       if (confirmModal.type === "invite") {
-        const payload = {
-          customerId: Number(customerId),
-          editorUserId: userId,
-          companyName: "",
-          userName: "",
-          userEmail: inviteEmail,
-          userPassword: "",
-          accessRightId: inviteAccess.accessRightId,
-          isOwner: false,
-        };
-        const response = await fetch(InviteUser, {
-          method: "POST",
-          headers: { Accept: "text/plain", "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+        const result = await InviteUser({
+          companyId: companyId,
+          userId: userId,
+          userEmailAddress: inviteEmail,
         });
-        const result = await response.text();
-        if (response.ok) {
-          setNotifyModal({ isOpen: true, message: `Invitation link: ${result}` });
+
+        if (result.success) {
+          setNotifyModal({ isOpen: true, message: `Invitation link: ${result.errorMessage}` });
           setShowInviteModal(false);
           setInviteEmail("");
           setInviteAccess(null);
@@ -224,7 +188,7 @@ const UserMaintenance = () => {
       setErrorModal({ title: "Error", message: error.message });
     } finally {
       setLoading(false);
-    } 
+    }
   };
 
   const getAccessRightLabel = (id) => accessRights.find((r) => r.accessRightId === id)?.description || "-";
@@ -282,7 +246,7 @@ const UserMaintenance = () => {
     menuList: (provided) => ({
       ...provided,
       maxHeight: "10.5rem",
-      overflowY: "auto", 
+      overflowY: "auto",
       WebkitOverflowScrolling: "touch",
     }),
     menuPortal: (provided) => ({
@@ -303,16 +267,16 @@ const UserMaintenance = () => {
 
   return (
     <div>
-      <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })}/>
+      <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
       <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.type] || "Confirm Action"} message={confirmationMessageMap[confirmModal.type] || "Are you sure?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
       <div className="text-right">
         <button
-            className="bg-secondary text-white px-4 py-1 rounded text-xs hover:bg-secondary/90 transition" onClick={() => setShowInviteModal(true)}
-            >
-            Add User
+          className="bg-secondary text-white px-4 py-1 rounded text-xs hover:bg-secondary/90 transition" onClick={() => setShowInviteModal(true)}
+        >
+          Add User
         </button>
-     </div>
+      </div>
       <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
         {loading ? (
           <p className="text-center py-4 text-gray-500">Loading...</p>
@@ -348,9 +312,12 @@ const UserMaintenance = () => {
                     <button className="text-red-500 bg-transparent pl-0" onClick={handleDelete}>
                       <Trash2 size={14} />
                     </button>
-                </td>
+                  </td>
                 </tr>
               ))}
+              {users.length === 0 && !loading && (
+                <tr><td colSpan="3" className="text-center py-4 text-gray-500">No users found.</td></tr>
+              )}
             </tbody>
           </table>
         )}
@@ -363,27 +330,25 @@ const UserMaintenance = () => {
           {pagination.totalItems}
         </span>
         <div className="flex">
-        <button
-          onClick={() => handlePageChange(pagination.currentPage - 1)}
-          disabled={pagination.currentPage === 1}
-          className={`px-2 py-1 bg-white border rounded ${
-            pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer"
-          }`}
-        >
-          ←
-        </button>
+          <button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1}
+            className={`px-2 py-1 bg-white border rounded ${pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer"
+              }`}
+          >
+            ←
+          </button>
 
-        <button
-          onClick={() => handlePageChange(pagination.currentPage + 1)}
-          disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems}
-          className={`px-2 py-1 bg-white border rounded ${
-            pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-gray-100 cursor-pointer"
-          }`}
-        >
-          →
-        </button>
+          <button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems}
+            className={`px-2 py-1 bg-white border rounded ${pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-100 cursor-pointer"
+              }`}
+          >
+            →
+          </button>
         </div>
       </div>
 
@@ -409,7 +374,7 @@ const UserMaintenance = () => {
                 {viewMode ? (
                   <div className="mt-1 p-2 bg-gray-100 rounded">{getAccessRightLabel(editUser.accessRightId)}</div>
                 ) : (
-                  <Select value={selectedAccess} onChange={setSelectedAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable/>
+                  <Select value={selectedAccess} onChange={setSelectedAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable />
                 )}
               </div>
               <div>
@@ -417,7 +382,7 @@ const UserMaintenance = () => {
                 {viewMode ? (
                   <div className="mt-1 p-2 bg-gray-100 rounded">{getLocationLabel(editUser.locationId)}</div>
                 ) : (
-                  <Select value={selectedLocation} onChange={setSelectedLocation} getOptionLabel={(e) => e.locationCode} getOptionValue={(e) => e.locationId} options={locations} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable/>
+                  <Select value={selectedLocation} onChange={setSelectedLocation} getOptionLabel={(e) => e.locationCode} getOptionValue={(e) => e.locationId} options={locations} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable />
                 )}
               </div>
             </div>
@@ -442,7 +407,7 @@ const UserMaintenance = () => {
               </div>
               <div>
                 <label>User Role</label>
-                <Select value={inviteAccess} onChange={setInviteAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable/>
+                <Select value={inviteAccess} onChange={setInviteAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable />
               </div>
             </div>
             <div className="mt-6 flex justify-end space-x-2">
@@ -453,9 +418,7 @@ const UserMaintenance = () => {
         </div>
       )}
 
-      {users.length === 0 && !loading && (
-        <tr><td colSpan="3" className="text-center py-4 text-gray-500">No users found.</td></tr>
-      )}
+
     </div>
   );
 };

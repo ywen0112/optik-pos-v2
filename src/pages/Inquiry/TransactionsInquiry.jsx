@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, FileText, Ban, CheckCircle, DollarSign } from "lucide-react";
-import { GetCounterSessionRecords, GetCounterSummaryReport, GetCashTransactionsRecords, VoidCashTransaction, GetSales, GetPurchases, VoidSales, VoidPurchases} from "../../apiconfig";
+import { GetCounterSessionRecords, GetCounterSummaryReport, GetCashTransactionsRecords, VoidCashTransaction, GetSales, GetPurchases, VoidSales, VoidPurchases} from "../../api/apiconfig";
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import PaymentModal from "../../modals/PaymentModal";
@@ -10,9 +10,9 @@ const TransactionsInquiry = () => {
   const [activeTab, setActiveTab] = useState("Counter Session");
   const [tableData, setTableData] = useState([]);
   const [expandedRows, setExpandedRows] = useState({});
-  const customerId = localStorage.getItem("customerId");
-  const userId = localStorage.getItem("userId");
-  const locationId = localStorage.getItem("locationId");
+  const customerId = sessionStorage.getItem("customerId");
+  const userId = sessionStorage.getItem("userId");
+  const locationId = sessionStorage.getItem("locationId");
   const [pagination, setPagination] = useState({
     "Counter Session": {
       currentPage: 1,

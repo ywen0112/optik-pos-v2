@@ -1,74 +1,25 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { EditCompany, SaveCompany } from "../../apiconfig";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import { UploadCloud } from "lucide-react";
 
+import { SaveCompany } from "../../api/companyapi";
+
 const CompanyProfile = () => {
   const location = useLocation();
   const company = location.state?.company;
+  const [initialCompany, setInitialCompany] = useState({ address: company.address, contact1: company.phone1, contact2: company.phone2, emailAddress: company.emailAddress, companyLogo: company.companyLogo });
 
-
-  const [companyAddress, setContact1] = useState("")
-  const [contact1, setContact2] = useState("")
-  const [contact2, setCompanyAddress] = useState("")
-  const [email, setEmail] = useState("")
-  const [logoB64, setLogoB64] = useState("")
-
-  const [initialCompany, setInitialCompany] = useState(company);
-  const [editData, setEditData] = useState({});
-  const [isEditing, setIsEditing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [notificationModal, setNotificationModal] = useState({ isOpen: false, title: "", message: "" });
 
-  useEffect(() => {
-    setEditData(company);
-  }, [company]);
-
   if (!company) {
     return <div className="p-4 text-center text-red-500">No company data available.</div>;
   }
-
-  const handleEditClick = async () => {
-    try {
-      const customerId = localStorage.getItem("customerId");
-      const userId = localStorage.getItem("userId");
-      const locationId = localStorage.getItem("locationId");
-
-      const response = await fetch(EditCompany, {
-        method: "POST",
-        headers: {
-          Accept: "text/plain",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ customerId: Number(customerId), userId, locationId, id: "" }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setEditData(data.data);
-        setIsEditing(true);
-      } else {
-        throw new Error(data.errorMessage || "Failed to enter edit mode.");
-      }
-    } catch (error) {
-      setErrorModal({ title: "Edit Error", message: error.message });
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditData(initialCompany);
-    setIsEditing(false);
-  };
-
-  const handleChange = (e) => {
-    setEditData({ ...editData, [e.target.name]: e.target.value });
-  };
 
   const handleSave = () => {
     setShowConfirm(true);
@@ -77,22 +28,20 @@ const CompanyProfile = () => {
   const confirmSave = async () => {
     setConfirmLoading(true);
     try {
-      const response = await fetch(SaveCompany, {
-        method: "POST",
-        headers: {
-          Accept: "text/plain",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editData),
+      const data = await SaveCompany({
+        actionData: company.actionData,
+        companyName: company.companyName,
+        companyLogo: initialCompany.companyLogo,
+        registrationNo: company.registrationNo,
+        address: initialCompany.address,
+        phone1: initialCompany.contact1,
+        phone2: initialCompany.contact2,
+        emailAddress: initialCompany.emailAddress,
       });
-
-      const data = await response.json();
       if (!data.success) {
         throw new Error(data.errorMessage || "Failed to save company info.");
       }
       setNotificationModal({ isOpen: true, title: "Success", message: "Company info saved successfully." });
-      setIsEditing(false);
-      setInitialCompany(editData);
     } catch (error) {
       setErrorModal({ title: "Save Error", message: error.message });
     } finally {
@@ -107,8 +56,13 @@ const CompanyProfile = () => {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64String = reader.result.split(",")[1]; // remove the prefix
-      setLogoB64(base64String);
+      const base64String = reader.result.split(",")[1];
+
+        setInitialCompany(prev => ({
+          ...prev,
+          companyLogo: base64String
+        }))
+      
     };
     reader.readAsDataURL(file);
   };
@@ -117,35 +71,45 @@ const CompanyProfile = () => {
   return (
     <>
       <div className="p-6 h-full">
-        <div className="bg-white rounded h-full ">
-          <div className="text-black text-xl p-6">Company Name</div>
+        <div className="bg-white rounded h-full">
+          <div className="flex flex-row place-content-between">
+            <div className="text-black text-xl p-6">{company.companyName}</div>
+            <div className="col-end-5 p-6">
+              <button className="bg-green-600 w-full text-white" onClick={handleSave}>Save</button>
+            </div>
+          </div>
+
           <div className="p-4 grid grid-cols-2 gap-4 text-sm">
             <div className="grid grid-cols-2 gap-4 text-black">
               <div>Business Register No.</div>
               <input
+                disabled={true}
                 type="text"
-                value="A-0001"
+                value={company.registrationNo}
                 placeholder="Business Registration No"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
               <div>TIN No.</div>
               <input
+                disabled={true}
                 type="text"
-                value="TIN-00001"
+                value=""
                 placeholder="TIN Number"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
               <div>Main Currency</div>
               <input
+                disabled={true}
                 type="text"
-                value="RM"
+                value=""
                 placeholder="Main Currency"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
               <div>Business Activity</div>
               <input
+                disabled={true}
                 type="text"
-                value="Optical Retailer"
+                value=""
                 placeholder="Business Activity"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
@@ -156,38 +120,58 @@ const CompanyProfile = () => {
                 placeholder="Company Address"
                 className="bg-gray-300 text-black p-2 rounded w-full"
                 rows={4}
-                value={companyAddress}
+                value={initialCompany.address}
 
-                onChange={(e) => setCompanyAddress(e.target.value)}
+                onChange={(e) =>
+                  setInitialCompany(prev => ({
+                    ...prev,
+                    address: e.target.value
+                  }))
+                }
               />
               <div>Contact 1</div>
               <input
                 type="tel"
-                value={contact1}
-                onChange={(e) => setContact1(e.target.value)}
+                value={initialCompany.contact1}
+                onChange={(e) =>
+                  setInitialCompany(prev => ({
+                    ...prev,
+                    contact1: e.target.value
+                  }))
+                }
                 placeholder="Contact No 1"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
               <div>Contact 2</div>
               <input
                 type="tel"
-                value={contact2}
-                onChange={(e) => setContact2(e.target.value)}
+                value={initialCompany.contact2}
+                onChange={(e) =>
+                  setInitialCompany(prev => ({
+                    ...prev,
+                    contact2: e.target.value
+                  }))
+                }
                 placeholder="Contact No 2"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
               <div>Email</div>
               <input
                 type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={initialCompany.emailAddress}
+                onChange={(e) =>
+                  setInitialCompany(prev => ({
+                    ...prev,
+                    emailAddress: e.target.value
+                  }))
+                }
                 placeholder="Company Email"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
             </div>
             <div className="bg-black ml-80 w-40 h-40 flex justify-center rounded-full items-center relative overflow-hidden group">
               <img
-                src={`data:image/png;base64,${logoB64}`}
+                src={`data:image/png;base64,${initialCompany.companyLogo}`}
                 className="w-full h-full rounded-full object-cover"
               />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
