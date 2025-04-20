@@ -72,13 +72,14 @@ const HeaderBar = ({ currentPage, onToggleSidebar }) => {
         className="text-secondary w-6 h-6 cursor-pointer"
         onClick={() => {
           navigate("/master-data");
+          setShowSettingsMenu(false);
           setProfileMenu(false);
         }}
       />
       <Settings
         className="text-secondary w-6 h-6 cursor-pointer"
         onClick={() => {
-          setShowSettingsMenu((prev) => !prev);
+          setShowSettingsMenu(!showSettingsMenu);
           setProfileMenu(false);
         }}
       />
@@ -86,7 +87,10 @@ const HeaderBar = ({ currentPage, onToggleSidebar }) => {
         <User
           className="text-secondary w-6 h-6 cursor-pointer"
           title="Profile"
-          onClick={() => setProfileMenu(!showProfileMenu)}
+          onClick={() => {
+            setShowSettingsMenu(false);
+            setProfileMenu(!showProfileMenu)
+          }}
         />
         <UserProfileMenu isOpen={showProfileMenu} afterSelect={setProfileMenu}/>
       </div>
