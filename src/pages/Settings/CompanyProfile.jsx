@@ -10,8 +10,7 @@ import { SaveCompany } from "../../api/companyapi";
 const CompanyProfile = () => {
   const location = useLocation();
   const company = location.state?.company;
-  const [initialCompany, setInitialCompany] = useState({ address: company.address, contact1: company.phone1, contact2: company.phone2, emailAddress: company.emailAddress, companyLogo: company.companyLogo });
-
+  const [companyLogo, setCompanyLogo] = useState(company.companyLogo)
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
@@ -30,13 +29,7 @@ const CompanyProfile = () => {
     try {
       const data = await SaveCompany({
         actionData: company.actionData,
-        companyName: company.companyName,
-        companyLogo: initialCompany.companyLogo,
-        registrationNo: company.registrationNo,
-        address: initialCompany.address,
-        phone1: initialCompany.contact1,
-        phone2: initialCompany.contact2,
-        emailAddress: initialCompany.emailAddress,
+        companyLogo: companyLogo,
       });
       if (!data.success) {
         throw new Error(data.errorMessage || "Failed to save company info.");
@@ -58,11 +51,8 @@ const CompanyProfile = () => {
     reader.onloadend = () => {
       const base64String = reader.result.split(",")[1];
 
-        setInitialCompany(prev => ({
-          ...prev,
-          companyLogo: base64String
-        }))
-      
+      setCompanyLogo(base64String)
+
     };
     reader.readAsDataURL(file);
   };
@@ -84,6 +74,7 @@ const CompanyProfile = () => {
               <div>Business Register No.</div>
               <input
                 disabled={true}
+                readOnly={true}
                 type="text"
                 value={company.registrationNo}
                 placeholder="Business Registration No"
@@ -92,86 +83,72 @@ const CompanyProfile = () => {
               <div>TIN No.</div>
               <input
                 disabled={true}
+                readOnly={true}
                 type="text"
-                value=""
+                value={company.fullTIN}
                 placeholder="TIN Number"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
               <div>Main Currency</div>
               <input
                 disabled={true}
+                readOnly={true}
                 type="text"
-                value=""
+                value={company.homeCurrency}
                 placeholder="Main Currency"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
               <div>Business Activity</div>
               <input
                 disabled={true}
+                readOnly={true}
                 type="text"
-                value=""
+                value={company.businessActivityDesc}
                 placeholder="Business Activity"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
               <div>Address</div>
               <textarea
+                disabled={true}
+                readOnly={true}
                 style={{ resize: 'none' }}
                 type="Text"
                 placeholder="Company Address"
                 className="bg-gray-300 text-black p-2 rounded w-full"
                 rows={4}
-                value={initialCompany.address}
-
-                onChange={(e) =>
-                  setInitialCompany(prev => ({
-                    ...prev,
-                    address: e.target.value
-                  }))
-                }
+                value={company.address}
               />
               <div>Contact 1</div>
               <input
+                disabled={true}
+                readOnly={true}
                 type="tel"
-                value={initialCompany.contact1}
-                onChange={(e) =>
-                  setInitialCompany(prev => ({
-                    ...prev,
-                    contact1: e.target.value
-                  }))
-                }
+                value={company.contact1}
                 placeholder="Contact No 1"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
               <div>Contact 2</div>
               <input
+                disabled={true}
+                readOnly={true}
                 type="tel"
-                value={initialCompany.contact2}
-                onChange={(e) =>
-                  setInitialCompany(prev => ({
-                    ...prev,
-                    contact2: e.target.value
-                  }))
-                }
+                value={company.contact2}
                 placeholder="Contact No 2"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
               <div>Email</div>
               <input
+                disabled={true}
+                readOnly={true}
                 type="text"
-                value={initialCompany.emailAddress}
-                onChange={(e) =>
-                  setInitialCompany(prev => ({
-                    ...prev,
-                    emailAddress: e.target.value
-                  }))
-                }
+                value={company.emailAddress}
                 placeholder="Company Email"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
             </div>
             <div className="bg-black ml-80 w-40 h-40 flex justify-center rounded-full items-center relative overflow-hidden group">
               <img
-                src={`data:image/png;base64,${initialCompany.companyLogo}`}
+                src={`data:image/png;base64,${companyLogo}`}
                 className="w-full h-full rounded-full object-cover"
               />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
