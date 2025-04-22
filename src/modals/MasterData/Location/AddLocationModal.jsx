@@ -27,12 +27,12 @@ const UpdatelocationModal = ({
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-        <div className="bg-white h-max p-6 rounded-lg shadow-lg w-1/2 max-h-[90vh] overflow-y-auto text-secondary text-xs">
-          <h3 className="text-lg font-semibold mb-4">
+        <div className="bg-white h-max p-6 rounded-lg shadow-lg w-1/2 max-h-[90vh] overflow-y-auto text-secondary">
+          <h3 className="font-semibold mb-4">
             {isEdit ? "Edit Location" : "Add Location"}
           </h3>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-1">
             <div className="flex flex-row">
               <input
                 type="checkbox"

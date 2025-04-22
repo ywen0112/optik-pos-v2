@@ -1,4 +1,3 @@
-import { FileChartColumn } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const MainMenuPage = () => {
@@ -8,7 +7,7 @@ const MainMenuPage = () => {
             <div className="bg-white p-10 shadow rounded w-full">
                 <div className="mb-4">
                    
-                    <h3 className="font-black text-2xl text-secondary">General</h3>
+                    <h3 className="font-black text-secondary">General</h3>
                 </div>
                 <ul className="space-y-3 text-blue-600 text-[14px]">
                     {/* <li><Link to="/location">Location</Link></li> */}
@@ -24,5 +23,5 @@ const MainMenuPage = () => {
     );
   };
   
-  export default MainMenuPage;
+export default MainMenuPage;
   

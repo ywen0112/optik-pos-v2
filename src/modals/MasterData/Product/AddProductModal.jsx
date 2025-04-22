@@ -100,9 +100,9 @@ const UpdateProductModal = ({
     return (
         <>
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-                <div className="bg-white p-6 rounded-lg shadow-lg w-full h-full overflow-y-auto text-secondary text-xs">
+                <div className="bg-white p-6 rounded-lg shadow-lg w-full h-full overflow-y-auto text-secondary">
                     <div className="flex flex-row justify-between">
-                        <h3 className="text-lg font-semibold mb-4">
+                        <h3 className="font-semibold mb-4">
                             {isEdit ? "Edit Product" : "Add Product"}
                         </h3>
                         <div className='col-span-4' onClick={handleClose}>
@@ -110,10 +110,7 @@ const UpdateProductModal = ({
                         </div>
                     </div>
 
-
-
-                    <div className="grid grid-cols-4 gap-4 text-[13.3px]">
-
+                    <div className="grid grid-cols-4 gap-1">
                         <div className="flex flex-col">
                             <div>Product Code</div>
                             <input
@@ -161,7 +158,7 @@ const UpdateProductModal = ({
                             />
                         </div>
                         <div className="flex flex-row justify-center">
-                        <input
+                            <input
                                     type="checkbox"
                                     checked={isActive}
                                     className="ml-2"
@@ -172,7 +169,7 @@ const UpdateProductModal = ({
                             <div className='flex items-center'>Active</div>
 
                         </div>
-                        <div className="flex flex-col col-span-2">
+                        <div className="flex flex-col col-span-2 mt-2">
                             <div>Product Name</div>
                             <input
                                 type="text"
@@ -182,7 +179,7 @@ const UpdateProductModal = ({
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
-                        <div className="flex flex-col col-span-2">
+                        <div className="flex flex-col col-span-2 mt-2">
                             <div>Description</div>
                             <input
                                 type="text"
@@ -192,7 +189,7 @@ const UpdateProductModal = ({
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col mt-2">
                             <div>UOM</div>
                             <input
                                 type="text"
@@ -202,7 +199,7 @@ const UpdateProductModal = ({
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col mt-2">
                             <div>Price</div>
                             <input
                                 type="number"
@@ -218,7 +215,7 @@ const UpdateProductModal = ({
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col mt-2">
                             <div>Min Price</div>
                             <input
                                 type="number"
@@ -234,7 +231,7 @@ const UpdateProductModal = ({
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col mt-2">
                             <div>Cost</div>
                             <input
                                 type="number"
@@ -250,7 +247,7 @@ const UpdateProductModal = ({
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
-                        <div className="flex flex-col col-span-2">
+                        <div className="flex flex-col col-span-2 mt-2">
                             <div>Barcode</div>
                             <input
                                 type="text"
@@ -261,7 +258,7 @@ const UpdateProductModal = ({
                             />
                         </div>
 
-                        <div className="flex flex-col col-span-2">
+                        <div className="flex flex-col col-span-2 mt-2">
                             <div className='flex flex-row'>
                                 <div>Commission</div>
                                 <input
@@ -298,7 +295,7 @@ const UpdateProductModal = ({
                             </div>
 
                         </div>
-                        <div className="flex flex-col col-span-2">
+                        <div className="flex flex-col col-span-2 mt-2">
                             <div>Remark</div>
                             <textarea
                                 type="text"
@@ -306,13 +303,13 @@ const UpdateProductModal = ({
                                 placeholder="Remark"
                                 value={productRemark}
                                 onChange={(e) => setProductRemark(e.target.value)}
-                                className="mr-2 mt-2 border w-full px-2 py-2"
+                                className="mr-2 mt-2 border w-full h-[90px] px-2 py-2"
                             />
                         </div>
                     </div>
 
                     <div className="absolute bottom-0 right-0 bg-white py-4 pr-6 flex justify-end w-full border-t">
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                             <button onClick={handleClose} className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700">
                                 Cancel
                             </button>
@@ -329,4 +326,4 @@ const UpdateProductModal = ({
     )
 }
 
-export default UpdateProductModal
+export default UpdateProductModal;

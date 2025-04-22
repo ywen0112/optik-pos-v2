@@ -70,7 +70,7 @@ const SalesPaymentModal = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto text-secondary text-sm">
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="font-semibold mb-4">
           {isEdit ? "Edit Payment" : "Add Payment"}
         </h3>
 

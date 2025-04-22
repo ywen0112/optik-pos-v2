@@ -355,7 +355,7 @@ const UserMaintenance = () => {
       {editUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white rounded-lg shadow-lg p-6 w-[500px] max-w-full text-secondary text-xs">
-            <h3 className="text-lg font-semibold mb-4">{viewMode ? "View User" : "Edit User"}</h3>
+            <h3 className="font-semibold mb-4">{viewMode ? "View User" : "Edit User"}</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label>Username</label>
@@ -399,7 +399,7 @@ const UserMaintenance = () => {
       {showInviteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white rounded-lg shadow-lg p-6 w-[400px] max-w-full text-secondary text-xs">
-            <h3 className="text-lg font-semibold mb-4">Invite New User</h3>
+            <h3 className="font-semibold mb-4">Invite New User</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <label>Email</label>
