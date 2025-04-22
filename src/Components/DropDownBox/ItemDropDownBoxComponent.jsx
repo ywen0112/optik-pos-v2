@@ -4,28 +4,18 @@ import DataGrid, {
     Paging,
     SearchPanel,
     Column,
+    Scrolling,
   } from 'devextreme-react/data-grid';
 
-  const dropDownOptions = { width: 300 };
+  const dropDownOptions = { width: 500 };
 
 const ItemDropDownBoxComponent = ({data, value, onValueChanged = () => {} }) => {
-    const [items, setItems] = useState(data ? data : []);
+   
     const [currentValue, setCurrentValue] = useState(value || '');
     const gridRef = useRef(null);
   
-    useEffect(() => {
-    //   fetchData('');
-    }, []);
-  
-    const fetchData = async (keyword) => {
-      try {
-        const res = await fetch(`/api/items?search=${keyword}`);
-        const data = await res.json();
-        setItems(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+ 
+   
   
     const handleValueChange = (selectedItems) => {
       const selected = selectedItems?.[0];
@@ -33,7 +23,7 @@ const ItemDropDownBoxComponent = ({data, value, onValueChanged = () => {} }) => 
   
       setCurrentValue(selected.itemCode);
       if (typeof onValueChanged === 'function') {
-        onValueChanged(selected.id); // ← clean call
+        onValueChanged(selected); // ← clean call
       }
     };
   
@@ -46,31 +36,27 @@ const ItemDropDownBoxComponent = ({data, value, onValueChanged = () => {} }) => 
         showClearButton
         contentRender={() => (
           <DataGrid
-            dataSource={items}
+            dataSource={data}
             height={250}
             showBorders
             focusedRowEnabled
-            keyExpr="id"
+            keyExpr="itemId"
             onRowClick={(e) => handleValueChange([e.data])}
             ref={gridRef}
+            remoteOperations={{
+              paging: true,
+              filtering: true,         
+            }}
           >
-            <SearchPanel visible={true} onTextChange={(e)=>{console.log(e)}}/>
-            <Paging enabled pageSize={5} />
-            <Column dataField="itemCode" caption="Code" />
-            <Column dataField="description" caption="Description" />
-            <Column dataField="qty" caption="Qty" dataType="number" />
+            <Scrolling mode="infinite"/>
+            <SearchPanel visible={true} highlightSearchText={true}/>
+            <Paging enabled pageSize={10} />
+            <Column dataField="itemCode" caption="Code" width={"30%"}/>
+            <Column dataField="description" caption="Description" width={"50%"} />
           </DataGrid>
         )}
       />
     );
   };
 
-  export default ItemDropDownBoxComponent
-  
-
-  const initialData = [
-    { id: 1, itemCode: 'A100', description: 'Widget', uom: 'pcs', qty: 10, unitPrice: 5.0 },
-    { id: 2, itemCode: 'B200', description: 'Gadget', uom: 'pcs', qty: 5, unitPrice: 12.5 },
-    { id: 3, itemCode: 'C100', description: 'WidgetBox', uom: 'pcs', qty: 10, unitPrice: 15.0 },
-    { id: 4, itemCode: 'D200', description: 'GadgetBox', uom: 'pcs', qty: 5, unitPrice: 22.5 },
-  ];
+  export default ItemDropDownBoxComponent;

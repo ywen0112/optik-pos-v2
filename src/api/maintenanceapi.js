@@ -142,11 +142,11 @@ export const GetDebtor = ({companyId, userId, id}) =>{
     return postRequest(getDebtor, body);
 };
 
-export const SaveDebtor = ({actionData, DebtorId, DebtorCode, companyName, isActive, identityNo, dob, address, remark, phone1, phone2, emailAddress, medicalIsDiabetes, medicalIsHypertension, medicalOthers, ocularIsSquint, ocularIsLazyEye, ocularHasSurgery, ocularOthers}) =>{
+export const SaveDebtor = ({actionData, debtorId, debtorCode, companyName, isActive, identityNo, dob, address, remark, phone1, phone2, emailAddress, medicalIsDiabetes, medicalIsHypertension, medicalOthers, ocularIsSquint, ocularIsLazyEye, ocularHasSurgery, ocularOthers}) =>{
     const body = JSON.stringify({
         actionData,
-        DebtorId,
-        DebtorCode,
+        debtorId,
+        debtorCode,
         companyName,
         isActive,
         identityNo,

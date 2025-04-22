@@ -12,7 +12,7 @@ const getUserRoles = `${ApiBaseUrl}InfoLookup/GetUserRoles`;
 const getUsers = `${ApiBaseUrl}InfoLookup/GetUsers`;
 
 export const getInfoLookUp = ({type, companyId, keyword, offset, limit}) =>{
-    const url = "";
+    var url = "";
     switch(type){
         case "classification":
             url = getClassificationCodes;

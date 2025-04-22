@@ -139,7 +139,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     { name: "Dashboard", icon: <Gauge size={20} />, path: "/dashboard" },
     { name: "Transaction", icon: <Receipt size={20} />, 
       children: [
-        { name: "Cash Sale", shortLabel: "CS", path: "/cash-sale", onClick: () => handleTransactionsClick() },
+        { name: "Cash Sale", shortLabel: "CS", path: "/cash-sale"},
         { name: "Sales Order", shortLabel: "SO", path: "/sales-order" },
         { name: "Purchase Invoice", shortLabel: "PI", path: "/purchase-invoice" },
         { name: "Stock Adjustment", shortLabel: "SA", path: "/stock-adjustment" },
