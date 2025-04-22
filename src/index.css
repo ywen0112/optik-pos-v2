@@ -3,7 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 :root {
   font-family: 'Roboto', sans-serif; 
   line-height: 1.5;
@@ -29,6 +28,12 @@
 
 #SalesOrderItemTable{
   font-family: 'Roboto', sans-serif;
+}
+
+@layer base {
+  h3 {
+    @apply text-2xl;
+  }
 }
 
 a {
