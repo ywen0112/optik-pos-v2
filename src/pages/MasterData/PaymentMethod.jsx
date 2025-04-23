@@ -1,58 +1,135 @@
-import { Check, Square, Pencil } from "lucide-react";
-
-const paymentMethods = [
-  {
-    type: "Cash",
-    method: "CASH",
-  },
-  {
-    type: "Bank",
-    method: "BANK",
-  },
-];
+import { useState } from "react";
+import ErrorModal from "../../modals/ErrorModal";
+import NotificationModal from "../../modals/NotificationModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
+import PaymentMethodDataGrid from "../../Components/DataGrid/PaymentMethodDataGrid";
+import AddPaymentModal from "../../modals/AddPaymentModal";
 
 const PaymentMethod = () => {
-  return (
-    <div className="p-6 w-full bg-white">
-      <div className="overflow-x-auto rounded shadow">
-        <table className="min-w-full text-xs border border-gray-300">
-          <thead className="bg-gray-300 text-secondary text-left">
-            <tr>
-              <th className="px-4 py-2">Payment Method Type</th>
-              <th className="px-4 py-2">Payment Method</th>
-              <th className="px-4 py-2">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paymentMethods.map((item, idx) => (
-              <tr key={idx} className="border-t border-gray-200 text-secondary">
-                <td className="px-4 py-2">{item.type}</td>
-                <td className="px-4 py-2">{item.method}</td>
-               
-                <td className="px-4 py-2 text-blue-600 hover:underline cursor-pointer">
-                    <Pencil className="w-4 h-4 text-green-600 mx-auto" />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+  const [formats, setFormats] = useState([]);
+  const [errorModal, setErrorModal] = useState({ title: "", message: "" });
+  const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
+  const [selectedFormat, setSelectedFormat] = useState(null);
+  const [formAction, setFormAction] = useState(null);
+  const [isUpdateModelOpen, setIsUpdateModelOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-      <div className="flex justify-between items-center mt-4">
-        <div className="flex items-center text-black gap-2">
-          {[10, 25, 50, 100].map((size) => (
-            <button
-              key={size}
-              className="px-2 py-1 border rounded text-sm hover:bg-green-100"
-            >
-              {size}
-            </button>
-          ))}
-        </div>
-        <div className="text-sm text-gray-600">Page 1 of 1 (2 items)</div>
-        <div className="flex items-center gap-1">
-          <button className="px-2 py-1 bg-green-600 text-white text-sm rounded">1</button>
-        </div>
+  const handleAddNew = () => {
+    setSelectedFormat({
+        isActive: true,
+        paymentMethod: "",
+        paymentMethodType: "",
+    });
+    setFormAction("add");
+    setIsUpdateModelOpen(true);
+  };
+
+  const handleOpenModal = (format, mode) => {
+    setSelectedFormat(format);
+    setFormAction(mode);
+    setIsUpdateModelOpen(true);
+  };
+
+  const handleDeleteClick = (id) => {
+    setDeleteTarget(id);
+    setConfirmModal({ isOpen: true, action: "delete" });
+  };
+
+  const confirmAction = () => {
+    const action = confirmModal.action;
+    setSaving(true);
+    setConfirmModal({ isOpen: false, action: null });
+
+    setTimeout(() => {
+      if (action === "delete") {
+        setFormats((prev) => prev.filter((f) => f.formatId !== deleteTarget));
+        setNotifyModal({ isOpen: true, message: "Payment Method deleted successfully!" });
+      } else {
+        if (formAction === "edit") {
+          setFormats((prev) =>
+            prev.map((f) =>
+                f.formatId === selectedFormat.formatId ? selectedFormat : f
+            )
+          );
+          setNotifyModal({ isOpen: true, message: "Payment Method updated successfully!" });
+        } else {
+          const newFormat = {
+            ...selectedFormat,
+            formatId: Date.now().toString(), // mock ID
+          };
+          setFormats((prev) => [...prev, newFormat]);
+          setNotifyModal({ isOpen: true, message: "Payment Method added successfully!" });
+        }
+        setSelectedFormat(null);
+        setIsUpdateModelOpen(false);
+      }
+      setSaving(false);
+    }, 500);
+  };
+
+  const handleCloseUpdateModal = () => {
+    setIsUpdateModelOpen(false);
+    setSelectedFormat(null);
+  };
+
+  const confirmationTitleMap = {
+    add: "Confirm Add",
+    edit: "Confirm Edit",
+    delete: "Confirm Delete",
+  };
+
+  const confirmationMessageMap = {
+    add: "Are you sure you want to add this payment method?",
+    edit: "Are you sure you want to edit this payment method?",
+    delete: "Are you sure you want to delete this payment method?",
+  };
+
+  return (
+    <div>
+      <ErrorModal
+        title={errorModal.title}
+        message={errorModal.message}
+        onClose={() => setErrorModal({ title: "", message: "" })}
+      />
+      <NotificationModal
+        isOpen={notifyModal.isOpen}
+        message={notifyModal.message}
+        onClose={() => setNotifyModal({ isOpen: false, message: "" })}
+      />
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmationTitleMap[confirmModal.action]}
+        message={confirmationMessageMap[confirmModal.action]}
+        loading={saving}
+        onConfirm={confirmAction}
+        onCancel={() => setConfirmModal({ isOpen: false, action: null })}
+      />
+      <AddPaymentModal
+        selectedPayment={selectedFormat}
+        isEdit={formAction === "edit"}
+        isOpen={isUpdateModelOpen}
+        onConfirm={confirmAction}
+        onError={setErrorModal}
+        onClose={handleCloseUpdateModal}
+      />
+      <div className="text-right p-2">
+        <button
+          className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition"
+          onClick={handleAddNew}
+        >
+          Add Payment Method
+        </button>
+      </div>
+      <div className="mt-2 bg-white h-[50vh] rounded-lg shadow overflow-hidden">
+        <PaymentMethodDataGrid
+          methodRecords={formats}
+          className="p-2"
+          onError={setErrorModal}
+          onDelete={handleDeleteClick}
+          onEdit={handleOpenModal}
+        />
       </div>
     </div>
   );
