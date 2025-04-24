@@ -1,23 +1,83 @@
 import StandardDataGridComponent from "../BaseDataGrid";
 import { Column } from "devextreme-react/cjs/data-grid";
-import { Eye, Trash2, Pencil } from "lucide-react";
+import { Eye, TrashIcon, Pencil } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { GetItemsRecords } from "../../api/maintenanceapi";
 
-const ProductDataGrid = ({ ref, productRecords, className, customerId, onPageChange, onError, onDelete, onEdit }) => {
+const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) => {
+    const [item, setItem] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [skip, setSkip] = useState(0)
+    const [take, setTake] = useState(10)
+    const [keyword, setKeyword] = useState("")
+
+    const itemDataGridRef = useRef(null);
+
+    useEffect(() => {
+        fetchItem();
+    }, [skip, take, keyword])
+
+    useEffect(() => {
+        fetchItem();
+    }, [onEdit, onDelete])
+
+    useEffect(() => {
+        setSkip(0)
+        setTake(10)
+    }, [keyword])
+
+    const fetchItem = async () =>{
+        setLoading(true);
+
+        try{
+            const data = await GetItemsRecords({companyId:companyId, keyword: keyword, offset:skip, limit:take});
+            if(data.success){
+                const records = data.data || [];
+                const total = data.data.totalRecords || 0;
+
+                setItem(records);
+            }else throw new Error(data.errorMessage || "Failed to fetch Products.");
+        }catch(error){
+            onError({title: "Fetch Error", message: error.message});
+        } finally{
+            setLoading(false);
+        }
+    }
+    const handlePagerChange = (e) =>{
+        if (e.fullName === 'paging.pageSize' || e.fullName === 'paging.pageIndex') {
+            const gridInstance = supplierDataGridRef.current.instance;
+      
+            const pageSize = gridInstance.pageSize();
+            const pageIndex = gridInstance.pageIndex(); 
+            const skip = pageIndex * pageSize;
+            const take = pageSize;
+
+            setSkip(skip);
+            setTake(take);
+        }
+
+        if(e.fullName === 'searchPanel.text'){
+            const searchText = e.value;
+            setKeyword(searchText);
+        }
+    }
+
     return (
         <StandardDataGridComponent
-            ref={ref}
-            dataSource={productRecords}
+            ref={itemDataGridRef}
+            height={"100%"}
+            dataSource={item}
             className={className}
             searchPanel={true}
             pager={true}
-            height={"100%"}
             pageSizeSelector={true}
             columnChooser={true}
             showBorders={true}
-            allowColumnReordering={true}
             allowColumnResizing={false}
+            allowColumnReordering={false}
             allowEditing={true}
-            onOptionChanged={onPageChange}
+            onLoading={loading}
+            onOptionChanged={handlePagerChange}            
         >
             <Column
                 caption="Product Code"
@@ -78,7 +138,7 @@ const ProductDataGrid = ({ ref, productRecords, className, customerId, onPageCha
                 caption="Remark"
                 dataField="remark"
             />
-             <Column
+            <Column
                 caption="Action"
                 width={"10%"}
                 headerCellRender={() => {
@@ -101,7 +161,7 @@ const ProductDataGrid = ({ ref, productRecords, className, customerId, onPageCha
                             <div className=" text-red-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
                                     e.stopPropagation(); // prevent row click event (select)
-                                    onDelete(cellData.data.id);
+                                    onDelete(cellData.data.itemId);
                                 }}>
                                 <TrashIcon size={20} />
                             </div>
@@ -110,7 +170,7 @@ const ProductDataGrid = ({ ref, productRecords, className, customerId, onPageCha
                     );
                 }}
             />
-            
+
         </StandardDataGridComponent>
     )
 }

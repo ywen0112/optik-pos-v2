@@ -1,6 +1,6 @@
 import { DropDownBox } from 'devextreme-react';
 import { DollarSign, Percent, X } from 'lucide-react';
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import DataGrid, {
     Selection,
     Paging,
@@ -10,89 +10,261 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 
 import Switch from "react-switch"
+import CustomStore from 'devextreme/data/custom_store';
+import { getInfoLookUp } from '../../../api/infolookupapi';
+import { GetItemGroup, GetItemType } from '../../../api/maintenanceapi';
 
-const productTypeOptions = [
-    { id: 1, name: "abc" },
-    { id: 2, name: "bcd" },
-    { id: 3, name: "cde" },
-    { id: 4, name: "def" }
-]
+const productGroupGridBoxDisplayExpr = (item) => item && `${item.itemGroupCode}-${item.description}`
+const productTypeGridBoxDisplayExpr = (item) => item && `${item.itemTypeCode}-${item.description}`
+
 
 const UpdateProductModal = ({
+    selectedItem,
     isOpen,
     isEdit,
-    handleClose
+    onConfirm,
+    onError,
+    onClose
 }) => {
-    const [productCode, setProductCode] = useState("");
-    const [productType, setProductType] = useState({ id: null, name: "" });
-    const [productTypeList, setProductTypeList] = useState(productTypeOptions)
+    const [formData, setFormData] = useState({
+        isActive: true,
+        itemCode: "",
+        description: "",
+        desc2: "",
+        itemGroupId: "",
+        itemTypeId: "",
+        remark: "",
+        itemUOM: {
+            itemUOMId: "",
+            uom: "",
+            rate: null,
+            price: null,
+            barcode: "",
+            classfication: null,
+        },
+        itemCommission: {
+            isFlat: true,
+            isPercentage: false,
+            value: 0,
+        }
+    });
+
+    const handleClose = () => {
+        setFormData({
+            isActive: true,
+            itemCode: "",
+            description: "",
+            desc2: "",
+            itemGroupId: "",
+            itemTypeId: "",
+            remark: "",
+            itemUOM: {
+                itemUOMId: "",
+                uom: "",
+                rate: null,
+                price: null,
+                barcode: "",
+                classfication: null,
+            },
+            itemCommission: {
+                isFlat: true,
+                isPercentage: false,
+                value: 0,
+            }
+        });
+
+        onClose();
+    }
+
+    useEffect(() => {
+        if (isOpen && isEdit) {
+            setFormData(selectedItem)
+        }
+        else if (isOpen) {
+            setFormData(selectedItem
+                ?? {
+                isActive: true,
+                itemCode: "",
+                description: "",
+                desc2: "",
+                itemGroupId: "",
+                itemTypeId: "",
+                remark: "",
+                itemUOM: {
+                    itemUOMId: "",
+                    uom: "",
+                    rate: null,
+                    price: null,
+                    barcode: "",
+                    classfication: null,
+                },
+                itemCommission: {
+                    isFlat: true,
+                    isPercentage: false,
+                    value: 0,
+                }
+            }
+            )
+        }
+    }, [isOpen, selectedItem, isEdit]);
+
+    const companyId = sessionStorage.getItem("companyId");
+    const userId = sessionStorage.getItem("userId");
+    const [productType, setProductType] = useState({ itemTypeId: null, itemTypeCode: "", description: "" });
     const [isTypeBoxOpened, setIsTypeBoxOpened] = useState(false);
-    const [productGroup, setProductGroup] = useState({ id: null, name: "" });
+    const [productGroup, setProductGroup] = useState({ itemGroupId: null, itemGroupCode: "", description: "" });
     const [isGroupBoxOpened, setIsGroupBoxOpened] = useState(false);
-    const [productName, setProductName] = useState("");
-    const [productDesc, setProductDesc] = useState("");
-    const [productUOM, setProductUOM] = useState("");
-    const [productPrice, setProductPrice] = useState(null);
     const [productMinPrice, setProductMinPrice] = useState(null);
     const [productCost, setProductCost] = useState(null);
-    const [productBarcode, setProductBarcode] = useState("");
-    const [productCommissionValue, setProductCommissionValue] = useState(null);
-    const [productRemark, setProductRemark] = useState("");
-    const [commissionPercentage, setCommissionPercentage] = useState(true);
     const [hasCommission, setHasCommission] = useState(false);
-    const [isActive, setIsActive] = useState(true);
 
-    const handleTypeSelection = useCallback((e) => {
-        const selected = e.selectedRowsData?.[0];
-        if (selected) {
-            setProductType(selected);
-            setIsTypeBoxOpened(false);
+    const productGroupStore = new CustomStore({
+        key: "itemGroupId",
+
+        load: async (loadOptions) =>{
+            const filter = loadOptions.filter;
+            let keyword = filter?.[2]?.[2] || "";
+
+
+            const params = {
+                keyword: keyword || "",
+                offset: loadOptions.skip,
+                limit: loadOptions.take,
+                type: "item_group",
+                companyId,
+            };
+            const res = await getInfoLookUp(params);
+            return{
+                data: res.data,
+                totalCount: loadOptions.skip + res.data.count,
+            };
+        },
+        byKey: async (key) =>{
+            const res = await GetItemGroup({
+                companyId,
+                userId,
+                id: key
+            });
+            return res.data;
         }
-    }, [productType])
+    })
 
-    const ProductTypeGridRender = useCallback(() => (
-        <DataGrid
-            dataSource={productTypeList}
-            keyExpr="id"
-            showBorders={true}
-            hoverStateEnabled
-            selectedRowKeys={[productType?.id]}
-            onSelectionChanged={handleTypeSelection}
-            height="100%"
-        >
-            <Selection mode="single" />
-            <Scrolling mode="virtual" />
-            <Paging enabled pageSize={5} />
-            <SearchPanel visible highlightSearchText />
-            <Column dataField="name" caption="Type" />
-        </DataGrid>
-    ), [productType, handleTypeSelection]);
+    const productTypeStore = new CustomStore({
+        key: "itemTypeId",
 
-    const handleGroupSelection = useCallback((e) => {
+        load: async (loadOptions) =>{
+            const filter = loadOptions.filter;
+            let keyword = filter?.[2]?.[2] || "";
+
+
+            const params = {
+                keyword: keyword || "",
+                offset: loadOptions.skip,
+                limit: loadOptions.take,
+                type: "item_type",
+                companyId,
+            };
+            const res = await getInfoLookUp(params);
+            return{
+                data: res.data,
+                totalCount: loadOptions.skip + res.data.count,
+            };
+        },
+        byKey: async (key) =>{
+            const res = await GetItemType({
+                companyId,
+                userId,
+                id: key
+            });
+            return res.data;
+        }
+    })
+
+    const productGroupDataGridOnSelectionChanged = useCallback((e)=>{
         const selected = e.selectedRowsData?.[0];
-        if (selected) {
-            setProductGroup(selected);
+        if(selected){
+            setProductGroup({itemGroupId: selected.itemGroupId, itemGroupCode: selected.itemGroupCode, description:selected.description})
             setIsGroupBoxOpened(false);
         }
-    }, [productType])
+    }, []);
 
     const ProductGroupGridRender = useCallback(() => (
         <DataGrid
-            dataSource={productTypeList}
-            keyExpr="id"
+            dataSource={productGroupStore}
             showBorders={true}
             hoverStateEnabled
-            selectedRowKeys={[productGroup?.id]}
-            onSelectionChanged={handleGroupSelection}
+            selectedRowKeys={productGroup.itemGroupId}
+            onSelectionChanged={productGroupDataGridOnSelectionChanged}
             height="100%"
+            remoteOperations={{
+                paging: true,
+                filtering: true,
+            }}
         >
             <Selection mode="single" />
-            <Scrolling mode="virtual" />
+            <Scrolling mode="infinite" />
             <Paging enabled pageSize={5} />
-            <SearchPanel visible highlightSearchText />
-            <Column dataField="name" caption="Type" />
+            <SearchPanel visible={true} highlightSearchText />
+            <Column dataField="itemGroupCode" caption="Code"/>
+            <Column dataField="Description" caption="Desc" />
         </DataGrid>
-    ), [productType, handleGroupSelection]);
+    ), [productGroup, productGroupDataGridOnSelectionChanged]);
+
+    const handleProductGroupGridBoxValueChanges = (e) =>{
+        if(!e.value){
+            setProductGroup({itemGroupId: "", itemGroupCode: "", description: ""})
+        }
+    }
+
+    const onProductGroupGridBoxOpened = useCallback((e)=>{
+        if(e.name === 'opened'){
+            setIsGroupBoxOpened(e.value);
+        }
+    },[])
+
+    
+    const handleTypeSelection = useCallback((e) => {
+        const selected = e.selectedRowsData?.[0];
+        if (selected) {
+            setProductType({itemTypeId: selected.itemTypeId, itemTypeCode: selected.itemTypeCode, description: selected.description});
+            setIsTypeBoxOpened(false);
+        }
+    }, [])
+
+    const ProductTypeGridRender = useCallback(() => (
+        <DataGrid
+            dataSource={productTypeStore}
+            showBorders={true}
+            hoverStateEnabled={true}
+            selectedRowKeys={[productType.itemTypeId]}
+            onSelectionChanged={handleTypeSelection}
+            height="100%"
+            remoteOperations={{
+                paging: true,
+                filtering: true,
+            }}
+        >
+            <Selection mode="single" />
+            <Scrolling mode="infinite" />
+            <Paging enabled pageSize={5} />
+            <SearchPanel visible={true} highlightSearchText />
+            <Column dataField="itemTypeCode" caption="Code" />
+            <Column dataField="description" caption="Desc"/>
+        </DataGrid>
+    ), [productType, handleTypeSelection]);
+
+    const handleProductTypeChanged = (e) =>{
+        if(!e.value){
+            setProductType({itemTypeId: "", itemGroupCode: "", description: ""});
+        }
+    }
+
+    const onProductTypeGridBoxOpened = useCallback((e)=>{
+        if(e.name === 'opened'){
+            setIsTypeBoxOpened(e.value);
+        }
+    },[]);
+
 
 
     if (!isOpen) return null;
@@ -116,56 +288,60 @@ const UpdateProductModal = ({
                             <input
                                 type="text"
                                 placeholder="Product Code"
-                                value={productCode}
-                                onChange={(e) => setProductCode(e.target.value)}
+                                value={formData.itemCode}
+                                onChange={(e) => setFormData({ ...formData, itemCode: e.target.value })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
                         <div className="flex flex-col">
                             <div>Product Type</div>
                             <DropDownBox
-                                value={productType?.id}
+                                id="ProductTypeSelection"
+                                value={productType?.itemTypeId}
                                 placeholder='Product Type'
-                                displayExpr="name"
-                                valueExpr="id"
+                                openOnFieldClick={true}
+                                displayExpr={productTypeGridBoxDisplayExpr}
+                                onValueChanged={handleProductTypeChanged}
+                                valueExpr="itemTypeId"
                                 opened={isTypeBoxOpened}
-                                onOptionChanged={(e) => {
-                                    if (e.name === "opened") {
-                                        setIsTypeBoxOpened(e.value);
-                                    }
-                                }}
+                                onOptionChanged={onProductTypeGridBoxOpened}
                                 contentRender={ProductTypeGridRender}
                                 className="border mt-2 rounded px-2 py-1 bg-white w-full"
-                                dataSource={productTypeList}
+                                dataSource={productTypeStore}
+                                dropDownOptions={{
+                                    width: 450
+                                }}
                             />
                         </div>
                         <div className="flex flex-col">
                             <div>Product Group</div>
                             <DropDownBox
-                                value={productGroup?.id}
+                                id="ProductGroupSelection"
+                                value={productGroup?.itemGroupId}
                                 placeholder='Product Group'
-                                displayExpr="name"
-                                valueExpr="id"
+                                openOnFieldClick={true}
+                                displayExpr={productGroupGridBoxDisplayExpr}
+                                onValueChanged={handleProductGroupGridBoxValueChanges}
+                                valueExpr="itemGroupId"
                                 opened={isGroupBoxOpened}
-                                onOptionChanged={(e) => {
-                                    if (e.name === "opened") {
-                                        setIsGroupBoxOpened(e.value);
-                                    }
-                                }}
+                                onOptionChanged={onProductGroupGridBoxOpened}
                                 contentRender={ProductGroupGridRender}
                                 className="border mt-2 rounded px-2 py-1 bg-white w-full"
-                                dataSource={productTypeList}
+                                dataSource={productGroupStore}
+                                dropDownOptions={{
+                                    width: 450
+                                }}
                             />
                         </div>
                         <div className="flex flex-row justify-center">
                             <input
-                                    type="checkbox"
-                                    checked={isActive}
-                                    className="ml-2"
-                                    onChange={(e) =>
-                                        setIsActive(e.target.checked)
-                                    }
-                                />
+                                type="checkbox"
+                                checked={formData.isActive}
+                                className="mr-2"
+                                onChange={(e) =>
+                                    setFormData({ ...formData, isActive: e.target.checked })
+                                }
+                            />
                             <div className='flex items-center'>Active</div>
 
                         </div>
@@ -174,8 +350,8 @@ const UpdateProductModal = ({
                             <input
                                 type="text"
                                 placeholder="Product Name"
-                                value={productName}
-                                onChange={(e) => setProductName(e.target.value)}
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
@@ -184,8 +360,8 @@ const UpdateProductModal = ({
                             <input
                                 type="text"
                                 placeholder="Product Description"
-                                value={productDesc}
-                                onChange={(e) => setProductDesc(e.target.value)}
+                                value={formData.desc2}
+                                onChange={(e) => setFormData({ ...formData, desc2: e.target.value })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
@@ -194,8 +370,8 @@ const UpdateProductModal = ({
                             <input
                                 type="text"
                                 placeholder="Product UOM"
-                                value={productUOM}
-                                onChange={(e) => setProductUOM(e.target.value)}
+                                value={formData.itemUOM.uom}
+                                onChange={(e) => setFormData({ ...formData, itemUOM: { ...formData.itemUOM, uom: e.target.value } })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
@@ -205,11 +381,11 @@ const UpdateProductModal = ({
                                 type="number"
                                 placeholder="Product Price"
                                 step="0.01"
-                                value={productPrice}
+                                value={formData.itemUOM.price}
                                 onChange={(e) => {
                                     const val = e.target.value;
                                     if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
-                                        setProductPrice(val);
+                                        setFormData({ ...formData, itemUOM: { ...formData.itemUOM, price: val } });
                                     }
                                 }}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
@@ -252,8 +428,8 @@ const UpdateProductModal = ({
                             <input
                                 type="text"
                                 placeholder="Product Barcode"
-                                value={productBarcode}
-                                onChange={(e) => setProductBarcode(e.target.value)}
+                                value={formData.itemUOM.barcode}
+                                onChange={(e) => setFormData({ ...formData, itemUOM: { ...formData.itemUOM, barcode: e.target.value } })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
@@ -270,14 +446,7 @@ const UpdateProductModal = ({
                                     }
                                 />
                             </div>
-                            <div className={`grid grid-cols-[10%,auto] flex-row items-center transition-opacity duration-200 ${hasCommission ? '' : 'opacity-50 pointer-events-none select-none'}`}>
-                                <Switch
-                                    draggable={false}
-                                    onChange={(checked) => setCommissionPercentage(checked)}
-                                    checked={commissionPercentage}
-                                    checkedIcon={<Percent size={15} style={{ margin: 'auto' }} />}
-                                    uncheckedIcon={<DollarSign size={15} style={{ margin: 'auto' }} />}
-                                />
+                            <div className={`flex-col items-center transition-opacity duration-200 ${hasCommission ? '' : 'opacity-50 pointer-events-none select-none'}`}>
                                 <input
                                     type="number"
                                     placeholder="Commission Value"
@@ -285,12 +454,45 @@ const UpdateProductModal = ({
                                     onChange={(e) => {
                                         const val = e.target.value;
                                         if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
-                                            setProductCommissionValue(val);
+                                            setFormData({...formData, itemCommission:{...formData.itemCommission, value:val}});
                                         }
                                     }}
-                                    value={productCommissionValue}
-                                    className="ml-2 mt-2 border w-full h-[40px] px-2"
+                                    value={formData.itemCommission.value}
+                                    className="mt-2 border w-full h-[40px] px-2"
                                 />
+                                <div className="flex-row space-x-5">
+                                    <label>Percentage</label>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.itemCommission.isPercentage}
+                                        onChange={() => {
+                                            setFormData({
+                                                ...formData,
+                                                itemCommission: {
+                                                    ...formData.itemCommission,
+                                                    isPercentage: true,
+                                                    isFlat: false,
+                                                },
+                                            });
+                                        }}
+                                    />
+
+                                    <label>Flat Rate</label>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.itemCommission.isFlat}
+                                        onChange={() => {
+                                            setFormData({
+                                                ...formData,
+                                                itemCommission: {
+                                                    ...formData.itemCommission,
+                                                    isPercentage: false,
+                                                    isFlat: true,
+                                                },
+                                            });
+                                        }}
+                                    />
+                                </div>
 
                             </div>
 
@@ -301,8 +503,8 @@ const UpdateProductModal = ({
                                 type="text"
                                 rows={6}
                                 placeholder="Remark"
-                                value={productRemark}
-                                onChange={(e) => setProductRemark(e.target.value)}
+                                value={formData.remark}
+                                onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
                                 className="mr-2 mt-2 border w-full h-[90px] px-2 py-2"
                             />
                         </div>

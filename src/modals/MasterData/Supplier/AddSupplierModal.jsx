@@ -35,7 +35,7 @@ const AddSupplierModal = ({
       phone2: "",
       emailAddress: "",
     });
-    onClose()
+    onClose();
   }
 
   useEffect(() => {
