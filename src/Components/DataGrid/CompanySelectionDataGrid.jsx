@@ -45,7 +45,7 @@ const CompanySelectionDataGrid = ({ companies }) => {
                     allowEditing={false}
                     headerCellRender={() =>{
                         return(
-                            <div className="font-bold text-gray-700">
+                            <div className="font-bold text-white">
                                 Company Name
                             </div>
                         )
@@ -63,7 +63,7 @@ const CompanySelectionDataGrid = ({ companies }) => {
                     width={"10%"}
                     headerCellRender={() =>{
                         return(
-                            <div className="  font-bold text-gray-700">
+                            <div className="  font-bold text-white">
                                 Action
                             </div>
                         )

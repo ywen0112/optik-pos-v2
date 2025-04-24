@@ -15,6 +15,7 @@ import { getInfoLookUp } from "../../api/infolookupapi";
 import { SaveDebtor, NewDebtor, GetDebtor, GetItem } from "../../api/maintenanceapi";
 import { GetSpecificUser } from "../../api/userapi";
 import CashSalesItemDataGrid from "../../Components/DataGrid/Transactions/CashSalesItemDataGrid";
+import AddExpressCustomerModal from "../../modals/Transactions/AddCustomerModal";
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
 const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
@@ -119,7 +120,7 @@ const CashSales = () => {
                 dataSource={customerStore}
                 columns={CustomerGridColumns}
                 hoverStateEnabled={true}
-                showBorders={false}
+                showBorders={true}
                 selectedRowKeys={CustomerGridBoxValue.debtorId}
                 onSelectionChanged={CustomerDataGridOnSelectionChanged}
                 height="300px"
@@ -171,7 +172,7 @@ const CashSales = () => {
                 dataSource={userStore}
                 columns={SalesPersonGridColumns}
                 hoverStateEnabled={true}
-                showBorders={false}
+                showBorders={true}
                 selectedRowKeys={SalesPersonGridBoxValue.id}
                 onSelectionChanged={SalesPersonDataGridOnSelectionChanged}
                 height="100%"
@@ -311,6 +312,7 @@ const CashSales = () => {
                     </div>
 
                     {showCustomerModal && (
+                        // <AddExpressCustomerModal/>
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
                             <div className="bg-white p-6 rounded shadow-md w-96 space-y-4">
                                 <h2 className="text-lg font-semibold text-gray-800">Add Customer</h2>

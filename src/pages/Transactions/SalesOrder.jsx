@@ -416,7 +416,7 @@ const SalesOrder = () => {
                             <div className="flex justify-end gap-2">
                                 <DropDownBox
                                     id="CustomerSelection"
-                                    className="border rounded p-1 w-1/2 h-[34px]"
+                                    className="border rounded w-full "
                                     value={CustomerGridBoxValue.id}
                                     opened={isCustomerGridBoxOpened}
                                     openOnFieldClick={true}
@@ -615,7 +615,7 @@ const SalesOrder = () => {
                 </div>
             </div>
 
-            <div className="mt-3 bg-white shadow rounded">
+            <div className=" bg-white shadow rounded">
                 <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} />
             </div>
 
@@ -659,7 +659,7 @@ const SalesOrder = () => {
                     onCancel={() => setShowCopyModal(false)}
                 />
 
-                <div className="grid grid-cols-[10%,15%,10%,15%,20%,auto] items-center gap-3 w-full">
+                <div className="grid grid-cols-[7%,15%,7%,15%,20%,auto] items-center gap-3 w-full">
                     <label className={activeRxTab === "Prescribed RX" ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary" }>Optical Height</label>
                     <input
                         type="text"
@@ -713,18 +713,7 @@ const SalesOrder = () => {
 
                 <div className=" space-y-2">
                     <div className="flex space-x-2">
-                        {/* {["Distance", "Reading"].map((mode) => (
-                            <button
-                                key={mode}
-                                onClick={() => setActiveRxMode(mode)}
-                                className={`px-4 py-1 border rounded text-sm font-medium ${activeRxMode === mode
-                                    ? "bg-primary text-white"
-                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                                    }`}
-                            >
-                                {mode}
-                            </button>
-                        ))} */}
+                        
                     </div>
 
                     <div className="overflow-x-auto flex flex-row">
@@ -733,7 +722,7 @@ const SalesOrder = () => {
                             <button
                                 key={mode}
                                 onClick={() => setActiveRxMode(mode)}
-                                className={`px-4 py-1 border rounded text-sm font-medium ${activeRxMode === mode
+                                className={`px-1 py-1 border rounded text-sm w-full font-medium ${activeRxMode === mode
                                     ? "bg-primary text-white"
                                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                                     }`}

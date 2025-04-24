@@ -69,32 +69,6 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     }
   }, [location.pathname]);
 
-  const handleCompanyChange = (event) => {
-    setIsLoading(true);
-
-    const companyId = event.target.value;
-    const newSelectedCompany = companyOptions.find(c => String(c.customerId) === companyId);
-
-    if (newSelectedCompany) {
-      try {
-        setSelectedCompany(newSelectedCompany);
-        sessionStorage.setItem("selectedCompany", JSON.stringify(newSelectedCompany));
-        sessionStorage.setItem("userId", newSelectedCompany.userId);
-        sessionStorage.setItem("customerId", newSelectedCompany.customerId);
-        sessionStorage.setItem("locationId", newSelectedCompany.locationId);
-        sessionStorage.setItem("accessRights", JSON.stringify(newSelectedCompany.accessRight));
-  
-        onSelectCompany(newSelectedCompany.customerId);
-        navigate("/dashboard");
-      } catch (error) {
-        setErrorModal({ title: "Company Change Error", message: error.message });
-      } finally {
-        setIsLoading(false); 
-      }
-    } else {
-      setIsLoading(false);
-    }
-  };
 
   const handleTransactionsClick = async () => {
     setIsLoading(true);
@@ -196,28 +170,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
         </>
       )}
 
-      {visible && (
-        <>
-          <label className="text-sm">Select Company:</label>
-          <select
-            className="w-full bg-white p-1 rounded mt-2 text-secondary text-sm"
-            value={selectedCompany?.companyId || ""}
-            onChange={handleCompanyChange}
-          >
-            {companyOptions.length > 0 ? (
-              companyOptions.map((company) => (
-                <option key={company.companyId} value={company.companyId}>
-                  {company.companyName}
-                </option>
-              ))
-            ) : (
-              <option value="">No companies available</option>
-            )}
-          </select>
-        </>
-      )}
-
-      <nav className="mt-8 flex-grow overflow-y-auto scrollbar-hide">
+      <nav className="mt-1 flex-grow overflow-y-auto scrollbar-hide">
         <ul>
           {menuItems.map((item) => {
             const isExpanded = expandedMenus.includes(item.name);

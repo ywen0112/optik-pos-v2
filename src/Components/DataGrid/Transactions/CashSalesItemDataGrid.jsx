@@ -8,14 +8,14 @@ import { getInfoLookUp } from '../../../api/infolookupapi';
 const itemGridBoxDisplayExpr = (item) => item && `${item.itemCode}`;
 const ItemGridColumns = [
     { dataField: "itemCode", caption: "Product Code", width: "30%" },
-    { dataField: "description", caption: "Product Name", width: "50%" }
+    { dataField: "description", caption: "Product Name", width: "50%" },
+    { dataField: "uom", caption: "UOM", width: "10%" },
+    { dataField: "", caption: "Price", width: "10%" }
 ];
 
 const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }) => {
     const companyId = sessionStorage.getItem("companyId");
-    const [itemQty, setItemQty] = useState(null);
     const [selectedItem, setSelectedItem] = useState({ itemId: "" });
-    const [isItemDropDownOpened, setIsItemDropDownOpened] = useState(false);
 
     const itemStore = new CustomStore({
         key: "itemId",
@@ -48,12 +48,10 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
     });
 
     useEffect(() => {
-        console.log(dataGridDataSource)
     }, [selectedItem, onSelectionChange]);
 
     const handleItemGridBoxValueChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
-        console.log(selected);
 
         if (selected) {
             const match = dataGridDataSource.find(item => item.itemId === selected.itemId);
@@ -62,7 +60,6 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
                 onSelectionChange(prev => [...prev, selected]);
 
             }
-            setIsItemDropDownOpened(false);
         }
     }, [dataGridDataSource]);
 
@@ -72,7 +69,7 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
                 dataSource={itemStore}
                 columns={ItemGridColumns}
                 hoverStateEnabled={true}
-                showBorders={false}
+                showBorders={true}
                 selectedRowKeys={[selectedItem.itemId]}
                 onRowClick={(e) => {
                     const selected = e.data;
@@ -81,7 +78,6 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
                         setSelectedItem(selected);
                         onSelectionChange(prev => [...prev, selected]);
                     }
-                    setIsItemDropDownOpened(false);
                 }}
                 height="300px"
                 remoteOperations={{
@@ -103,28 +99,6 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
             </DataGrid>
         );
     }, [selectedItem, handleItemGridBoxValueChanged]);
-
-
-    const onItemGridBoxOpened = useCallback((e) => {
-        if (e.name === 'opened') {
-            setIsItemDropDownOpened(e.value);
-        }
-    }, []);
-
-    // const handleQtyChange = useCallback((rowData, newQty) => {
-    //     // compute new amount
-    //     const discAmt = rowData.isDiscByPercent ? rowData.discAmt / 100 || 0 : rowData.discAmt;
-    //     const newAmount = (newQty * rowData.price) - discAmt;
-
-    //     // produce updated list
-    //     onSelectionChange(prevList =>
-    //         prevList.map(item =>
-    //             item.itemId === rowData.itemId
-    //                 ? { ...item, qty: newQty, amount: newAmount }
-    //                 : item
-    //         )
-    //     );
-    // }, [onSelectionChange]);
 
     return (
         <>
@@ -182,7 +156,7 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
                     newRowPosition='last'
                 />
                 <ColumnFixing enabled />
-                <ColumnChooser enabled mode="select" title="Choose Columns" />
+                <ColumnChooser enabled mode="dragAndDrop" title="Choose Columns" />
 
                 <Column
                     dataField="itemCode"
@@ -192,7 +166,6 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
                         <DropDownBox
                             id="itemSelection"
                             value={selectedItem.itemId}
-                            opened={isItemDropDownOpened}
                             openOnFieldClick={true}
                             valueExpr='itemId'
                             displayExpr={itemGridBoxDisplayExpr}
@@ -201,7 +174,6 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
                             onValueChanged={handleItemGridBoxValueChanged}
                             contentRender={onItemGridBoxRender}
                             dataSource={itemStore}
-                            onOptionChanged={onItemGridBoxOpened}
                             dropDownOptions={{
                                 width: 700
                             }}
