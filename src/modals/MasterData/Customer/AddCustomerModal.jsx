@@ -9,25 +9,28 @@ const AddCustomerModal = ({
     onError,
     onClose,
 }) => {
-    const [formData, setFormData] = useState({
+    const [debtorFormData, setDebtorFormData] = useState({
         isActive: true,
-        customerCode: "",
-        name: "",
-        ic: "",
+        debtorCode: "",
+        companyName: "",
+        identityNo: "",
         dob: "",
-        billingAddress: "",
+        address: "",
         remark: "",
         phone1: "",
         phone2: "",
-        email: "",
+        emailAddress: "",
         // Medical Info
-        diabetes: false,
-        hypertension: false,
-        squint: false,
-        lazyEye: false,
-        surgery: false,
+        medicalIsDiabetes: false,
+        medicalIsHypertension: false,
+        ocularIsSquint: false,
+        ocularIsLazyEye: false,
+        ocularHasSurgery: false,
         medicalOthers: "",
         ocularOthers: "",
+    });
+
+    const [formData, setFormData] = useState({
         // RX
         lastUpdate: new Date().toISOString().split("T")[0],
         opticalHeight: "",
@@ -53,19 +56,38 @@ const AddCustomerModal = ({
         docDate: new Date().toISOString().split("T")[0],
         historyRight: false,
         historyLeft: false,
-    });
+    })
+
+    const handleClose = () =>{
+        setDebtorFormData({
+            isActive: true,
+            debtorCode: "",
+            companyName: "",
+            identityNo: "",
+            dob: "",
+            address: "",
+            remark: "",
+            phone1: "",
+            phone2: "",
+            emailAddress: "",
+            // Medical Info
+            medicalIsDiabetes: false,
+            medicalIsHypertension: false,
+            ocularIsSquint: false,
+            ocularIsLazyEye: false,
+            ocularHasSurgery: false,
+            medicalOthers: "",
+            ocularOthers: "",
+        });
+        onClose()
+    }
 
     useEffect(() => {
-        if (isOpen) {
-            setFormData(
-                isEdit && selectedCustomer
-                    ? selectedCustomer
-                    : {
-                        ...formData,
-                        lastUpdate: new Date().toISOString().split("T")[0],
-                        docDate: new Date().toISOString().split("T")[0],
-                    }
-            );
+        if (isOpen && isEdit) {
+            setDebtorFormData(selectedCustomer);
+        }
+        else if(isOpen){
+            setDebtorFormData(selectedCustomer )
         }
     }, [isOpen, selectedCustomer, isEdit]);
 
@@ -79,7 +101,7 @@ const AddCustomerModal = ({
                         <h3 className="font-semibold mb-4">
                             {isEdit ? "Edit Customer" : "Add Customer"}
                         </h3>
-                        <div className='col-span-4' onClick={onClose}>
+                        <div className='col-span-4' onClick={handleClose}>
                             <X size={20} />
                         </div>
                     </div>
@@ -96,9 +118,9 @@ const AddCustomerModal = ({
                                     <div className="flex items-center space-x-2">
                                         <input
                                             type="checkbox"
-                                            checked={formData.isActive}
+                                            checked={debtorFormData.isActive}
                                             onChange={(e) =>
-                                                setFormData({ ...formData, isActive: e.target.checked })
+                                                setDebtorFormData({ ...debtorFormData, isActive: e.target.checked })
                                             }
                                         />
                                         <label>Active</label>
@@ -110,9 +132,9 @@ const AddCustomerModal = ({
                                         type="text"
                                         className="mr-2 border w-full h-[40px] px-2"
                                         placeholder="Customer Code"
-                                        value={formData.customerCode}
+                                        value={debtorFormData.debtorCode}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, customerCode: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, debtorCode: e.target.value })
                                         }
                                     />
                                 </div>
@@ -123,9 +145,9 @@ const AddCustomerModal = ({
                                         type="text"
                                         className="mr-2 border w-full h-[40px] px-2"
                                         placeholder="Name"
-                                        value={formData.name}
+                                        value={debtorFormData.companyName}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, name: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, companyName: e.target.value })
                                         }
                                     />
                                 </div>
@@ -136,9 +158,9 @@ const AddCustomerModal = ({
                                         type="text"
                                         className="mr-2 border w-full h-[40px] px-2"
                                         placeholder="IC"
-                                        value={formData.ic}
+                                        value={debtorFormData.identityNo}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, ic: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, identityNo: e.target.value })
                                         }
                                     />
                                 </div>
@@ -148,9 +170,9 @@ const AddCustomerModal = ({
                                     <input
                                         type="date"
                                         className="mr-2 border w-full h-[40px] px-2"
-                                        value={formData.dob}
+                                        value={debtorFormData.dob}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, dob: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, dob: e.target.value })
                                         }
                                     />
                                 </div>
@@ -161,9 +183,9 @@ const AddCustomerModal = ({
                                         rows={4}
                                         className="mr-2 border w-full h-[80px] px-2 py-2"
                                         placeholder="Billing Address"
-                                        value={formData.billingAddress}
+                                        value={debtorFormData.address}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, billingAddress: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, address: e.target.value })
                                         }
                                     />
                                 </div>
@@ -174,9 +196,9 @@ const AddCustomerModal = ({
                                         rows={4}
                                         className="mr-2 border w-full h-[80px] px-2 py-2"
                                         placeholder="Remark"
-                                        value={formData.remark}
+                                        value={debtorFormData.remark}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, remark: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, remark: e.target.value })
                                         }
                                     />
                                 </div>
@@ -187,9 +209,9 @@ const AddCustomerModal = ({
                                         type="text"
                                         className="mr-2 border w-full h-[40px] px-2"
                                         placeholder="Phone"
-                                        value={formData.phone1}
+                                        value={debtorFormData.phone1}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, phone1: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, phone1: e.target.value })
                                         }
                                     />
                                 </div>
@@ -200,9 +222,9 @@ const AddCustomerModal = ({
                                         type="text"
                                         className="mr-2 border w-full h-[40px] px-2"
                                         placeholder="Phone 2"
-                                        value={formData.phone2}
+                                        value={debtorFormData.phone2}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, phone2: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, phone2: e.target.value })
                                         }
                                     />
                                 </div>
@@ -213,9 +235,9 @@ const AddCustomerModal = ({
                                         type="email"
                                         className="mr-2 border w-full h-[40px] px-2"
                                         placeholder="Email"
-                                        value={formData.email}
+                                        value={debtorFormData.emailAddress}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, email: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, emailAddress: e.target.value })
                                         }
                                     />
                                 </div>
@@ -232,10 +254,10 @@ const AddCustomerModal = ({
                                     <label className="flex items-center space-x-2">
                                         <input
                                             type="checkbox"
-                                            checked={formData.diabetes}
+                                            checked={debtorFormData.medicalIsDiabetes}
                                             className="h-[47px]"
                                             onChange={(e) =>
-                                                setFormData({ ...formData, diabetes: e.target.checked })
+                                                setDebtorFormData({ ...debtorFormData, medicalIsDiabetes: e.target.checked })
                                             }
                                         />
                                         <span>Diabetes</span>
@@ -244,9 +266,9 @@ const AddCustomerModal = ({
                                         <input
                                             type="checkbox"
                                             className="h-[47px]"
-                                            checked={formData.hypertension}
+                                            checked={debtorFormData.medicalIsHypertension}
                                             onChange={(e) =>
-                                                setFormData({ ...formData, hypertension: e.target.checked })
+                                                setDebtorFormData({ ...debtorFormData, medicalIsHypertension: e.target.checked })
                                             }
                                         />
                                         <span>Hypertension</span>
@@ -258,9 +280,9 @@ const AddCustomerModal = ({
                                         type="text"
                                         className="mr-2 border w-full h-[40px] px-2"
                                         placeholder="Others"
-                                        value={formData.medicalOthers}
+                                        value={debtorFormData.medicalOthers}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, medicalOthers: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, medicalOthers: e.target.value })
                                         }
                                     />
                                 </div>
@@ -273,9 +295,9 @@ const AddCustomerModal = ({
                                         <input
                                             type="checkbox"
                                             className="h-[47px]"
-                                            checked={formData.squint}
+                                            checked={debtorFormData.ocularIsSquint}
                                             onChange={(e) =>
-                                                setFormData({ ...formData, squint: e.target.checked })
+                                                setDebtorFormData({ ...debtorFormData, ocularIsSquint: e.target.checked })
                                             }
                                         />
                                         <span>Squint</span>
@@ -284,9 +306,9 @@ const AddCustomerModal = ({
                                         <input
                                             type="checkbox"
                                             className="h-[47px]"
-                                            checked={formData.lazyEye}
+                                            checked={debtorFormData.ocularIsLazyEye}
                                             onChange={(e) =>
-                                                setFormData({ ...formData, lazyEye: e.target.checked })
+                                                setDebtorFormData({ ...debtorFormData, ocularIsLazyEye: e.target.checked })
                                             }
                                         />
                                         <span>Lazy Eye</span>
@@ -295,9 +317,9 @@ const AddCustomerModal = ({
                                         <input
                                             type="checkbox"
                                             className="h-[47px]"
-                                            checked={formData.surgery}
+                                            checked={debtorFormData.ocularHasSurgery}
                                             onChange={(e) =>
-                                                setFormData({ ...formData, surgery: e.target.checked })
+                                                setDebtorFormData({ ...debtorFormData, ocularHasSurgery: e.target.checked })
                                             }
                                         />
                                         <span>Surgery</span>
@@ -309,9 +331,9 @@ const AddCustomerModal = ({
                                         type="text"
                                         className="mr-2 border w-full h-[40px] px-2"
                                         placeholder="Others"
-                                        value={formData.ocularOthers}
+                                        value={debtorFormData.ocularOthers}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, ocularOthers: e.target.value })
+                                            setDebtorFormData({ ...debtorFormData, ocularOthers: e.target.value })
                                         }
                                     />
                                 </div>
@@ -665,7 +687,7 @@ const AddCustomerModal = ({
                     <div className="flex justify-end space-x-2">
                         <button
                             className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700"
-                            onClick={onClose}
+                            onClick={handleClose}
                         >
                             Close
                         </button>

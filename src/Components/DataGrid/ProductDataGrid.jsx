@@ -83,7 +83,7 @@ const ProductDataGrid = ({ ref, productRecords, className, customerId, onPageCha
                 width={"10%"}
                 headerCellRender={() => {
                     return (
-                        <div className="  font-bold text-gray-700">
+                        <div className="  font-bold text-white">
                             Action
                         </div>
                     )

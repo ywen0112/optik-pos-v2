@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  NewDebtor,
-  EditDebtor,
   SaveDebtor,
   DeleteDebtor
 } from "../../api/apiconfig";
@@ -10,9 +8,10 @@ import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import CustomerTableDataGrid from "../../Components/DataGrid/CustomerTableDataGrid";
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
+import { GetDebtor, NewDebtor } from "../../api/maintenanceapi";
 
 const DebtorMaintenance = () => {
-  const customerId = sessionStorage.getItem("customerId");
+  const companyId = sessionStorage.getItem("companyId");
   const userId = sessionStorage.getItem("userId");
   const locationId = sessionStorage.getItem("locationId");
 
@@ -30,12 +29,8 @@ const DebtorMaintenance = () => {
 
   const handleAddNew = async () => {
     try {
-      const res = await fetch(NewDebtor, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerId: Number(customerId), userId, locationId, id: "" })
-      });
-      const data = await res.json();
+      
+      const data = await NewDebtor({companyId: companyId, userId: userId, id: userId});
       if (data.success) {
         setSelectedDebtor(data.data);
         setFormAction("add");
@@ -49,12 +44,8 @@ const DebtorMaintenance = () => {
   const handleOpenModal = async (debtor, mode) => {
     if (mode === "edit") {
       try {
-        const res = await fetch(EditDebtor, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ customerId: Number(customerId), userId, locationId, id: debtor.debtorId })
-        });
-        const data = await res.json();
+        
+        const data = await GetDebtor({companyId:companyId, userId:userId, id:debtor.debtorId});
         if (data.success) {
           setSelectedDebtor(data.data);
           setFormAction("edit");
@@ -97,10 +88,10 @@ const DebtorMaintenance = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             actionData: {
-                customerId: Number(customerId),
-                userId,
-                locationId,
-                id: selectedDebtor.debtorId || ""
+              customerId: Number(customerId),
+              userId,
+              locationId,
+              id: selectedDebtor.debtorId || ""
             },
             debtorId: selectedDebtor.debtorId,
             debtorCode: selectedDebtor.debtorCode || "",
@@ -122,7 +113,7 @@ const DebtorMaintenance = () => {
             ocularIsLazyEye: !!selectedDebtor.ocularIsLazyEye,
             ocularHasSurgery: !!selectedDebtor.ocularHasSurgery,
             ocularOthers: selectedDebtor.ocularOthers || ""
-        })
+          })
         });
         const data = await res.json();
         if (data.success) {
@@ -138,7 +129,7 @@ const DebtorMaintenance = () => {
     }
   };
 
-  const handleCloseUpdateModal = async () =>{
+  const handleCloseUpdateModal = async () => {
     setIsUpdateModelOpen(false);
     setSelectedDebtor(null);
   };
@@ -190,7 +181,7 @@ const DebtorMaintenance = () => {
           <CustomerTableDataGrid
             vustomerRecords={debtors}
             className={"p-2"}
-            customerId={customerId}
+            companyId={companyId}
             onError={setErrorModal}
             onDelete={handleDeleteClick}
             onEdit={handleOpenModal}

@@ -3,33 +3,38 @@ import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 
 import StandardDataGridComponent from "../BaseDataGrid";
-import { GetCreditorRecords } from "../../api/apiconfig";
+import { GetCreditorRecords } from "../../api/maintenanceapi";
 
 
-const SupplierDataGrid = ({className, customerId, onError, onDelete, onEdit}) => {
+const SupplierDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
     const [supplier, setSupplier] = useState([]);
     const [loading, setLoading] = useState(false);
     const [skip, setSkip] = useState(0)
     const [take, setTake] = useState(10)
+    const [keyword, setKeyword] = useState("")
 
     const supplierDataGridRef = useRef(null);
 
     useEffect(() => {
         fetchSuppliers();
-    }, [skip, take])
+    }, [skip, take, keyword])
+
+    useEffect(() => {
+        fetchSuppliers();
+    }, [onEdit, onDelete ])
+
+    useEffect(() =>{
+        setSkip(0)
+        setTake(10)
+    }, [keyword])
 
     const fetchSuppliers = async () => {
         setLoading(true);
     
         try {
-          const res = await fetch(GetCreditorRecords, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ customerId: Number(customerId), keyword: "", Offset: skip, Limit: take })
-          });
-          const data = await res.json();
+          const data = await GetCreditorRecords({companyId: companyId, keyword: keyword, offset: skip, limit: take});
           if (data.success) {
-          const records = data.data.creditorsRecords || [];
+          const records = data.data || [];
           const total = data.data.totalRecords || 0;
     
           setSupplier(records);
@@ -53,7 +58,12 @@ const SupplierDataGrid = ({className, customerId, onError, onDelete, onEdit}) =>
 
             setSkip(skip);
             setTake(take);
-          }
+        }
+
+        if(e.fullName === 'searchPanel.text'){
+            const searchText = e.value;
+            setKeyword(searchText);
+        }
     }
     return (
         <StandardDataGridComponent
@@ -100,7 +110,7 @@ const SupplierDataGrid = ({className, customerId, onError, onDelete, onEdit}) =>
                 width={"10%"}
                 headerCellRender={() => {
                     return (
-                        <div className="font-bold text-gray-700">
+                        <div className="font-bold text-white">
                             Action
                         </div>
                     )
@@ -118,7 +128,8 @@ const SupplierDataGrid = ({className, customerId, onError, onDelete, onEdit}) =>
                             <div className=" text-red-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
                                     e.stopPropagation(); // prevent row click event (select)
-                                    onDelete(cellData.data.id);
+
+                                    onDelete(cellData.data.creditorId);
                                 }}>
                                 <TrashIcon size={20} />
                             </div>

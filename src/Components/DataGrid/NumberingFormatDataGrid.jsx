@@ -87,7 +87,7 @@ const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
         caption="Action"
         width={"15%"}
         headerCellRender={() => (
-          <div className="font-bold text-gray-700">Action</div>
+          <div className="font-bold text-white">Action</div>
         )}
         cellRender={(cellData) => (
           <div className="flex flex-row justify-center space-x-2">

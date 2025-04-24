@@ -4,8 +4,6 @@ import { useLocation } from "react-router-dom";
 import SideBar from "./SideBar";
 import HeaderBar from "./HeaderBar";
 import Dashboard from "../pages/Dashboard";
-import Transactions from "../pages/Transactions";
-import TransactionsInquiry from "../pages/Inquiry/TransactionsInquiry";
 import AuditLogs from "../pages/AuditLogs";
 import CompanyProfile from "../pages/Settings/CompanyProfile";
 import Reports from "../pages/Reports";

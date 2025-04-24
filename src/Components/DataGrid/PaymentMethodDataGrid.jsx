@@ -75,9 +75,9 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
       <Column
         caption="Action"
         width={"150px"}
-        // headerCellRender={() => (
-        //   <div className="font-bold text-gray-700">Action</div>
-        // )}
+        headerCellRender={() => (
+          <div className="font-bold text-white">Action</div>
+        )}
         cellRender={(cellData) => (
           <div className="flex flex-row justify-center space-x-2">
             <div

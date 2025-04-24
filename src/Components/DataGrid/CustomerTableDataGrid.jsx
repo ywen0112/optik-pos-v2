@@ -3,34 +3,36 @@ import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 
 import StandardDataGridComponent from "../BaseDataGrid";
-import { GetDebtorRecords } from "../../api/apiconfig";
+import { GetDebtorRecords } from "../../api/maintenanceapi";
 
 
-const CustomerTableDataGrid = ({className, customerId, onError, onDelete, onEdit}) => {
+const CustomerTableDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
     const [customer, setCustomer] = useState([]);
     const [loading, setLoading] = useState(false);
     const [skip, setSkip] = useState(0)
     const [take, setTake] = useState(10)
+    const [searchKeyword, setSearchKeywordText] = useState("")
 
     const customerDataGridRef = useRef(null);
 
     useEffect(() => {
-        fetchCustomers();
-    }, [skip, take])
+        fetchCustomers({skip: skip, take:take, keyword:searchKeyword});
+    }, [skip, take, searchKeyword])
 
-    const fetchCustomers = async () => {
+    useEffect(() => {
+        setSkip(0);
+        setTake(10);
+    }, [searchKeyword]);
+
+    const fetchCustomers = async ({skip, take, keyword}) => {
         setLoading(true);
     
         try {
-          const res = await fetch(GetDebtorRecords, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ customerId: Number(customerId), keyword: "", Offset: skip, Limit: take })
-          });
-          const data = await res.json();
+          
+          const data = await GetDebtorRecords({companyId: companyId, keyword: keyword, offset: skip, limit: take});
           if (data.success) {
-          const records = data.data.debtorRecords || [];
-          const total = data.data.totalRecords || 0;
+          const records = data.data || [];
+        //   const total = data.data.totalRecords || 0;
     
           setCustomer(records);
           
@@ -54,6 +56,11 @@ const CustomerTableDataGrid = ({className, customerId, onError, onDelete, onEdit
             setSkip(skip);
             setTake(take);
           }
+
+        if(e.fullName === 'searchPanel.text'){
+            const searchText = e.value;
+            setSearchKeywordText(searchText);
+        }
     }
     return (
         <StandardDataGridComponent
@@ -100,7 +107,7 @@ const CustomerTableDataGrid = ({className, customerId, onError, onDelete, onEdit
                 width={"10%"}
                 headerCellRender={() => {
                     return (
-                        <div className="  font-bold text-gray-700">
+                        <div className="  font-bold text-white">
                             Action
                         </div>
                     )
