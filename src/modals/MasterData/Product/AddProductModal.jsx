@@ -78,9 +78,11 @@ const UpdateProductModal = ({
 
     useEffect(() => {
         if (isOpen && isEdit) {
+            console.log(selectedItem)
             setFormData(selectedItem)
         }
         else if (isOpen) {
+            console.log(selectedItem)
             setFormData(selectedItem
                 ?? {
                 isActive: true,
@@ -265,8 +267,6 @@ const UpdateProductModal = ({
         }
     },[]);
 
-
-
     if (!isOpen) return null;
 
     return (
@@ -370,7 +370,7 @@ const UpdateProductModal = ({
                             <input
                                 type="text"
                                 placeholder="Product UOM"
-                                value={formData.itemUOM.uom}
+                                value={formData.itemUOM?.uom}
                                 onChange={(e) => setFormData({ ...formData, itemUOM: { ...formData.itemUOM, uom: e.target.value } })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
@@ -381,7 +381,7 @@ const UpdateProductModal = ({
                                 type="number"
                                 placeholder="Product Price"
                                 step="0.01"
-                                value={formData.itemUOM.price}
+                                value={formData.itemUOM?.price}
                                 onChange={(e) => {
                                     const val = e.target.value;
                                     if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
@@ -428,7 +428,7 @@ const UpdateProductModal = ({
                             <input
                                 type="text"
                                 placeholder="Product Barcode"
-                                value={formData.itemUOM.barcode}
+                                value={formData.itemUOM?.barcode}
                                 onChange={(e) => setFormData({ ...formData, itemUOM: { ...formData.itemUOM, barcode: e.target.value } })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
@@ -457,14 +457,14 @@ const UpdateProductModal = ({
                                             setFormData({...formData, itemCommission:{...formData.itemCommission, value:val}});
                                         }
                                     }}
-                                    value={formData.itemCommission.value}
+                                    value={formData.itemCommission?.value}
                                     className="mt-2 border w-full h-[40px] px-2"
                                 />
                                 <div className="flex-row space-x-5">
                                     <label>Percentage</label>
                                     <input
                                         type="checkbox"
-                                        checked={formData.itemCommission.isPercentage}
+                                        checked={formData.itemCommission?.isPercentage}
                                         onChange={() => {
                                             setFormData({
                                                 ...formData,
@@ -480,7 +480,7 @@ const UpdateProductModal = ({
                                     <label>Flat Rate</label>
                                     <input
                                         type="checkbox"
-                                        checked={formData.itemCommission.isFlat}
+                                        checked={formData.itemCommission?.isFlat}
                                         onChange={() => {
                                             setFormData({
                                                 ...formData,
@@ -515,7 +515,22 @@ const UpdateProductModal = ({
                             <button onClick={handleClose} className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700">
                                 Cancel
                             </button>
-                            <button className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90">
+                            <button className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
+                                onClick={() =>{
+                                    if(!formData.description.trim()){
+                                        onError({
+                                            title: "Validation Error",
+                                            message: "Item Name is required.",
+                                        });
+                                        return;
+                                    }
+                                    onConfirm({
+                                        isOpen:true,
+                                        action: isEdit ? "edit": "add",
+                                        data: formData,
+                                    });
+                                }}
+                            >
                                 Save
                             </button>
                         </div>

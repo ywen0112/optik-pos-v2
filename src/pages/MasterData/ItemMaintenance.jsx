@@ -26,6 +26,7 @@ const ItemMaintenance = () => {
     const handleAddItem = async () => {
         try {
             const data = await NewItem({ companyId: companyId, userId: userId, id: userId });
+            console.log(data.data)
             if (data.success) {
                 setSelectedItem(data.data);
                 setFormAction("add");
@@ -71,9 +72,15 @@ const ItemMaintenance = () => {
         setConfirmModal({ isOpen: false, action: null });
 
         try {
+            console.log(data)
             if (action === "add" || action === "edit") {
-                const data = await SaveItem({
-                    actionData: data.actionData,
+                const actionData = {
+                    companyId: companyId,
+                    userId: userId,
+                    id: action === "add" ? userId : data.itemId
+                }
+                const resData = await SaveItem({
+                    actionData: actionData,
                     itemId: data.itemId,
                     itemCode: data.itemCode,
                     isActive: data.isActive,
@@ -85,11 +92,11 @@ const ItemMaintenance = () => {
                     itemUOM: data.itemUOM,
                     itemCommission: data.itemCommission
                 });
-                if (data.success) {
+                if (resData.success) {
                     setNotifyModal({ isOpen: true, message: "Item saved successfully!" });
                     setSelectedItem(null);
                 } else {
-                    throw new Error(data.errorMessage || "Failed to save item.");
+                    throw new Error(resData.errorMessage || "Failed to save item.");
                 }
             } else if (action === "delete") {
                 const data = await DeleteItem({ companyId: companyId, userId: userId, id: deleteTarget });
