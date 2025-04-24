@@ -14,7 +14,7 @@ const MainMenuPage = () => {
                     <li><Link to="/customer">Customer</Link></li>
                     <li><Link to="/supplier">Supplier</Link></li>
                     <li><Link to="/product">Product</Link></li>
-                    <li><Link to="#">Numbering Format</Link></li>
+                    <li><Link to="/numbering-format">Numbering Format</Link></li>
                     <li><Link to="/payment-method">Payment Method</Link></li>
                 </ul>
             </div>

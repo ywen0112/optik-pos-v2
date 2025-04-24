@@ -2,74 +2,74 @@ import { useEffect, useState } from "react";
 import { X } from 'lucide-react';
 
 const AddCustomerModal = ({
-  selectedCustomer,
-  isEdit,
-  isOpen,
-  onConfirm,
-  onError,
-  onClose,
+    selectedCustomer,
+    isEdit,
+    isOpen,
+    onConfirm,
+    onError,
+    onClose,
 }) => {
-  const [formData, setFormData] = useState({
-    isActive: true,
-    customerCode: "",
-    name: "",
-    ic: "",
-    dob: "",
-    billingAddress: "",
-    remark: "",
-    phone1: "",
-    phone2: "",
-    email: "",
-    // Medical Info
-    diabetes: false,
-    hypertension: false,
-    squint: false,
-    lazyEye: false,
-    surgery: false,
-    medicalOthers: "",
-    ocularOthers: "",
-    // RX
-    lastUpdate: new Date().toISOString().split("T")[0],
-    opticalHeight: "",
-    segmentHeight: "",
-    dominentEye: "",
-    rxRight: false,
-    rxLeft: false,
-    rSPH: "",
-    rCYL: "",
-    rAXIS: "",
-    rVA: "",
-    rPRISM: "",
-    rADD: "",
-    rPD: "",
-    lSPH: "",
-    lCYL: "",
-    lAXIS: "",
-    lVA: "",
-    lPRISM: "",
-    lADD: "",
-    lPD: "",
+    const [formData, setFormData] = useState({
+        isActive: true,
+        customerCode: "",
+        name: "",
+        ic: "",
+        dob: "",
+        billingAddress: "",
+        remark: "",
+        phone1: "",
+        phone2: "",
+        email: "",
+        // Medical Info
+        diabetes: false,
+        hypertension: false,
+        squint: false,
+        lazyEye: false,
+        surgery: false,
+        medicalOthers: "",
+        ocularOthers: "",
+        // RX
+        lastUpdate: new Date().toISOString().split("T")[0],
+        opticalHeight: "",
+        segmentHeight: "",
+        dominentEye: "",
+        rxRight: false,
+        rxLeft: false,
+        rSPH: "",
+        rCYL: "",
+        rAXIS: "",
+        rVA: "",
+        rPRISM: "",
+        rADD: "",
+        rPD: "",
+        lSPH: "",
+        lCYL: "",
+        lAXIS: "",
+        lVA: "",
+        lPRISM: "",
+        lADD: "",
+        lPD: "",
 
-    docDate: new Date().toISOString().split("T")[0],
-    historyRight: false,
-    historyLeft: false,
-  });
+        docDate: new Date().toISOString().split("T")[0],
+        historyRight: false,
+        historyLeft: false,
+    });
 
-  useEffect(() => {
-    if (isOpen) {
-      setFormData(
-        isEdit && selectedCustomer
-          ? selectedCustomer
-          : {
-              ...formData,
-              lastUpdate: new Date().toISOString().split("T")[0],
-              docDate: new Date().toISOString().split("T")[0],
-            }
-      );
-    }
-  }, [isOpen, selectedCustomer, isEdit]);
+    useEffect(() => {
+        if (isOpen) {
+            setFormData(
+                isEdit && selectedCustomer
+                    ? selectedCustomer
+                    : {
+                        ...formData,
+                        lastUpdate: new Date().toISOString().split("T")[0],
+                        docDate: new Date().toISOString().split("T")[0],
+                    }
+            );
+        }
+    }, [isOpen, selectedCustomer, isEdit]);
 
-  if (!isOpen) return null;
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

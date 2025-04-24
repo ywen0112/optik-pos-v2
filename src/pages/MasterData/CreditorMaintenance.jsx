@@ -64,7 +64,7 @@ const CreditorMaintenance = () => {
         setErrorModal({ title: "Edit Error", message: error.message });
       }
     } else {
-      setSelectedCreditor(location);
+      setSelectedCreditor(creditor);
       setIsUpdateModelOpen(true);
     }
   };
@@ -162,7 +162,7 @@ const CreditorMaintenance = () => {
       />
 
       <AddSupplierModal
-        selectedLocation={selectedCreditor}
+        selectedSupplier={selectedCreditor}
         isEdit={formAction === "edit"}
         isOpen={isUpdateModelOpen}
         onConfirm={confirmAction}

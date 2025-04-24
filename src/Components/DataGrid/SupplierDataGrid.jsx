@@ -100,7 +100,7 @@ const SupplierDataGrid = ({className, customerId, onError, onDelete, onEdit}) =>
                 width={"10%"}
                 headerCellRender={() => {
                     return (
-                        <div className="  font-bold text-gray-700">
+                        <div className="font-bold text-gray-700">
                             Action
                         </div>
                     )

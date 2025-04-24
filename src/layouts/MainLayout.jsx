@@ -27,6 +27,7 @@ import PurchaseInvoice from "../pages/Transactions/PurchasesInvoice";
 import StockAdjustment from "../pages/Transactions/StockAdjustment";
 import GoodsTransit from "../pages/Transactions/GoodsTransit";
 import SalesInquiry from "../pages/Inquiry/SalesInquiry";
+import NumberingFormat from "../pages/MasterData/NumberingFormat";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -92,6 +93,8 @@ const MainLayout = ({ title }) => {
         return <PaymentMethod />
       case "/products-inquiry":
         return <ProductInquiry />
+      case "/numbering-format":
+        return <NumberingFormat />
       default:
         return <Dashboard />;
     }

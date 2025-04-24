@@ -3,10 +3,89 @@ import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import PaymentMethodDataGrid from "../../Components/DataGrid/PaymentMethodDataGrid";
-// import AddPaymentModal from "../../modals/Transacti";
-import { Plus } from "lucide-react";
+import AddPaymentModal from "../../modals/AddPaymentModal";
 
 const PaymentMethod = () => {
+  const [formats, setFormats] = useState([]);
+  const [errorModal, setErrorModal] = useState({ title: "", message: "" });
+  const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
+  const [selectedFormat, setSelectedFormat] = useState(null);
+  const [formAction, setFormAction] = useState(null);
+  const [isUpdateModelOpen, setIsUpdateModelOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const handleAddNew = () => {
+    setSelectedFormat({
+        isActive: true,
+        paymentMethod: "",
+        paymentMethodType: "",
+    });
+    setFormAction("add");
+    setIsUpdateModelOpen(true);
+  };
+
+  const handleOpenModal = (format, mode) => {
+    setSelectedFormat(format);
+    setFormAction(mode);
+    setIsUpdateModelOpen(true);
+  };
+
+  const handleDeleteClick = (id) => {
+    setDeleteTarget(id);
+    setConfirmModal({ isOpen: true, action: "delete" });
+  };
+
+  const confirmAction = () => {
+    const action = confirmModal.action;
+    setSaving(true);
+    setConfirmModal({ isOpen: false, action: null });
+
+    setTimeout(() => {
+      if (action === "delete") {
+        setFormats((prev) => prev.filter((f) => f.formatId !== deleteTarget));
+        setNotifyModal({ isOpen: true, message: "Payment Method deleted successfully!" });
+      } else {
+        if (formAction === "edit") {
+          setFormats((prev) =>
+            prev.map((f) =>
+                f.formatId === selectedFormat.formatId ? selectedFormat : f
+            )
+          );
+          setNotifyModal({ isOpen: true, message: "Payment Method updated successfully!" });
+        } else {
+          const newFormat = {
+            ...selectedFormat,
+            formatId: Date.now().toString(), // mock ID
+          };
+          setFormats((prev) => [...prev, newFormat]);
+          setNotifyModal({ isOpen: true, message: "Payment Method added successfully!" });
+        }
+        setSelectedFormat(null);
+        setIsUpdateModelOpen(false);
+      }
+      setSaving(false);
+    }, 500);
+  };
+
+  const handleCloseUpdateModal = () => {
+    setIsUpdateModelOpen(false);
+    setSelectedFormat(null);
+  };
+
+  const confirmationTitleMap = {
+    add: "Confirm Add",
+    edit: "Confirm Edit",
+    delete: "Confirm Delete",
+  };
+
+  const confirmationMessageMap = {
+    add: "Are you sure you want to add this payment method?",
+    edit: "Are you sure you want to edit this payment method?",
+    delete: "Are you sure you want to delete this payment method?",
+  };
+
   return (
     <div>
       <ErrorModal
@@ -35,15 +114,15 @@ const PaymentMethod = () => {
         onError={setErrorModal}
         onClose={handleCloseUpdateModal}
       />
-      <div className="p-2 flex justify-end">
+      <div className="text-right p-2">
         <button
-          className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition flex flex-row"
+          className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition"
           onClick={handleAddNew}
         >
-          <Plus size={24}/> <span className="mt-1 text-[15px]">New</span>
+          Add Payment Method
         </button>
       </div>
-      <div className="mt-2 bg-white h-[61.7vh] rounded-lg shadow overflow-hidden">
+      <div className="mt-2 bg-white h-[50vh] rounded-lg shadow overflow-hidden">
         <PaymentMethodDataGrid
           methodRecords={formats}
           className="p-2"

@@ -3,13 +3,13 @@ import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 import StandardDataGridComponent from "../BaseDataGrid";
 
-const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
-  const [method, setMethod] = useState([]);
+const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
+  const [format, setFormat] = useState([]);
   const [loading, setLoading] = useState(false);
   const [skip, setSkip] = useState(0);
   const [take, setTake] = useState(10);
 
-  const methodDataGridRef = useRef(null);
+  const formatDataGridRef = useRef(null);
 
   useEffect(() => {
     loadDummyData();
@@ -21,26 +21,34 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
     setTimeout(() => {
       const dummy = [
         {
-        methodId: "1",
-        isActive: true,
-        paymentMethod: "CASH",
-        paymentMethodType: "Cash"
+        formatId: "1",
+        docType: "Cash Sale",
+        name: "HQ Default",
+        nextNo: "1",
+        numberingFormat: "CS-<000000>",
+        oneMonthOneSet: false,
+        sample: "CS-<000001>",
+        isDefault: true
         },
         {
-        methodId: "2",
-        isActive: true,
-        paymentMethod: "CARD",
-        paymentMethodType: "Card"
+        formatId: "2",
+        docType: "Cash Sale",
+        name: "HQ Secondary",
+        nextNo: "2",
+        numberingFormat: "CS-<000000>",
+        oneMonthOneSet: true,
+        sample: "CS-<000002>",
+        isDefault: true,
         }
       ];
-      setMethod(dummy);
+      setFormat(dummy);
       setLoading(false);
     }, 300); // simulate async load
   };
 
   const handlePagerChange = (e) => {
     if (e.fullName === "paging.pageSize" || e.fullName === "paging.pageIndex") {
-      const gridInstance = methodDataGridRef.current.instance;
+      const gridInstance = formatDataGridRef.current.instance;
 
       const pageSize = gridInstance.pageSize();
       const pageIndex = gridInstance.pageIndex();
@@ -54,9 +62,9 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
 
   return (
     <StandardDataGridComponent
-      ref={methodDataGridRef}
+      ref={formatDataGridRef}
       height={"100%"}
-      dataSource={method}
+      dataSource={format}
       className={className}
       searchPanel={true}
       pager={true}
@@ -69,15 +77,18 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
       onLoading={loading}
       onOptionChanged={handlePagerChange}
     >
-      <Column dataField="paymentMethod" caption="Payment Method" allowEditing={false} width={"20%"} />
-      <Column dataField="paymentMethodType" caption="Payment Method Type" width={"50%"} />
-      <Column dataField="isActive" caption="Active" dataType="boolean" width={"20%"} />
+      <Column dataField="docType" caption="Doc Type" allowEditing={false} width={"20%"} />
+      <Column dataField="name" caption="Name" width={"20%"} />
+      <Column dataField="nextNo" caption="Next No" width={"20%"} />
+      <Column dataField="numberingFormat" caption="Format" width={"20%"} />
+      <Column dataField="oneMonthOneSet" caption="One Month One Set" dataType="boolean" width={"20%"} />
+      <Column dataField="sample" caption="Sample" width={"20%"} />
       <Column
         caption="Action"
-        width={"150px"}
-        // headerCellRender={() => (
-        //   <div className="font-bold text-gray-700">Action</div>
-        // )}
+        width={"15%"}
+        headerCellRender={() => (
+          <div className="font-bold text-gray-700">Action</div>
+        )}
         cellRender={(cellData) => (
           <div className="flex flex-row justify-center space-x-2">
             <div
@@ -99,11 +110,10 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
               <TrashIcon size={20} />
             </div>
           </div>
-          
         )}
       />
     </StandardDataGridComponent>
   );
 };
 
-export default PaymentMethodDataGrid;
+export default NumberingFormatDataGrid;

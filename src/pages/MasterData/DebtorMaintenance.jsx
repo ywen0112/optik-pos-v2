@@ -64,7 +64,7 @@ const DebtorMaintenance = () => {
         setErrorModal({ title: "Edit Error", message: error.message });
       }
     } else {
-      setSelectedDebtor(location);
+      setSelectedDebtor(debtor);
       setIsUpdateModelOpen(true);
     }
   };

@@ -17,7 +17,6 @@ import DatePicker from "react-datepicker";
 import SalesOrderItemTable from "../../Components/DataGrid/SalesOrderItemDataGrid";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import { Copy } from "lucide-react";
-import SalesPaymentModal from "../../modals/SalesPaymentModal";
 import ErrorModal from "../../modals/ErrorModal";
 import CustomerDataGrid from "../../Components/DataGrid/CustomerDataGrid";
 
@@ -387,21 +386,7 @@ const SalesOrder = () => {
         }
     };
     const total = currentSalesTotal + parseFloat(rounding);
-    const balance = total - parseFloat(securityDeposit || 0);
-
-    //Payment Modal
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
-    const [paymentData, setPaymentData] = useState(null);
-
-    const handleOpenPaymentModal = () => {
-        setShowPaymentModal(true);
-    };
-
-    const handlePaymentConfirm = ({ data }) => {
-        setPaymentData(data); 
-        setShowPaymentModal(false);
-    };
-        
+    const balance = total - parseFloat(securityDeposit || 0);     
 
     return (
         <>
@@ -857,8 +842,7 @@ const SalesOrder = () => {
                 <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                     Collection
                 </button>
-                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
-                onClick={handleOpenPaymentModal}>
+                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                     Payment
                 </button>
                 <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
@@ -869,17 +853,6 @@ const SalesOrder = () => {
                 </button>
                 
                 <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
-
-                <SalesPaymentModal
-                    isOpen={showPaymentModal}
-                    isEdit={!!paymentData}
-                    selectedPayment={paymentData}
-                    onConfirm={handlePaymentConfirm}
-                    onClose={() => setShowPaymentModal(false)}
-                    onError={(error) => {
-                        setErrorModal({ title: "Payment Error", message: error.message });
-                    }}
-                />
             </div>
             </div>
         </>
