@@ -16,19 +16,19 @@ const NumberingFormat = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const handleAddNew = () => {
-    setSelectedFormat({
-        isDefault: true,
-        name: "",
-        docType: "",
-        nextNo: "",
-        numberingFormat: "",
-        sample: "",
-        oneMonthOneSet: false,
-    });
-    setFormAction("add");
-    setIsUpdateModelOpen(true);
-  };
+  // const handleAddNew = () => {
+  //   setSelectedFormat({
+  //       isDefault: true,
+  //       name: "",
+  //       docType: "",
+  //       nextNo: "",
+  //       numberingFormat: "",
+  //       sample: "",
+  //       oneMonthOneSet: false,
+  //   });
+  //   setFormAction("add");
+  //   setIsUpdateModelOpen(true);
+  // };
 
   const handleOpenModal = (format, mode) => {
     setSelectedFormat(format);
@@ -49,6 +49,8 @@ const NumberingFormat = () => {
     setTimeout(() => {
       if (action === "delete") {
         setFormats((prev) => prev.filter((f) => f.formatId !== deleteTarget));
+        console.log("Deleting formatId:", deleteTarget);
+        console.log("Current formats:", formats);
         setNotifyModal({ isOpen: true, message: "Numbering format deleted successfully!" });
       } else {
         if (formAction === "edit") {
@@ -61,7 +63,7 @@ const NumberingFormat = () => {
         } else {
           const newFormat = {
             ...selectedFormat,
-            formatId: Date.now().toString(), // mock ID
+            formatId: Date.now().toString(), 
           };
           setFormats((prev) => [...prev, newFormat]);
           setNotifyModal({ isOpen: true, message: "Numbering format added successfully!" });
@@ -118,14 +120,14 @@ const NumberingFormat = () => {
         onError={setErrorModal}
         onClose={handleCloseUpdateModal}
       />
-      <div className="text-right p-2">
+      {/* <div className="text-right p-2">
         <button
           className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition"
           onClick={handleAddNew}
         >
           + New
         </button>
-      </div>
+      </div> */}
       <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
         <NumberingFormatDataGrid
           numberingFormatRecords={formats}

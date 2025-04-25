@@ -8,12 +8,17 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
   const [loading, setLoading] = useState(false);
   const [skip, setSkip] = useState(0);
   const [take, setTake] = useState(10);
+  const [keyword, setKeyword] = useState("")
 
   const methodDataGridRef = useRef(null);
 
   useEffect(() => {
     loadDummyData();
-  }, []);
+  }, [skip, take, keyword]);
+
+  useEffect(() => {
+    loadDummyData();
+}, [onEdit, onDelete ])
 
   const loadDummyData = () => {
     setLoading(true);
@@ -49,6 +54,11 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
 
       setSkip(skip);
       setTake(take);
+    }
+
+    if(e.fullName === 'searchPanel.text'){
+      const searchText = e.value;
+      setKeyword(searchText);
     }
   };
 

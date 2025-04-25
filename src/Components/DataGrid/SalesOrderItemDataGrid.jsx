@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import DataGrid, {
   Lookup,
   Paging,
@@ -12,7 +12,7 @@ import DataGrid, {
 import ItemDropDownBoxComponent from '../DropDownBox/ItemDropDownBoxComponent';
 
 
-const SalesOrderItemTable = ({ data, itemSource, onDataChange, height = 245 }) => {
+const SalesOrderItemTable = ({ data, itemSource, onDataChange, height = 245, setSelectedItemTypeTitle  }) => {
   const [itemDataGridData, setItemDataGridData] = useState([]);
   const [itemQty, setItemQty] = useState();
 
@@ -62,11 +62,19 @@ const SalesOrderItemTable = ({ data, itemSource, onDataChange, height = 245 }) =
             value={props.value}
             onValueChanged={(newValue) => {
               setItemDataGridData(prev => {
-                prev.push(newValue);
-                return prev;
+                const updated = [...prev];
+                updated.push(newValue);
+                return updated;
               });
-
-
+            
+              if (newValue) {
+                let title = "";
+                if (newValue.isNormalItem) title = "Normal Item";
+                if (newValue.isSpectacles) title = "Spectacles";
+                if (newValue.isContactLenses) title = "Contact Lens";
+            
+                setSelectedItemTypeTitle(title);
+              }
             }}
           />
         )}

@@ -1,121 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { Pencil, Trash2, Eye } from "lucide-react";
-import Select from "react-select";
-
-import { GetLocationRecords, GetAccessRightRecords } from "../../api/apiconfig";
+import React, { useState } from "react";
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
-import { GetUserRecords, SaveUserUpdate, InviteUser, DeleteUser } from "../../api/userapi";
+import { SaveUserUpdate, InviteUser, DeleteUser } from "../../api/userapi";
+import UserDataGrid from "../../Components/DataGrid/UserDataGrid";
+import { X } from 'lucide-react';
 
 const UserMaintenance = () => {
   const companyId = sessionStorage.getItem("companyId");
   const userId = sessionStorage.getItem("userId");
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
-  const [accessRights, setAccessRights] = useState([]);
-  const [locations, setLocations] = useState([]);
   const [editUser, setEditUser] = useState(null);
   const [viewMode, setViewMode] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: "", targetUser: null });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
   const [email, setEmail] = useState("");
-  const [selectedAccess, setSelectedAccess] = useState(null);
-  const [selectedLocation, setSelectedLocation] = useState(null);
+
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteAccess, setInviteAccess] = useState(null);
-
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    itemsPerPage: 10,
-  });
-
-  useEffect(() => {
-    fetchUsers();
-    // fetchAccessRights();
-    // fetchLocations();
-  }, [pagination.currentPage]);
-
-  const fetchUsers = async () => {
-    setLoading(true);
-    const offset = (pagination.currentPage - 1) * pagination.itemsPerPage;
-
-    try {
-      const response = await GetUserRecords({
-        companyId: companyId,
-        keyword: "",
-        offset: offset,
-        limit: pagination.itemsPerPage,
-      });
-      if (response.success) {
-        const records = response.data || [];
-        setUsers(records);
-        setPagination((prev) => ({
-          ...prev,
-        }));
-      } else {
-        throw new Error(response.errorMessage || "Failed to fetch users.");
-      }
-    } catch (error) {
-      setErrorModal({ title: "Fetch Error", message: error.message });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAccessRights = async () => {
-
-    try {
-      const res = await fetch(GetAccessRightRecords, {
-        method: "POST",
-        headers: {
-          Accept: "text/plain",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ customerId: Number(customerId), keyword: "", offset: 0, limit: 9999 }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setAccessRights(data.data.accessRightsRecords || [])
-      } else {
-        throw new Error(data.errorMessage || "Failed to fetch access right.");
-      }
-    } catch (error) {
-      setErrorModal({ title: "Fetch Error", message: error.message });
-    }
-  };
-
-  const fetchLocations = async () => {
-    try {
-      const res = await fetch(GetLocationRecords, {
-        method: "POST",
-        headers: {
-          Accept: "text/plain",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ customerId: Number(customerId), keyword: "", offset: 0, limit: 9999 }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setLocations(data.data.locationRecords || [])
-      } else {
-        throw new Error(data.errorMessage || "Failed to fetch locations.");
-      }
-    } catch (error) {
-      setErrorModal({ title: "Fetch Error", message: error.message });
-    }
-  };
-
-  const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= Math.ceil(pagination.totalItems / pagination.itemsPerPage)) {
-      setPagination((prev) => ({
-        ...prev,
-        currentPage: newPage,
-      }));
-    }
-  };
 
   const handleSave = () => setConfirmModal({ isOpen: true, type: "update", targetUser: editUser });
 
@@ -151,7 +54,6 @@ const UserMaintenance = () => {
         if (result.success) {
           setNotifyModal({ isOpen: true, message: "User updated successfully!" });
           setEditUser(null);
-          fetchUsers();
         } else {
           throw new Error(result.errorMessage || "Failed to update user.");
         }
@@ -163,7 +65,6 @@ const UserMaintenance = () => {
         });
         if (result.success) {
           setNotifyModal({ isOpen: true, message: "User deleted successfully!" });
-          fetchUsers();
         } else {
           throw new Error(result.errorMessage || "Failed to delete user.");
         }
@@ -179,7 +80,6 @@ const UserMaintenance = () => {
           setNotifyModal({ isOpen: true, message: `Invitation link: ${result.errorMessage}` });
           setShowInviteModal(false);
           setInviteEmail("");
-          setInviteAccess(null);
         } else {
           throw new Error(result.errorMessage || "Failed to send invitation.");
         }
@@ -191,15 +91,10 @@ const UserMaintenance = () => {
     }
   };
 
-  const getAccessRightLabel = (id) => accessRights.find((r) => r.accessRightId === id)?.description || "-";
-  const getLocationLabel = (id) => locations.find((l) => l.locationId === id)?.locationCode || "-";
-
   const openEditModal = (user, isView = false) => {
     setEditUser(user);
     setViewMode(isView);
     setEmail(user.userEmail || "");
-    setSelectedAccess(accessRights.find((r) => r.accessRightId === user.accessRightId) || null);
-    setSelectedLocation(locations.find((l) => l.locationId === user.locationId) || null);
   };
 
   const confirmationTitleMap = {
@@ -214,183 +109,92 @@ const UserMaintenance = () => {
     delete: "Are you sure you want to delete this user?",
   };
 
-  const customStyles = {
-    control: (provided, state) => ({
-      ...provided,
-      border: "1px solid #ccc",
-      padding: "1px",
-      fontSize: "0.75rem",
-      width: "100%",
-      minHeight: "2.5rem",
-      backgroundColor: state.isDisabled ? "#f9f9f9" : "white",
-      cursor: state.isDisabled ? "not-allowed" : "pointer",
-    }),
-    input: (provided) => ({
-      ...provided,
-      fontSize: "0.75rem",
-    }),
-    placeholder: (provided) => ({
-      ...provided,
-      fontSize: "0.75rem",
-    }),
-    menu: (provided) => ({
-      ...provided,
-      fontSize: "0.75rem",
-      zIndex: 9999,
-      position: "absolute",
-      maxHeight: "10.5rem",
-      overflowY: "auto",
-      WebkitOverflowScrolling: "touch",
-      pointerEvents: "auto",
-    }),
-    menuList: (provided) => ({
-      ...provided,
-      maxHeight: "10.5rem",
-      overflowY: "auto",
-      WebkitOverflowScrolling: "touch",
-    }),
-    menuPortal: (provided) => ({
-      ...provided,
-      zIndex: 9999,
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      fontSize: "0.75rem",
-      padding: "4px 8px",
-      backgroundColor: state.isSelected ? "#f0f0f0" : "#fff",
-      color: state.isSelected ? "#333" : "#000",
-      ":hover": {
-        backgroundColor: "#e6e6e6",
-      },
-    }),
-  };
-
   return (
     <div>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
       <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.type] || "Confirm Action"} message={confirmationMessageMap[confirmModal.type] || "Are you sure?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
-      <div className="text-right">
-        <button
-          className="bg-secondary text-white px-4 py-1 rounded text-xs hover:bg-secondary/90 transition" onClick={() => setShowInviteModal(true)}
-        >
-          Add User
+      <div className="text-right p-2">
+        <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2" onClick={() => setShowInviteModal(true)}>
+          + New
         </button>
       </div>
-      <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
         {loading ? (
           <p className="text-center py-4 text-gray-500">Loading...</p>
         ) : (
-          <table className="w-full border-collapse">
-            <thead className="bg-gray-200 border-b-2 border-gray-100 font-bold">
-              <tr className="text-left text-xs text-secondary">
-                <th className="px-4 py-3">NO</th>
-                <th className="py-3">USERNAME</th>
-                <th className="py-3">EMAIL</th>
-                <th className="py-3">USER ROLE</th>
-                <th className="py-3">LOCATION CODE</th>
-                <th className="py-3">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => (
-                <tr key={user.userId} className="text-xs font-medium border-b-2 border-gray-100 text-secondary">
-                  <td className="pl-4 p-2">
-                    {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}
-                  </td>
-                  <td className="p-1">{user.userName || "-"}</td>
-                  <td className="p-1">{user.userEmail || "-"}</td>
-                  <td className="p-1">{getAccessRightLabel(user.accessRightId)}</td>
-                  <td className="p-1">{getLocationLabel(user.locationId)}</td>
-                  <td className="p-1 flex space-x-1">
-                    <button className="text-blue-500 bg-transparent pl-0" onClick={() => openEditModal(user, true)}>
-                      <Eye size={14} />
-                    </button>
-                    <button className="text-yellow-500 bg-transparent pl-0" onClick={() => openEditModal(user, false)}>
-                      <Pencil size={14} />
-                    </button>
-                    <button className="text-red-500 bg-transparent pl-0" onClick={handleDelete}>
-                      <Trash2 size={14} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {users.length === 0 && !loading && (
-                <tr><td colSpan="3" className="text-center py-4 text-gray-500">No users found.</td></tr>
-              )}
-            </tbody>
-          </table>
+          <UserDataGrid
+            className={"p-2"}
+            companyId={companyId}
+            onError={setErrorModal}
+            onDelete={handleDelete}
+            onEdit={openEditModal}
+          >
+          </UserDataGrid>
         )}
-      </div>
-
-      <div className="flex justify-between p-4 text-xs text-secondary mt-4">
-        <span>
-          Showing {(pagination.currentPage - 1) * pagination.itemsPerPage + 1} to{" "}
-          {Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} of{" "}
-          {pagination.totalItems}
-        </span>
-        <div className="flex">
-          <button
-            onClick={() => handlePageChange(pagination.currentPage - 1)}
-            disabled={pagination.currentPage === 1}
-            className={`px-2 py-1 bg-white border rounded ${pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer"
-              }`}
-          >
-            ←
-          </button>
-
-          <button
-            onClick={() => handlePageChange(pagination.currentPage + 1)}
-            disabled={pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems}
-            className={`px-2 py-1 bg-white border rounded ${pagination.currentPage * pagination.itemsPerPage >= pagination.totalItems
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-gray-100 cursor-pointer"
-              }`}
-          >
-            →
-          </button>
-        </div>
       </div>
 
       {editUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white rounded-lg shadow-lg p-6 w-[500px] max-w-full text-secondary text-xs">
-            <h3 className="font-semibold mb-4">{viewMode ? "View User" : "Edit User"}</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label>Username</label>
-                <div className="mt-1 p-2 bg-gray-100 rounded">{editUser.userName}</div>
+          <div className="flex flex-row justify-between">
+              <h3 className="font-semibold mb-4">
+                Edit Supplier
+              </h3>
+              <div className='col-span-4' onClick={() => setEditUser(null)}>
+                <X size={20} />
               </div>
-              <div>
-                <label>Email</label>
-                {viewMode ? (
-                  <div className="mt-1 p-2 bg-gray-100 rounded">{editUser.userEmail}</div>
-                ) : (
-                  <input value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 p-2 border border-gray-300 rounded w-full bg-white" />
-                )}
+            </div>            
+            <div className="grid grid-cols-2 gap-1">
+              <div className="col-span-1 mt-2">
+                <label className="block mb-2">Username</label>
+                <input
+                  type="text"
+                  className="mr-2 border w-full h-[40px] px-2 bg-gray-200"
+                  placeholder="Username"
+                  value={editUser.userName}
+                  readOnly
+                />
               </div>
-              <div>
-                <label>User Role</label>
-                {viewMode ? (
-                  <div className="mt-1 p-2 bg-gray-100 rounded">{getAccessRightLabel(editUser.accessRightId)}</div>
-                ) : (
-                  <Select value={selectedAccess} onChange={setSelectedAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable />
-                )}
-              </div>
-              <div>
-                <label>Location Code</label>
-                {viewMode ? (
-                  <div className="mt-1 p-2 bg-gray-100 rounded">{getLocationLabel(editUser.locationId)}</div>
-                ) : (
-                  <Select value={selectedLocation} onChange={setSelectedLocation} getOptionLabel={(e) => e.locationCode} getOptionValue={(e) => e.locationId} options={locations} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable />
-                )}
+
+              <div className="col-span-1 mt-2">
+                <label className="block mb-2">Email</label>
+                <input
+                  type="text"
+                  className="mr-2 border w-full h-[40px] px-2"
+                  placeholder="Email"
+                  value={editUser.userEmailAddress}
+                  onChange={(e) =>
+                    setEditUser(prev => ({
+                      ...prev,
+                      userEmailAddress: e.target.value
+                    }))
+                  }
+                />
               </div>
             </div>
             <div className="mt-6 flex justify-end space-x-2">
-              {!viewMode && (
-                <button className="px-4 py-1 rounded text-sm bg-green-500 text-white" onClick={handleSave}>Save</button>
-              )}
-              <button className="px-4 py-1 rounded text-sm bg-red-500 text-white" onClick={() => setEditUser(null)}>Close</button>
+              <button className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700" 
+              onClick={() => setEditUser(null)}>Cancel</button>
+              <button className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90" 
+                onClick={() => {
+                  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+                
+                  if (!editUser.userEmailAddress.trim()) {
+                    setErrorModal({ title: "Validation Error", message: "Email is required." });
+                    return;
+                  }
+                
+                  if (!emailPattern.test(editUser.userEmailAddress)) {
+                    setErrorModal({ title: "Validation Error", message: "Invalid email format." });
+                    return;
+                  }
+                
+                  handleSave();
+                }}
+              >
+              Save
+              </button>
             </div>
           </div>
         </div>
@@ -398,21 +202,45 @@ const UserMaintenance = () => {
 
       {showInviteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-[400px] max-w-full text-secondary text-xs">
-            <h3 className="font-semibold mb-4">Invite New User</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/2 max-h-[90vh] overflow-y-auto text-secondary">
+          <div className="flex flex-row justify-between">
+            <h3 className="font-semibold mb-4">
+              Invite New User
+            </h3>
+            <div className='col-span-4' onClick={() => setShowInviteModal(false)}>
+              <X size={20} />
+            </div>
+          </div>
+            <div className="grid grid-cols-1 gap-1">
               <div>
-                <label>Email</label>
-                <input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="mt-1 p-2 border border-gray-300 rounded w-full bg-white" />
-              </div>
-              <div>
-                <label>User Role</label>
-                <Select value={inviteAccess} onChange={setInviteAccess} getOptionLabel={(e) => e.description} getOptionValue={(e) => e.accessRightId} options={accessRights} styles={customStyles} isSearchable={false} classNames={{ menuList: () => "scrollbar-hide" }} menuPortalTarget={document.body} menuPosition="fixed" tabIndex={0} isClearable />
-              </div>
+              <label className="block mb-2">Email</label>
+              <input type="text" placeholder="Email"
+               value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} 
+               className="mr-2 border w-full h-[40px] px-2" />
+               </div>
             </div>
             <div className="mt-6 flex justify-end space-x-2">
-              <button className="px-4 py-1 rounded text-sm bg-green-500 text-white" onClick={handleInvite}>Save</button>
-              <button className="px-4 py-1 rounded text-sm bg-red-500 text-white" onClick={() => setShowInviteModal(false)}>Cancel</button>
+              <button className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700" 
+              onClick={() => setShowInviteModal(false)}>Cancel</button>
+              <button className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90" 
+                onClick={() => {
+                  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+                
+                  if (!inviteEmail.trim()) {
+                    setErrorModal({ title: "Validation Error", message: "Email is required." });
+                    return;
+                  }
+                
+                  if (!emailPattern.test(inviteEmail)) {
+                    setErrorModal({ title: "Validation Error", message: "Invalid email format." });
+                    return;
+                  }
+                
+                  handleInvite();
+                }}
+              >
+              Save
+              </button>
             </div>
           </div>
         </div>

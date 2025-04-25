@@ -8,8 +8,6 @@ import DataGrid, {
     SearchPanel,
     Column
 } from "devextreme-react/data-grid";
-
-import Switch from "react-switch"
 import CustomStore from 'devextreme/data/custom_store';
 import { getInfoLookUp } from '../../../api/infolookupapi';
 import { GetItemGroup, GetItemType } from '../../../api/maintenanceapi';

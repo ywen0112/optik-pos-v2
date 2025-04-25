@@ -8,12 +8,17 @@ const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
   const [loading, setLoading] = useState(false);
   const [skip, setSkip] = useState(0);
   const [take, setTake] = useState(10);
+  const [keyword, setKeyword] = useState("")
 
   const formatDataGridRef = useRef(null);
 
   useEffect(() => {
     loadDummyData();
-  }, []);
+  }, [skip, take, keyword]);
+
+  useEffect(() => {
+    loadDummyData();
+}, [onEdit, onDelete ])
 
   const loadDummyData = () => {
     setLoading(true);
@@ -32,7 +37,7 @@ const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
         },
         {
         formatId: "2",
-        docType: "Cash Sale",
+        docType: "Sales Order",
         name: "HQ Secondary",
         nextNo: "2",
         numberingFormat: "CS-<000000>",
@@ -58,8 +63,12 @@ const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
       setSkip(skip);
       setTake(take);
     }
-  };
 
+    if(e.fullName === 'searchPanel.text'){
+      const searchText = e.value;
+      setKeyword(searchText);
+    }
+  }
   return (
     <StandardDataGridComponent
       ref={formatDataGridRef}
@@ -104,7 +113,7 @@ const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
               className="text-red-600 hover:cursor-pointer flex justify-center"
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete(cellData.data.id);
+                onDelete(cellData.data.formatId);
               }}
             >
               <TrashIcon size={20} />

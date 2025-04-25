@@ -26,25 +26,39 @@ const AddPaymentModal = ({
   const [paymentData, setPaymentData] = useState({
     isActive: true,
     paymentMethod: "",
-    paymentMenthodType: paymentTypeOptions[0], 
+    paymentMethodType: paymentTypeOptions[0], 
   });
 
   const [isTypeBoxOpened, setIsTypeBoxOpened] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setPaymentData(
-        isEdit && selectedPayment
-          ? selectedPayment
-          : { isActive: true, paymentMethod: "", paymentMenthodType: paymentTypeOptions[0] }
-      );
+      console.log("Incoming selectedPayment:", selectedPayment);
+  
+      if (isEdit && selectedPayment) {
+        const matchingType = paymentTypeOptions.find(
+          (option) => option.name === selectedPayment.paymentMethodType
+        );
+        console.log("Found matching paymentType:", matchingType);
+  
+        setPaymentData({
+          ...selectedPayment,
+          paymentMethodType: matchingType || paymentTypeOptions[0],
+        });
+      } else {
+        setPaymentData({
+          isActive: true,
+          paymentMethod: "",
+          paymentMethodType: paymentTypeOptions[0],
+        });
+      }
     }
-  }, [isOpen, isEdit, selectedPayment]);
-
+  }, [isOpen, isEdit, selectedPayment]);  
+  
   const handleTypeSelection = useCallback((e) => {
     const selected = e.selectedRowsData?.[0];
     if (selected) {
-      setPaymentData({ ...paymentData, paymentMenthodType: selected });
+      setPaymentData({ ...paymentData, paymentMethodType: selected });
       setIsTypeBoxOpened(false);
     }
   }, [paymentData]);
@@ -55,7 +69,7 @@ const AddPaymentModal = ({
       keyExpr="id"
       showBorders={false}
       hoverStateEnabled
-      selectedRowKeys={[paymentData.paymentMenthodType?.id]}
+      selectedRowKeys={[paymentData.paymentMethodType?.id]} 
       onSelectionChanged={handleTypeSelection}
       height="100%"
     >
@@ -64,8 +78,8 @@ const AddPaymentModal = ({
       <Paging enabled pageSize={5} />
       <SearchPanel visible highlightSearchText />
     </DataGrid>
-  ), [paymentData.type, handleTypeSelection]);
-
+  ), [paymentData.paymentMethodType, handleTypeSelection]);
+  
   if (!isOpen) return null;
 
   return (
@@ -81,9 +95,8 @@ const AddPaymentModal = ({
         </div>
 
         <div className="grid grid-cols-2 gap-1">
-            <div className="col-span-2 mt-2">
-              <div className="flex items-center space-x-2">
-                <input
+          <div className="col-span-2 mt-2 flex items-center space-x-2">
+            <input
                 type="checkbox"
                 checked={paymentData.isActive}
                 onChange={(e) =>
@@ -93,7 +106,7 @@ const AddPaymentModal = ({
                 <label>isActive</label>
               </div>
 
-              {/* Payment Method and DropDown Grid */}
+              {/* Payment Method */}
               <div className="col-span-1 mt-2">
                 <label className="block mb-2">Payment Method</label>
                 <input
@@ -103,14 +116,16 @@ const AddPaymentModal = ({
                     setPaymentData({ ...paymentData, paymentMethod: e.target.value })
                   }
                   placeholder="Payment Method"
-                  className="mr-2 border w-1/2 h-[40px] px-2"
+                  className="mr-2 border w-full h-[40px] px-2" // w-full instead of w-1/2
                 />
               </div>
 
+              {/* Payment Method Type */}
               <div className="col-span-1 mt-2">
                 <label className="block mb-2">Payment Method Type</label>
                 <DropDownBox
-                  value={paymentData.paymentMenthodType?.name}
+                  dataSource={paymentTypeOptions}
+                  value={paymentData.paymentMethodType?.id}
                   displayExpr="name"
                   valueExpr="id"
                   opened={isTypeBoxOpened}
@@ -120,26 +135,25 @@ const AddPaymentModal = ({
                     }
                   }}
                   contentRender={PaymentTypeGridRender}
-                  className="border rounded px-2 py-1 bg-white w-1/2"
+                  className="border rounded px-2 py-1 bg-white w-full" // also w-full
                 />
               </div>
             </div>
-          </div>
 
           <div className="mt-6 flex justify-end space-x-2">
-        <button
+            <button
                 className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700"
                 onClick={onClose}
             >
-                Close
+                Cancel
             </button>
             <button
                 className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
                 onClick={() => {
-                if (!paymentData.paymentMenthodType.trim()) {    
+                if (!paymentData.paymentMethod.trim()) {    
                     onError({
                     title: "Validation Error",
-                    message: "Payment Method Type is required.",
+                    message: "Payment Method is required.",
                     });
                     return;
                 }

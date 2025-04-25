@@ -135,12 +135,18 @@ const AddNumberingFormatModal = ({
             <label className="block mb-2">Next Number</label>
             <input
               type="number"
+              step="1" 
               min="0"
               className="mr-2 border w-1/2 h-[40px] px-2"
               value={formData.nextNo}
-              onChange={(e) =>
-                setFormData({ ...formData, nextNo: e.target.value })
-              }
+              onChange={(e) => {
+                const intValue = e.target.value.replace(/[^0-9]/g, ''); // remove non-numeric
+                setFormData({ ...formData, nextNo: intValue });
+              }}
+              onInput={(e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, ''); // block typing non-digit
+              }}
+              onWheel={(e) => e.target.blur()} // prevent scroll to change
             />
           </div>
 
@@ -206,23 +212,32 @@ const AddNumberingFormatModal = ({
             {formData.monthlyNumbers.map((row, rowIndex) => (
               <tr key={rowIndex}>
                 <td className="p-1">
-                  <input
-                    type="number"
-                    value={row.year}
-                    onChange={(e) => updateYearValue(rowIndex, e.target.value)}
-                    className="w-[60px] px-1 text-center"
-                    disabled={!formData.oneMonthOneSet}
-                    onWheel={(e) => e.target.blur()}
-                  />
+                <input
+                  type="number"
+                  step="1"
+                  min="0"
+                  value={row.year}
+                  onChange={(e) => updateYearValue(rowIndex, e.target.value)}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, ''); 
+                  }}
+                  className="w-[60px] px-1 text-center"
+                  disabled={!formData.oneMonthOneSet}
+                  onWheel={(e) => e.target.blur()}
+                />
                 </td>
                 {row.months.map((value, monthIndex) => (
                   <td key={monthIndex} className="p-1">
                     <input
                       type="number"
+                      step="1"
                       min="0"
-                      className="w-[30px] px-1 text-center"
                       value={value}
                       onChange={(e) => updateMonthValue(rowIndex, monthIndex, e.target.value)}
+                      onInput={(e) => {
+                        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                      }}
+                      className="w-[30px] px-1 text-center"
                       disabled={!formData.oneMonthOneSet}
                       onWheel={(e) => e.target.blur()}
                     />
@@ -248,26 +263,26 @@ const AddNumberingFormatModal = ({
                 className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700"
                 onClick={onClose}
             >
-                Close
+                Cancel
             </button>
             <button
-                className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
-                onClick={() => {
-                if (!formData.customerCode.trim()) {    
-                    onError({
+              className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
+              onClick={() => {
+                if (!formData.name?.trim()) {
+                  onError({
                     title: "Validation Error",
-                    message: "Customer Code is required.",
-                    });
-                    return;
+                    message: "Name is required.",
+                  });
+                  return;
                 }
                 onConfirm({
-                    isOpen: true,
-                    action: isEdit ? "edit" : "add",
-                    data: formData,
+                  isOpen: true,
+                  action: isEdit ? "edit" : "add",
+                  data: formData,
                 });
-                }}
+              }}
             >
-                Save
+              Save
             </button>
         </div>
       </div>

@@ -169,12 +169,12 @@ const DebtorMaintenance = () => {
       />
 
       <div className="text-right p-2">
-        <button className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition" onClick={handleAddNew}>
-          Add Customer
+        <button className="bg-secondary text-white px-4 py-2 mb-2 rounded hover:bg-secondary/90 transition" onClick={handleAddNew}>
+          + New
         </button>
       </div>
 
-      <div className="mt-2 bg-white h-[50vh] rounded-lg shadow overflow-hidden">
+      <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
         {loading ? (
           <p className="text-center py-4 text-gray-500">Loading...</p>
         ) : (
