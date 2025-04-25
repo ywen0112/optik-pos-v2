@@ -2,7 +2,6 @@ import { useState } from "react";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
-import AddSupplierModal from "../../modals/MasterData/Supplier/AddSupplierModal";
 import NumberingFormatDataGrid from "../../Components/DataGrid/NumberingFormatDataGrid";
 import AddNumberingFormatModal from "../../modals/MasterData/NumberingFormat/AddNumberingFormatModal";
 
@@ -124,10 +123,10 @@ const NumberingFormat = () => {
           className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition"
           onClick={handleAddNew}
         >
-          Add Numbering Format
+          + New
         </button>
       </div>
-      <div className="mt-2 bg-white h-[50vh] rounded-lg shadow overflow-hidden">
+      <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
         <NumberingFormatDataGrid
           numberingFormatRecords={formats}
           className="p-2"
