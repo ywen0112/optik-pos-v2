@@ -51,15 +51,19 @@ const AddNumberingFormatModal = ({
   }, [isOpen, selectedFormat]);
 
   const addRow = () => {
+    const lastRow = formData.monthlyNumbers[formData.monthlyNumbers.length - 1];
+    const newYear = lastRow ? lastRow.year + 1 : getCurrentYear();
+  
     const newRow = {
-      year: getCurrentYear(),
+      year: newYear,
       months: Array(12).fill(1),
     };
+  
     setFormData(prev => ({
       ...prev,
       monthlyNumbers: [...(prev.monthlyNumbers || []), newRow],
     }));
-  };
+  };  
 
   const updateMonthValue = (rowIndex, monthIndex, value) => {
     const updatedRows = [...formData.monthlyNumbers];
@@ -179,53 +183,65 @@ const AddNumberingFormatModal = ({
           </div>
         </div>
 
-        {/* Table */}
-        {formData.oneMonthOneSet && (
-          <div className="mt-4 overflow-x-auto">
-            <button onClick={addRow} className="mt-2 flex items-center gap-1 px-3 py-1 border rounded bg-gray-100 hover:bg-gray-200">
-              <Plus size={16} />
-            </button>
-            <table className="w-full text-center border border-collapse">
-              <thead>
-                <tr className="bg-primary text-secondary">
-                  <th className="border px-2 py-1">Year</th>
-                  {months.map((m, i) => (
-                    <th key={i} className="border px-2 py-1">{m}</th>
-                  ))}
-                  <th className="border px-2 py-1">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {formData.monthlyNumbers.map((row, rowIndex) => (
-                  <tr key={rowIndex}>
-                    <td className="p-1">
-                      <input
-                        type="number"
-                        value={row.year}
-                        onChange={(e) => updateYearValue(rowIndex, e.target.value)}
-                        className="w-[60px] px-1 text-center"
-                      />
-                    </td>
-                    {row.months.map((value, monthIndex) => (
-                      <td key={monthIndex} className="p-1">
-                        <input
-                          type="number"
-                          min="0"
-                          className="w-[30px] px-1 text-center"
-                          value={value}
-                          onChange={(e) => updateMonthValue(rowIndex, monthIndex, e.target.value)}
-                        />
-                      </td>
-                    ))}
-                    <td className="border p-1">
-                      <button onClick={() => deleteRow(rowIndex)} className="text-blue-600 underline">Delete</button>
-                    </td>
-                  </tr>
+        <div className={`mt-4 overflow-x-auto ${!formData.oneMonthOneSet ? "opacity-50 pointer-events-none" : ""}`}>
+        <button
+          onClick={addRow}
+          className="mt-2 flex items-center gap-1 px-3 py-1 border rounded bg-gray-100 hover:bg-gray-200 mb-4"
+          disabled={!formData.oneMonthOneSet}
+        >
+          <Plus size={16} />
+        </button>
+
+        <table className="w-full text-center border border-collapse">
+          <thead>
+            <tr className="bg-primary text-white">
+              <th className="border px-2 py-1">Year</th>
+              {months.map((m, i) => (
+                <th key={i} className="border px-2 py-1">{m}</th>
+              ))}
+              <th className="border px-2 py-1">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {formData.monthlyNumbers.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                <td className="p-1">
+                  <input
+                    type="number"
+                    value={row.year}
+                    onChange={(e) => updateYearValue(rowIndex, e.target.value)}
+                    className="w-[60px] px-1 text-center"
+                    disabled={!formData.oneMonthOneSet}
+                    onWheel={(e) => e.target.blur()}
+                  />
+                </td>
+                {row.months.map((value, monthIndex) => (
+                  <td key={monthIndex} className="p-1">
+                    <input
+                      type="number"
+                      min="0"
+                      className="w-[30px] px-1 text-center"
+                      value={value}
+                      onChange={(e) => updateMonthValue(rowIndex, monthIndex, e.target.value)}
+                      disabled={!formData.oneMonthOneSet}
+                      onWheel={(e) => e.target.blur()}
+                    />
+                  </td>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                <td className="border p-1">
+                  <button
+                    onClick={() => deleteRow(rowIndex)}
+                    className={`underline ${formData.oneMonthOneSet ? "text-blue-600" : "text-gray-400"}`}
+                    disabled={!formData.oneMonthOneSet}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
         <div className="mt-6 flex justify-end space-x-2">
         <button
