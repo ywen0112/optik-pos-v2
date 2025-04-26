@@ -2,7 +2,6 @@ import { useState } from "react";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
-import AddSupplierModal from "../../modals/MasterData/Supplier/AddSupplierModal";
 import NumberingFormatDataGrid from "../../Components/DataGrid/NumberingFormatDataGrid";
 import AddNumberingFormatModal from "../../modals/MasterData/NumberingFormat/AddNumberingFormatModal";
 
@@ -36,6 +35,8 @@ const NumberingFormat = () => {
     setTimeout(() => {
       if (action === "delete") {
         setFormats((prev) => prev.filter((f) => f.formatId !== deleteTarget));
+        console.log("Deleting formatId:", deleteTarget);
+        console.log("Current formats:", formats);
         setNotifyModal({ isOpen: true, message: "Numbering format deleted successfully!" });
       } else {
         if (formAction === "edit") {
@@ -45,7 +46,14 @@ const NumberingFormat = () => {
             )
           );
           setNotifyModal({ isOpen: true, message: "Numbering format updated successfully!" });
-        } 
+        } else {
+          const newFormat = {
+            ...selectedFormat,
+            formatId: Date.now().toString(), 
+          };
+          setFormats((prev) => [...prev, newFormat]);
+          setNotifyModal({ isOpen: true, message: "Numbering format added successfully!" });
+        }
         setSelectedFormat(null);
         setIsUpdateModelOpen(false);
       }
@@ -98,8 +106,15 @@ const NumberingFormat = () => {
         onError={setErrorModal}
         onClose={handleCloseUpdateModal}
       />
-   
-      <div className="mt-2 bg-white h-[50vh] rounded-lg shadow overflow-hidden">
+      {/* <div className="text-right p-2">
+        <button
+          className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition"
+          onClick={handleAddNew}
+        >
+          + New
+        </button>
+      </div> */}
+      <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
         <NumberingFormatDataGrid
           numberingFormatRecords={formats}
           className="p-2"

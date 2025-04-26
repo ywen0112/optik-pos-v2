@@ -57,6 +57,8 @@ const SalesOrder = () => {
     const [newCustomerName, setNewCustomerName] = useState("");
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
 
+    const [selectedItemTypeTitle, setSelectedItemTypeTitle] = useState("");
+
     const intervals = [
         { label: '1 mth', months: 1 },
         { label: '3 mth', months: 3 },
@@ -388,6 +390,49 @@ const SalesOrder = () => {
     const total = currentSalesTotal + parseFloat(rounding);
     const balance = total - parseFloat(securityDeposit || 0);     
 
+    const itemSource = [
+        {
+          itemId: "1",
+          itemCode: "N001",
+          description: "Regular Frame",
+          uom: "pcs",
+          price: 100.00,
+          isNormalItem: true,
+          isSpectacles: false,
+          isContactLenses: false
+        },
+        {
+          itemId: "2",
+          itemCode: "S001",
+          description: "Spectacle Lens",
+          uom: "pair",
+          price: 200.00,
+          isNormalItem: false,
+          isSpectacles: true,
+          isContactLenses: false
+        },
+        {
+          itemId: "3",
+          itemCode: "C001",
+          description: "Contact Lens - Monthly",
+          uom: "box",
+          price: 150.00,
+          isNormalItem: false,
+          isSpectacles: false,
+          isContactLenses: true
+        },
+        {
+          itemId: "4",
+          itemCode: "NSC001",
+          description: "Multifunctional Lens",
+          uom: "set",
+          price: 300.00,
+          isNormalItem: true,
+          isSpectacles: true,
+          isContactLenses: true
+        }
+      ];      
+
     return (
         <>
             <div className="grid grid-cols-2 gap-6">
@@ -601,7 +646,12 @@ const SalesOrder = () => {
             </div>
 
             <div className=" bg-white shadow rounded">
-                <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} />
+            <SalesOrderItemTable
+                data={SalesItemTableData}
+                onDataChange={handleSalesItemChange}
+                setSelectedItemTypeTitle={setSelectedItemTypeTitle}
+                itemSource={itemSource}
+                />           
             </div>
 
             <div className="mt-3 p-2 bg-white shadow rounded w-full">
@@ -696,9 +746,13 @@ const SalesOrder = () => {
                     </div>
                 </div>
 
-                <div className=" space-y-2">
-                    <div className="flex space-x-2">
-                        
+                <div className="space-y-2">
+                    <div className="text-center mt-2">
+                    {selectedItemTypeTitle && (
+                    <div className="text-secondary font-semibold px-2">
+                        {selectedItemTypeTitle}
+                    </div>
+                    )}
                     </div>
 
                     <div className="overflow-x-auto flex flex-row">

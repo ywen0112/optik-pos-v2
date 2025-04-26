@@ -689,7 +689,7 @@ const AddCustomerModal = ({
                             className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700"
                             onClick={handleClose}
                         >
-                            Close
+                            Cancel
                         </button>
                         <button
                             className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"

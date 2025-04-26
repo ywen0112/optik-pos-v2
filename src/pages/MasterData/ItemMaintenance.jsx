@@ -24,6 +24,7 @@ const ItemMaintenance = () => {
     const [deleteTarget, setDeleteTarget] = useState(null);
 
     const handleAddItem = async () => {
+        setLoading(true);
         try {
             const data = await NewItem({ companyId: companyId, userId: userId, id: userId });
             if (data.success) {
@@ -33,6 +34,8 @@ const ItemMaintenance = () => {
             } else throw new Error(data.errorMessage || "Failed to create new product.");
         } catch (error) {
             setErrorModal({ title: "New Product Error", message: error.message });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -42,18 +45,21 @@ const ItemMaintenance = () => {
     }
 
     const handleOpenModal = async (item, mode) => {
+        setLoading(true);
         if (mode === "edit") {
             try {
                 const data = await GetItem({ companyId: companyId, userId: userId, id: item.itemId });
                 if (data.success) {
                     setSelectedItem(data.data);
                     setFormAction("edit");
-                    setViewMode(false);
+                    setIsUpdateModelOpen(true);
                 } else {
                     throw new Error(data.errorMessage || "Failed to fetch item.");
                 }
             } catch (error) {
                 setErrorModal({ title: "Edit Error", message: error.message });
+            } finally {
+                setLoading(false);
             }
         } else {
             setSelectedItem(item);
@@ -147,12 +153,12 @@ const ItemMaintenance = () => {
             />
 
             <div className="text-right p-2">
-                <button className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition" onClick={handleAddItem}>
-                    Add Item
+                <button className="bg-secondary text-white px-4 py-2 rounded mb-2 hover:bg-secondary/90 transition" onClick={handleAddItem}>
+                    + New
                 </button>
             </div>
 
-            <div className="mt-2 bg-white h-[50vh] rounded-lg shadow overflow-hidden">
+            <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
                 {loading ? (
                     <p className="text-center py-4 text-gray-500">Loading...</p>
                 ) : (

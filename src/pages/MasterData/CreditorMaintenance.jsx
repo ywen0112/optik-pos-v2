@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
@@ -20,7 +20,6 @@ const CreditorMaintenance = () => {
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
 
-  const [creditors, setCreditors] = useState([]);
   const [selectedCreditor, setSelectedCreditor] = useState(null);
   const [formAction, setFormAction] = useState(null);
   const [isUpdateModelOpen, setIsUpdateModelOpen] = useState(false);
@@ -28,6 +27,7 @@ const CreditorMaintenance = () => {
   const [saving, setSaving] = useState(false);
 
   const handleAddNew = async () => {
+    setLoading(true);
     try {
       const data = await NewCreditor({companyId: companyId, userId: userId, id: userId});
       if (data.success) {
@@ -37,11 +37,14 @@ const CreditorMaintenance = () => {
       } else throw new Error(data.errorMessage || "Failed to create new supplier.");
     } catch (error) {
       setErrorModal({ title: "New Supplier Error", message: error.message });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleOpenModal = async (creditor, mode) => {
     if (mode === "edit") {
+      setLoading(true);
       try {
         const data = await GetCreditor({companyId: companyId, userId: userId, id: creditor.creditorId});
         if (data.success) {
@@ -51,6 +54,8 @@ const CreditorMaintenance = () => {
         } else throw new Error(data.errorMessage || "Failed to fetch supplier data");
       } catch (error) {
         setErrorModal({ title: "Edit Error", message: error.message });
+      } finally {
+        setLoading(false);
       }
     } else {
       setSelectedCreditor(creditor);
@@ -141,17 +146,16 @@ const CreditorMaintenance = () => {
       />
 
       <div className="text-right p-2">
-        <button className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition" onClick={handleAddNew}>
-          Add Supplier
+        <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2" onClick={handleAddNew}>
+          + New
         </button>
       </div>
 
-      <div className="mt-2 bg-white h-[50vh] rounded-lg shadow overflow-hidden">
+      <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
         {loading ? (
           <p className="text-center py-4 text-gray-500">Loading...</p>
         ) : (
           <SupplierDataGrid
-            supplierRecords={creditors}
             className={"p-2"}
             companyId={companyId}
             onError={setErrorModal}

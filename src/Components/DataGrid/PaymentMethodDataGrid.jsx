@@ -19,28 +19,32 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
     loadPaymentMethodData();
   }, [skip, take, keyword]);
 
-  useEffect(()=>{
+  useEffect(() => {
+    loadPaymentMethodData();
+  }, [onEdit, onDelete])
+
+  useEffect(() => {
     loadPaymentMethodData();
   }, [onEdit, onDelete]);
 
-  useEffect(() =>{
+  useEffect(() => {
     setSkip(0);
     setTake(10);
-  },[keyword]);
+  }, [keyword]);
 
   const loadPaymentMethodData = async () => {
     setLoading(true);
-    try{
-      const data = await GetPaymentMethodRecords({companyId: companyId, keyword: keyword, offset:skip, limit:take});
-      if(data.success){
-          const records = data.data || [];
-          const total = data.data.totalRecords || 0;
-          setMethod(records);
-        }else throw new Error(data.errorMessage || "Failed to fetch Payment Method.");
-     
-    }catch(error){
-      onError({title: "Fetch Error", message: error.Message});
-    }finally{
+    try {
+      const data = await GetPaymentMethodRecords({ companyId: companyId, keyword: keyword, offset: skip, limit: take });
+      if (data.success) {
+        const records = data.data || [];
+        const total = data.data.totalRecords || 0;
+        setMethod(records);
+      } else throw new Error(data.errorMessage || "Failed to fetch Payment Method.");
+
+    } catch (error) {
+      onError({ title: "Fetch Error", message: error.Message });
+    } finally {
       setLoading(false);
     }
   };
@@ -57,10 +61,11 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
       setSkip(skip);
       setTake(take);
     }
-    if(e.fullName === 'searchPanel.text'){
+
+    if (e.fullName === 'searchPanel.text') {
       const searchText = e.value;
       setKeyword(searchText);
-  }
+    }
   };
 
   return (
@@ -94,7 +99,7 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
               className="text-green-600 hover:cursor-pointer flex justify-center"
               onClick={(e) => {
                 e.stopPropagation();
-                
+
                 onEdit(cellData.data, "edit");
                 loadPaymentMethodData();
               }}
@@ -111,7 +116,7 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
               <TrashIcon size={20} />
             </div>
           </div>
-          
+
         )}
       />
     </StandardDataGridComponent>

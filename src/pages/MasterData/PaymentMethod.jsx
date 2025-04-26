@@ -131,13 +131,13 @@ const PaymentMethod = () => {
       />
       <div className="text-right p-2">
         <button
-          className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition"
+          className="bg-secondary text-white px-4 py-2 mb-2 rounded hover:bg-secondary/90 transition"
           onClick={handleAddNew}
         >
-          Add Payment Method
+          + New
         </button>
       </div>
-      <div className="mt-2 bg-white h-[50vh] rounded-lg shadow overflow-hidden">
+      <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
         <PaymentMethodDataGrid
           methodRecords={formats}
           className="p-2"

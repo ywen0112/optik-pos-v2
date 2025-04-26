@@ -12,12 +12,17 @@ const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
   const [loading, setLoading] = useState(false);
   const [skip, setSkip] = useState(0);
   const [take, setTake] = useState(10);
+  const [keyword, setKeyword] = useState("")
 
   const formatDataGridRef = useRef(null);
 
   useEffect(() => {
+loadFormats();
+  }, [skip, take, keyword]);
+
+  useEffect(() => {
     loadFormats();
-  }, []);
+}, [onEdit, onDelete ])
 
   const loadFormats = async () => {
     setLoading(true);
@@ -38,8 +43,12 @@ const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
       setSkip(skip);
       setTake(take);
     }
-  };
 
+    if(e.fullName === 'searchPanel.text'){
+      const searchText = e.value;
+      setKeyword(searchText);
+    }
+  }
   return (
     <StandardDataGridComponent
       ref={formatDataGridRef}
