@@ -60,6 +60,9 @@ const App = () => {
         <Route path="/location" element={isAuthenticated ? <MainLayout title="Location Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/numbering-format" element={isAuthenticated ? <MainLayout title="Numbering Format" /> : <Navigate to="/login" />} />
         <Route path="/payment-method" element={isAuthenticated ? <MainLayout title="Payment Method" /> : <Navigate to="/login" />} />
+        <Route path="/product-group" element={isAuthenticated ? <MainLayout title="Product Group Maintenance" /> : <Navigate to="/login" />} />
+        <Route path="/product-type" element={isAuthenticated ? <MainLayout title="Product Type Maintenance" /> : <Navigate to="/login" />} />
+
 
         <Route path="/item-opening" element={isAuthenticated ? <MainLayout title="Item Opening" /> : <Navigate to="/login" />} />
         <Route path="/user" element={isAuthenticated ? <MainLayout title="User Maintenance" /> : <Navigate to="/login" />} />
@@ -72,6 +75,7 @@ const App = () => {
         <Route path="/maintenances/member" element={isAuthenticated ? <MainLayout title="Member Maintenance" /> : <Navigate to="/login" />} />
         <Route path="/maintenances/pwp" element={isAuthenticated ? <MainLayout title="PWP Maintenance" /> : <Navigate to="/login" />} />
 
+      
         <Route path="/invite" element={<UserRegistrationPage /> } />
 
         {/* Catch-all Redirect */}

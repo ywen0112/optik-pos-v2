@@ -86,12 +86,12 @@ const AddNumberingFormatModal = ({
             />
           </div>
 
-          <div className="col-span-4 mt-2">
+          <div className="col-span-2 mt-2">
             <label className="block mb-2">Next Number</label>
             <input
               type="number"
               min="0"
-              className="mr-2 border w-1/2 h-[40px] px-2"
+              className="mr-2 border w-full h-[40px] px-2"
               value={formData.nextNo}
               onChange={(e) =>
                 setFormData({ ...formData, nextNo: e.target.value })
@@ -111,17 +111,6 @@ const AddNumberingFormatModal = ({
             />
             <label className="block mb-2 text-gray-400">CS-&lt;@yymm&gt;-&lt;000&gt;</label>
             </div>
-
-          <div className="col-span-2 mt-2">
-            <label className="block mb-2">Sample</label>
-            <input
-              type="text"
-              className="mr-2 border w-full h-[40px] px-2 bg-gray-200"
-              value={formData.sample}
-              readOnly
-            />
-            <label className="block mb-2 text-gray-400">CS-2504-001&gt;</label>
-          </div>
 
           <div className="col-span-4 mt-2">
               <div className="flex items-center space-x-2">

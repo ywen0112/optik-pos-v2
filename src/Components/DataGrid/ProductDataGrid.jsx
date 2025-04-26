@@ -26,29 +26,29 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
         setTake(10)
     }, [keyword])
 
-    const fetchItem = async () =>{
+    const fetchItem = async () => {
         setLoading(true);
 
-        try{
-            const data = await GetItemsRecords({companyId:companyId, keyword: keyword, offset:skip, limit:take});
-            if(data.success){
+        try {
+            const data = await GetItemsRecords({ companyId: companyId, keyword: keyword, offset: skip, limit: take });
+            if (data.success) {
                 const records = data.data || [];
                 const total = data.data.totalRecords || 0;
 
                 setItem(records);
-            }else throw new Error(data.errorMessage || "Failed to fetch Products.");
-        }catch(error){
-            onError({title: "Fetch Error", message: error.message});
-        } finally{
+            } else throw new Error(data.errorMessage || "Failed to fetch Products.");
+        } catch (error) {
+            onError({ title: "Fetch Error", message: error.message });
+        } finally {
             setLoading(false);
         }
     }
-    const handlePagerChange = (e) =>{
+    const handlePagerChange = (e) => {
         if (e.fullName === 'paging.pageSize' || e.fullName === 'paging.pageIndex') {
             const gridInstance = supplierDataGridRef.current.instance;
-      
+
             const pageSize = gridInstance.pageSize();
-            const pageIndex = gridInstance.pageIndex(); 
+            const pageIndex = gridInstance.pageIndex();
             const skip = pageIndex * pageSize;
             const take = pageSize;
 
@@ -56,7 +56,7 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
             setTake(take);
         }
 
-        if(e.fullName === 'searchPanel.text'){
+        if (e.fullName === 'searchPanel.text') {
             const searchText = e.value;
             setKeyword(searchText);
         }
@@ -77,7 +77,7 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
             allowColumnReordering={false}
             allowEditing={true}
             onLoading={loading}
-            onOptionChanged={handlePagerChange}            
+            onOptionChanged={handlePagerChange}
         >
             <Column
                 caption="Product Code"
@@ -89,44 +89,21 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
                 dataField="description"
             />
             <Column
-                caption="Description"
-                dataField="desc2"
-            />
-            <Column
                 caption="UOM"
                 dataField="UOM"
             />
             <Column
-                caption="Price"
-                dataField="price"
+                dataField="itemTypeCode"
+                caption="Product Type"
             />
             <Column
-                caption="Min Price"
-                dataField="minPrice"
-            />
-            <Column
-                caption="Cost"
-                dataField="cost"
-            />
-            <Column
-                caption="Barcode"
-                dataField="barcode"
-            />
-            <Column
-                caption="Has Commission"
-                dataField="hasCommision"
-            />
-            <Column
-                caption="Commission Type"
-                dataField="commisionType"
-            />
-            <Column
-                dataField="Commission Value"
-                caption="Commission Value"
-            />
-            <Column
-                dataField="productGroup"
+                dataField="itemGroupCode"
                 caption="Product Group"
+            />
+
+            <Column
+                caption="Bal"
+                dataField=""
             />
 
             <Column
@@ -134,10 +111,7 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
                 dataField="isActive"
                 dataType="boolean"
             />
-            <Column
-                caption="Remark"
-                dataField="remark"
-            />
+
             <Column
                 caption="Action"
                 width={"10%"}

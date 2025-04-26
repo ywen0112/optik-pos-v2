@@ -2,40 +2,47 @@ import { useEffect, useState, useRef } from "react";
 import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 import StandardDataGridComponent from "../BaseDataGrid";
+import { GetPaymentMethodRecords } from "../../api/maintenanceapi";
 
 const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
+  const companyId = sessionStorage.getItem("companyId");
+  const userId = sessionStorage.getItem("userId");
   const [method, setMethod] = useState([]);
   const [loading, setLoading] = useState(false);
   const [skip, setSkip] = useState(0);
   const [take, setTake] = useState(10);
+  const [keyword, setKeyword] = useState("");
 
   const methodDataGridRef = useRef(null);
 
   useEffect(() => {
-    loadDummyData();
-  }, []);
+    loadPaymentMethodData();
+  }, [skip, take, keyword]);
 
-  const loadDummyData = () => {
+  useEffect(()=>{
+    loadPaymentMethodData();
+  }, [onEdit, onDelete]);
+
+  useEffect(() =>{
+    setSkip(0);
+    setTake(10);
+  },[keyword]);
+
+  const loadPaymentMethodData = async () => {
     setLoading(true);
-
-    setTimeout(() => {
-      const dummy = [
-        {
-        methodId: "1",
-        isActive: true,
-        paymentMethod: "CASH",
-        paymentMethodType: "Cash"
-        },
-        {
-        methodId: "2",
-        isActive: true,
-        paymentMethod: "CARD",
-        paymentMethodType: "Card"
-        }
-      ];
-      setMethod(dummy);
+    try{
+      const data = await GetPaymentMethodRecords({companyId: companyId, keyword: keyword, offset:skip, limit:take});
+      if(data.success){
+          const records = data.data || [];
+          const total = data.data.totalRecords || 0;
+          setMethod(records);
+        }else throw new Error(data.errorMessage || "Failed to fetch Payment Method.");
+     
+    }catch(error){
+      onError({title: "Fetch Error", message: error.Message});
+    }finally{
       setLoading(false);
-    }, 300); // simulate async load
+    }
   };
 
   const handlePagerChange = (e) => {
@@ -50,6 +57,10 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
       setSkip(skip);
       setTake(take);
     }
+    if(e.fullName === 'searchPanel.text'){
+      const searchText = e.value;
+      setKeyword(searchText);
+  }
   };
 
   return (
@@ -69,9 +80,8 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
       onLoading={loading}
       onOptionChanged={handlePagerChange}
     >
-      <Column dataField="paymentMethod" caption="Payment Method" allowEditing={false} width={"20%"} />
-      <Column dataField="paymentMethodType" caption="Payment Method Type" width={"50%"} />
-      <Column dataField="isActive" caption="Active" dataType="boolean" width={"20%"} />
+      <Column dataField="paymentMethodCode" caption="Payment Method" allowEditing={false} width={"20%"} />
+      <Column dataField="paymentType" caption="Payment Method Type" width={"50%"} />
       <Column
         caption="Action"
         width={"150px"}
@@ -84,7 +94,9 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
               className="text-green-600 hover:cursor-pointer flex justify-center"
               onClick={(e) => {
                 e.stopPropagation();
+                
                 onEdit(cellData.data, "edit");
+                loadPaymentMethodData();
               }}
             >
               <Pencil size={20} />
@@ -93,7 +105,7 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
               className="text-red-600 hover:cursor-pointer flex justify-center"
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete(cellData.data.id);
+                onDelete(cellData.data.paymentMethodId);
               }}
             >
               <TrashIcon size={20} />

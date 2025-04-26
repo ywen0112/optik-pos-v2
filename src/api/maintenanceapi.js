@@ -51,6 +51,11 @@ const editPaymentMethod = `${ApiBaseUrl}PaymentMethod/Edit`;
 const savePaymentMethod = `${ApiBaseUrl}PaymentMethod/Save`;
 const deletePaymentMethod = `${ApiBaseUrl}PaymentMethod/Delete`;
 
+//DocNoFormat
+const getDocNoFormat = `${ApiBaseUrl}DocNoFormat/Get`;
+const newDocNoFormatByYear = `${ApiBaseUrl}DocNoFormat/New`;
+const saveDocNoFormat = `${ApiBaseUrl}DocNoFormat/Save`;
+
 export const GetCreditorRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
@@ -468,3 +473,28 @@ export const DeletePaymentMethod = ({companyId, userId, id}) =>{
 
     return postRequest(deletePaymentMethod, body);
 };
+
+export const GetDocNoRecords = ({companyId, userId, id}) =>{
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        id,
+    });
+
+    return postRequest(getDocNoFormat, body);
+};
+
+export const GetMonthlyNo = () =>{
+    const body = JSON.stringify({});
+
+    return postRequest(newDocNoFormatByYear, body);
+};
+
+export const  SaveDocNoFormat = ({actionData, docNoFormats}) =>{
+    const body = JSON.stringify({
+        actionData,
+        docNoFormats,
+    });
+
+    return postRequest(saveDocNoFormat, body);
+}

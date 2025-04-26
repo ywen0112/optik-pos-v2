@@ -26,7 +26,6 @@ const ItemMaintenance = () => {
     const handleAddItem = async () => {
         try {
             const data = await NewItem({ companyId: companyId, userId: userId, id: userId });
-            console.log(data.data)
             if (data.success) {
                 setSelectedItem(data.data);
                 setFormAction("add");
@@ -72,7 +71,6 @@ const ItemMaintenance = () => {
         setConfirmModal({ isOpen: false, action: null });
 
         try {
-            console.log(data)
             if (action === "add" || action === "edit") {
                 const actionData = {
                     companyId: companyId,

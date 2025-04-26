@@ -9,10 +9,9 @@ import DataGrid, {
 import { X } from 'lucide-react';
 
 const paymentTypeOptions = [
-  { id: 1, name: "Cash" },
-  { id: 2, name: "Card" },
-  { id: 3, name: "Bank" },
-  { id: 4, name: "Ewallet" }
+  { name: "Cash" },
+  { name: "Credit Card" },
+  { name: "E-Wallet" }
 ];
 
 const AddPaymentModal = ({
@@ -23,20 +22,15 @@ const AddPaymentModal = ({
   onClose,
   onError
 }) => {
-  const [paymentData, setPaymentData] = useState({
-    isActive: true,
-    paymentMethod: "",
-    paymentMenthodType: paymentTypeOptions[0], 
-  });
-
+  const companyId = sessionStorage.getItem("companyId");
+  const userId = sessionStorage.getItem("userId");
+  const [paymentData, setPaymentData] = useState({});
   const [isTypeBoxOpened, setIsTypeBoxOpened] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setPaymentData(
-        isEdit && selectedPayment
-          ? selectedPayment
-          : { isActive: true, paymentMethod: "", paymentMenthodType: paymentTypeOptions[0] }
+        selectedPayment
       );
     }
   }, [isOpen, isEdit, selectedPayment]);
@@ -44,7 +38,7 @@ const AddPaymentModal = ({
   const handleTypeSelection = useCallback((e) => {
     const selected = e.selectedRowsData?.[0];
     if (selected) {
-      setPaymentData({ ...paymentData, paymentMenthodType: selected });
+      setPaymentData({ ...paymentData, paymentType: selected.name });
       setIsTypeBoxOpened(false);
     }
   }, [paymentData]);
@@ -52,10 +46,9 @@ const AddPaymentModal = ({
   const PaymentTypeGridRender = useCallback(() => (
     <DataGrid
       dataSource={paymentTypeOptions}
-      keyExpr="id"
+      keyExpr="name"
       showBorders={false}
       hoverStateEnabled
-      selectedRowKeys={[paymentData.paymentMenthodType?.id]}
       onSelectionChanged={handleTypeSelection}
       height="100%"
     >
@@ -64,7 +57,7 @@ const AddPaymentModal = ({
       <Paging enabled pageSize={5} />
       <SearchPanel visible highlightSearchText />
     </DataGrid>
-  ), [paymentData.type, handleTypeSelection]);
+  ), [paymentData, handleTypeSelection]);
 
   if (!isOpen) return null;
 
@@ -82,15 +75,15 @@ const AddPaymentModal = ({
 
         <div className="grid grid-cols-2 gap-1">
             <div className="col-span-2 mt-2">
-              <div className="flex items-center space-x-2">
-                <input
+              <div className="flex justify-end items-center space-x-2">
+                {/* <input
                 type="checkbox"
                 checked={paymentData.isActive}
                 onChange={(e) =>
                   setPaymentData({ ...paymentData, isActive: e.target.checked })
                 }
                 />
-                <label>isActive</label>
+                <label>isActive</label> */}
               </div>
 
               {/* Payment Method and DropDown Grid */}
@@ -98,9 +91,9 @@ const AddPaymentModal = ({
                 <label className="block mb-2">Payment Method</label>
                 <input
                   type="text"
-                  value={paymentData.paymentMethod}
+                  value={paymentData?.paymentMethodCode}
                   onChange={(e) =>
-                    setPaymentData({ ...paymentData, paymentMethod: e.target.value })
+                    setPaymentData({ ...paymentData, paymentMethodCode: e.target.value })
                   }
                   placeholder="Payment Method"
                   className="mr-2 border w-1/2 h-[40px] px-2"
@@ -110,9 +103,11 @@ const AddPaymentModal = ({
               <div className="col-span-1 mt-2">
                 <label className="block mb-2">Payment Method Type</label>
                 <DropDownBox
-                  value={paymentData.paymentMenthodType?.name}
+                  id="PaymentMethodTypeSelection"
+                  value={paymentData?.paymentType}
                   displayExpr="name"
-                  valueExpr="id"
+                  valueExpr="name"
+                  dataSource={paymentTypeOptions}
                   opened={isTypeBoxOpened}
                   onOptionChanged={(e) => {
                     if (e.name === "opened") {
@@ -136,17 +131,22 @@ const AddPaymentModal = ({
             <button
                 className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
                 onClick={() => {
-                if (!paymentData.paymentMenthodType.trim()) {    
+                if (!paymentData.paymentType.trim()) {    
                     onError({
                     title: "Validation Error",
                     message: "Payment Method Type is required.",
                     });
                     return;
                 }
+                const actionData = {
+                  companyId: companyId,
+                  userId: userId,
+                  id: paymentData.paymentMethodId,
+                };
                 onConfirm({
                     isOpen: true,
                     action: isEdit ? "edit" : "add",
-                    data: paymentData,
+                    data: isEdit ? {...paymentData, actionData} : paymentData,
                 });
                 }}
             >

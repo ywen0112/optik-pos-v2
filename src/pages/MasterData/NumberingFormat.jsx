@@ -17,20 +17,6 @@ const NumberingFormat = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const handleAddNew = () => {
-    setSelectedFormat({
-        isDefault: true,
-        name: "",
-        docType: "",
-        nextNo: "",
-        numberingFormat: "",
-        sample: "",
-        oneMonthOneSet: false,
-    });
-    setFormAction("add");
-    setIsUpdateModelOpen(true);
-  };
-
   const handleOpenModal = (format, mode) => {
     setSelectedFormat(format);
     setFormAction(mode);
@@ -59,14 +45,7 @@ const NumberingFormat = () => {
             )
           );
           setNotifyModal({ isOpen: true, message: "Numbering format updated successfully!" });
-        } else {
-          const newFormat = {
-            ...selectedFormat,
-            formatId: Date.now().toString(), // mock ID
-          };
-          setFormats((prev) => [...prev, newFormat]);
-          setNotifyModal({ isOpen: true, message: "Numbering format added successfully!" });
-        }
+        } 
         setSelectedFormat(null);
         setIsUpdateModelOpen(false);
       }
@@ -119,14 +98,7 @@ const NumberingFormat = () => {
         onError={setErrorModal}
         onClose={handleCloseUpdateModal}
       />
-      <div className="text-right p-2">
-        <button
-          className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition"
-          onClick={handleAddNew}
-        >
-          Add Numbering Format
-        </button>
-      </div>
+   
       <div className="mt-2 bg-white h-[50vh] rounded-lg shadow overflow-hidden">
         <NumberingFormatDataGrid
           numberingFormatRecords={formats}

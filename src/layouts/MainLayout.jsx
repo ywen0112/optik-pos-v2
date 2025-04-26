@@ -93,6 +93,8 @@ const MainLayout = ({ title }) => {
         return <ProductInquiry />
       case "/numbering-format":
         return <NumberingFormat />
+      // case "/product-group":
+      //   return <NumberingFormat/>
       default:
         return <Dashboard />;
     }

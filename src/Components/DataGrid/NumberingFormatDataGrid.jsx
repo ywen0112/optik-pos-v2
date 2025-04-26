@@ -2,8 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 import StandardDataGridComponent from "../BaseDataGrid";
+import { GetDocNoRecords } from "../../api/maintenanceapi";
+
 
 const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
+  const companyId = sessionStorage.getItem("companyId");
+  const userId = sessionStorage.getItem("userId");
   const [format, setFormat] = useState([]);
   const [loading, setLoading] = useState(false);
   const [skip, setSkip] = useState(0);
@@ -12,38 +16,14 @@ const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
   const formatDataGridRef = useRef(null);
 
   useEffect(() => {
-    loadDummyData();
+    loadFormats();
   }, []);
 
-  const loadDummyData = () => {
+  const loadFormats = async () => {
     setLoading(true);
-
-    setTimeout(() => {
-      const dummy = [
-        {
-        formatId: "1",
-        docType: "Cash Sale",
-        name: "HQ Default",
-        nextNo: "1",
-        numberingFormat: "CS-<000000>",
-        oneMonthOneSet: false,
-        sample: "CS-<000001>",
-        isDefault: true
-        },
-        {
-        formatId: "2",
-        docType: "Cash Sale",
-        name: "HQ Secondary",
-        nextNo: "2",
-        numberingFormat: "CS-<000000>",
-        oneMonthOneSet: true,
-        sample: "CS-<000002>",
-        isDefault: true,
-        }
-      ];
-      setFormat(dummy);
-      setLoading(false);
-    }, 300); // simulate async load
+    const data = await GetDocNoRecords({companyId: companyId, userId: userId, id: userId});
+    setFormat(data.data.docNoFormats);
+    setLoading(false);
   };
 
   const handlePagerChange = (e) => {
@@ -100,15 +80,7 @@ const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
             >
               <Pencil size={20} />
             </div>
-            <div
-              className="text-red-600 hover:cursor-pointer flex justify-center"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(cellData.data.id);
-              }}
-            >
-              <TrashIcon size={20} />
-            </div>
+            
           </div>
         )}
       />
