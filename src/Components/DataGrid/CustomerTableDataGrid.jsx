@@ -1,72 +1,41 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 
 import StandardDataGridComponent from "../BaseDataGrid";
 import { GetDebtorRecords } from "../../api/maintenanceapi";
+import CustomStore from "devextreme/data/custom_store";
 
 
 const CustomerTableDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
-    const [customer, setCustomer] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [skip, setSkip] = useState(0)
-    const [take, setTake] = useState(10)
-    const [searchKeyword, setSearchKeywordText] = useState("")
-
     const customerDataGridRef = useRef(null);
+    const customerStore = new CustomStore({
+        key: "debtorId",
+            load: async (loadOptions) => {
+              const skip = loadOptions.skip ?? 0;
+              const take = loadOptions.take ?? 10;
+              const keyword = loadOptions.searchValue || "";
+        
+              try {
+                const data = await GetDebtorRecords({ companyId, offset: skip, limit: take, keyword });
+                return {
+                  data: data.data || [],
+                  totalCount: data.totalRecords || 0
+                };
+              } catch (error) {
+                onError({ title: "Fetch Error", message: error.message });
+                return { data: [], totalCount: 0 };
+              } 
+            }
+    })
 
-    useEffect(() => {
-        fetchCustomers({skip: skip, take:take, keyword:searchKeyword});
-    }, [skip, take, searchKeyword])
 
-    useEffect(() => {
-        setSkip(0);
-        setTake(10);
-    }, [searchKeyword]);
-
-    const fetchCustomers = async ({skip, take, keyword}) => {
-        setLoading(true);
-    
-        try {
-          
-          const data = await GetDebtorRecords({companyId: companyId, keyword: keyword, offset: skip, limit: take});
-          if (data.success) {
-          const records = data.data || [];
-        //   const total = data.data.totalRecords || 0;
-    
-          setCustomer(records);
-          
-          } else throw new Error(data.errorMessage || "Failed to fetch customers.");
-        } catch (error) {
-            onError({ title: "Fetch Error", message: error.message });
-        } finally {
-          setLoading(false);
-        }
-      };
-    
-    const handlePagerChange = (e) =>{
-        if (e.fullName === 'paging.pageSize' || e.fullName === 'paging.pageIndex') {
-            const gridInstance = customerDataGridRef.current.instance;
-      
-            const pageSize = gridInstance.pageSize();
-            const pageIndex = gridInstance.pageIndex(); 
-            const skip = pageIndex * pageSize;
-            const take = pageSize;
-
-            setSkip(skip);
-            setTake(take);
-          }
-
-        if(e.fullName === 'searchPanel.text'){
-            const searchText = e.value;
-            setSearchKeywordText(searchText);
-        }
-    }
     return (
         <StandardDataGridComponent
             ref={customerDataGridRef}
             height={"100%"}
-            dataSource={customer}
+            dataSource={customerStore}
             className={className}
             searchPanel={true}
             pager={true}
@@ -77,13 +46,13 @@ const CustomerTableDataGrid = ({className, companyId, onError, onDelete, onEdit}
             allowColumnReordering={false}
             allowEditing={true}
             onLoading={loading}
-            onOptionChanged={handlePagerChange}            
+            remoteOperations={{ paging: true, filtering: true, sorting: true }}            
         >
             <Column
                 dataField="debtorCode"
                 caption="Customer Code"
                 allowEditing={false}
-                width={"10%"}
+                width={"15%"}
             />
             <Column
                 dataField="companyName"
@@ -125,7 +94,7 @@ const CustomerTableDataGrid = ({className, companyId, onError, onDelete, onEdit}
                             <div className=" text-red-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
                                     e.stopPropagation(); // prevent row click event (select)
-                                    onDelete(cellData.data.id);
+                                    onDelete(cellData.data.debtorId);
                                 }}>
                                 <TrashIcon size={20} />
                             </div>
