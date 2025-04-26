@@ -15,7 +15,7 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
         load: async (loadOptions) => {
             const skip = loadOptions.skip ?? 0;
             const take = loadOptions.take ?? 10;
-            const keyword = loadOptions.searchValue || "";
+            const keyword = loadOptions.filter?.[2][2] || "";
 
             try {
                 const data = await GetItemsRecords({ companyId, offset: skip, limit: take, keyword });

@@ -16,7 +16,7 @@ const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
             load: async (loadOptions) => {
               const skip = loadOptions.skip ?? 0;
               const take = loadOptions.take ?? 10;
-              const keyword = loadOptions.searchValue || "";
+              const keyword = loadOptions.filter?.[2][2] || "";
         
               try {
                 const data = await GetDebtorRecords({ companyId, offset: skip, limit: take, keyword });
@@ -31,25 +31,6 @@ const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
             }
     })
 
-    const customerStore = new CustomStore({
-        key: "debtorId",
-        load: async (loadOptions) => {
-            const skip = loadOptions.skip ?? 0;
-            const take = loadOptions.take ?? 10;
-            const keyword = loadOptions.searchValue || "";
-
-            try {
-                const data = await GetDebtorRecords({ companyId, offset: skip, limit: take, keyword });
-                return {
-                    data: data.data || [],
-                    totalCount: data.totalRecords || 0
-                };
-            } catch (error) {
-                onError({ title: "Fetch Error", message: error.message });
-                return { data: [], totalCount: 0 };
-            }
-        }
-    })
 
     return (
         <StandardDataGridComponent

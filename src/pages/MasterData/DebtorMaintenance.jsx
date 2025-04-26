@@ -1,9 +1,5 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import {
-  SaveDebtor,
-  DeleteDebtor
-} from "../../api/apiconfig";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
