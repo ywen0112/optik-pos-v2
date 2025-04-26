@@ -9,19 +9,17 @@ import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import CustomerTableDataGrid from "../../Components/DataGrid/CustomerTableDataGrid";
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
-import { GetDebtor, NewDebtor } from "../../api/maintenanceapi";
+import { GetDebtor, NewDebtor, SaveDebtor, DeleteDebtor } from "../../api/maintenanceapi";
 
 const DebtorMaintenance = () => {
   const companyId = sessionStorage.getItem("companyId");
   const userId = sessionStorage.getItem("userId");
-  const locationId = sessionStorage.getItem("locationId");
 
   const [loading, setLoading] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
 
-  const [debtors, setDebtors] = useState([]);
   const [selectedDebtor, setSelectedDebtor] = useState(null);
   const [formAction, setFormAction] = useState(null);
   const [isUpdateModelOpen, setIsUpdateModelOpen] = useState(false);
@@ -29,8 +27,8 @@ const DebtorMaintenance = () => {
   const [saving, setSaving] = useState(false);
 
   const handleAddNew = async () => {
+    setLoading(true);
     try {
-      
       const data = await NewDebtor({companyId: companyId, userId: userId, id: userId});
       if (data.success) {
         setSelectedDebtor(data.data);
@@ -39,14 +37,16 @@ const DebtorMaintenance = () => {
       } else throw new Error(data.errorMessage || "Failed to create new customer.");
     } catch (error) {
       setErrorModal({ title: "New Customer Error", message: error.message });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleOpenModal = async (debtor, mode) => {
     if (mode === "edit") {
+      setLoading(true);
       try {
-        
-        const data = await GetDebtor({companyId:companyId, userId:userId, id:debtor.debtorId});
+        const data = await GetDebtor({companyId: companyId, userId: userId, id: debtor.debtorId});
         if (data.success) {
           setSelectedDebtor(data.data);
           setFormAction("edit");
@@ -54,6 +54,8 @@ const DebtorMaintenance = () => {
         } else throw new Error(data.errorMessage || "Failed to fetch debtor data");
       } catch (error) {
         setErrorModal({ title: "Edit Error", message: error.message });
+      } finally {
+        setLoading(false);
       }
     } else {
       setSelectedDebtor(debtor);
@@ -66,67 +68,48 @@ const DebtorMaintenance = () => {
     setConfirmModal({ isOpen: true, action: "delete" });
   };
 
-  const confirmAction = async () => {
+  const confirmAction = async ({action, data}) => {
     setSaving(true);
-    const action = confirmModal.action;
     setConfirmModal({ isOpen: false, action: null });
 
     try {
       if (action === "delete") {
-        const res = await fetch(DeleteDebtor, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ customerId: Number(customerId), userId, locationId, id: deleteTarget })
-        });
-        const data = await res.json();
+        const data = await DeleteDebtor({companyId: companyId, userId: userId, id: deleteTarget})
         if (data.success) {
           setNotifyModal({ isOpen: true, message: "Customer deleted successfully!" });
-          // fetchLocations();
         } else throw new Error(data.errorMessage || "Failed to delete customer.");
       } else {
-        const res = await fetch(SaveDebtor, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            actionData: {
-              customerId: Number(customerId),
-              userId,
-              locationId,
-              id: selectedDebtor.debtorId || ""
-            },
-            debtorId: selectedDebtor.debtorId,
-            debtorCode: selectedDebtor.debtorCode || "",
-            companyName: selectedDebtor.companyName || "",
-            debtorTypeId: selectedDebtor.debtorTypeId || "",
-            isActive: !!selectedDebtor.isActive,
-            address1: selectedDebtor.address1 || "",
-            address2: selectedDebtor.address2 || "",
-            address3: selectedDebtor.address3 || "",
-            address4: selectedDebtor.address4 || "",
-            postCode: selectedDebtor.postCode || "",
-            phone1: selectedDebtor.phone1 || "",
-            phone2: selectedDebtor.phone2 || "",
-            mobile: selectedDebtor.mobile || "",
-            medicalIsDiabetes: !!selectedDebtor.medicalIsDiabetes,
-            medicalIsHypertension: !!selectedDebtor.medicalIsHypertension,
-            medicalOthers: selectedDebtor.medicalOthers || "",
-            ocularIsSquint: !!selectedDebtor.ocularIsSquint,
-            ocularIsLazyEye: !!selectedDebtor.ocularIsLazyEye,
-            ocularHasSurgery: !!selectedDebtor.ocularHasSurgery,
-            ocularOthers: selectedDebtor.ocularOthers || ""
-          })
+        const saveRes = await SaveDebtor ({
+          actionData: data.actionData,
+          debtorId: data.debtorId,
+          debtorCode: data.debtorCode,
+          companyName: data.companyName,
+          isActive: data.isActive,
+          identityNo: data.identityNo,
+          dob: data.dob || null,
+          address: data.address,
+          remark: data.remark,
+          phone1: data.phone1,
+          phone2: data.phone2,
+          emailAddress: data.emailAddress,
+          medicalIsDiabetes: data.medicalIsDiabetes,
+          medicalIsHypertension: data.medicalIsHypertension,
+          medicalOthers: data.medicalOthers,
+          ocularIsSquint: data.ocularIsSquint,
+          ocularIsLazyEye: data.ocularIsLazyEye,
+          ocularHasSurgery: data.ocularHasSurgery,
+          ocularOthers: data.ocularOthers,
         });
-        const data = await res.json();
-        if (data.success) {
+        if (saveRes.success) {
           setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
           setSelectedDebtor(null);
-          // fetchLocations();
-        } else throw new Error(data.errorMessage || "Failed to save customer.");
+        } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
       }
     } catch (error) {
       setErrorModal({ title: `${action === "delete" ? "Delete" : "Save"} Error`, message: error.message });
     } finally {
       setSaving(false);
+      setIsUpdateModelOpen(false);
     }
   };
 
@@ -156,7 +139,7 @@ const DebtorMaintenance = () => {
         title={confirmationTitleMap[confirmModal.action]}
         message={confirmationMessageMap[confirmModal.action]}
         loading={saving}
-        onConfirm={confirmAction}
+        onConfirm={() => confirmAction({action: confirmModal.action})}
         onCancel={() => setConfirmModal({ isOpen: false, action: null })}
       />
 
@@ -167,6 +150,8 @@ const DebtorMaintenance = () => {
         onConfirm={confirmAction}
         onError={setErrorModal}
         onClose={handleCloseUpdateModal}
+        companyId={companyId}
+        userId={userId}
       />
 
       <div className="text-right p-2">
@@ -178,7 +163,6 @@ const DebtorMaintenance = () => {
       <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
       
           <CustomerTableDataGrid
-            vustomerRecords={debtors}
             className={"p-2"}
             companyId={companyId}
             onError={setErrorModal}

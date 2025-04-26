@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 
@@ -11,6 +11,25 @@ const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
     const [loading, setLoading] = useState(false);
 
     const customerDataGridRef = useRef(null);
+    const customerStore = new CustomStore({
+        key: "debtorId",
+            load: async (loadOptions) => {
+              const skip = loadOptions.skip ?? 0;
+              const take = loadOptions.take ?? 10;
+              const keyword = loadOptions.searchValue || "";
+        
+              try {
+                const data = await GetDebtorRecords({ companyId, offset: skip, limit: take, keyword });
+                return {
+                  data: data.data || [],
+                  totalCount: data.totalRecords || 0
+                };
+              } catch (error) {
+                onError({ title: "Fetch Error", message: error.message });
+                return { data: [], totalCount: 0 };
+              } 
+            }
+    })
 
     const customerStore = new CustomStore({
         key: "debtorId",
@@ -53,7 +72,7 @@ const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
                 dataField="debtorCode"
                 caption="Customer Code"
                 allowEditing={false}
-                width={"10%"}
+                width={"15%"}
             />
             <Column
                 dataField="companyName"
@@ -95,7 +114,7 @@ const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
                             <div className=" text-red-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
                                     e.stopPropagation(); // prevent row click event (select)
-                                    onDelete(cellData.data.id);
+                                    onDelete(cellData.data.debtorId);
                                 }}>
                                 <TrashIcon size={20} />
                             </div>
