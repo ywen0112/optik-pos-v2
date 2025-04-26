@@ -1,72 +1,40 @@
-import StandardDataGridComponent from "../BaseDataGrid";
+import StandardDataGridComponent from "../../BaseDataGrid";
 import { Column } from "devextreme-react/cjs/data-grid";
 import { Eye, TrashIcon, Pencil } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
-import { GetItemsRecords } from "../../api/maintenanceapi";
+import { GetItemsRecords } from "../../../api/maintenanceapi";
+import CustomStore from "devextreme/data/custom_store";
 
 const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) => {
-    const [item, setItem] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [skip, setSkip] = useState(0)
-    const [take, setTake] = useState(10)
-    const [keyword, setKeyword] = useState("")
 
     const itemDataGridRef = useRef(null);
 
-    useEffect(() => {
-        fetchItem();
-    }, [skip, take, keyword])
+    const itemStore = new CustomStore({
+        key: "itemId",
+        load: async (loadOptions) => {
+            const skip = loadOptions.skip ?? 0;
+            const take = loadOptions.take ?? 10;
+            const keyword = loadOptions.searchValue || "";
 
-    useEffect(() => {
-        fetchItem();
-    }, [onEdit, onDelete])
-
-    useEffect(() => {
-        setSkip(0)
-        setTake(10)
-    }, [keyword])
-
-    const fetchItem = async () => {
-        setLoading(true);
-
-        try {
-            const data = await GetItemsRecords({ companyId: companyId, keyword: keyword, offset: skip, limit: take });
-            if (data.success) {
-                const records = data.data || [];
-                const total = data.data.totalRecords || 0;
-
-                setItem(records);
-            } else throw new Error(data.errorMessage || "Failed to fetch Products.");
-        } catch (error) {
-            onError({ title: "Fetch Error", message: error.message });
-        } finally {
-            setLoading(false);
+            try {
+                const data = await GetItemsRecords({ companyId, offset: skip, limit: take, keyword });
+                return {
+                    data: data.data || [],
+                    totalCount: data.totalRecords || 0
+                };
+            } catch (error) {
+                onError({ title: "Fetch Error", message: error.message });
+                return { data: [], totalCount: 0 };
+            }
         }
-    }
-    const handlePagerChange = (e) => {
-        if (e.fullName === 'paging.pageSize' || e.fullName === 'paging.pageIndex') {
-            const gridInstance = supplierDataGridRef.current.instance;
-
-            const pageSize = gridInstance.pageSize();
-            const pageIndex = gridInstance.pageIndex();
-            const skip = pageIndex * pageSize;
-            const take = pageSize;
-
-            setSkip(skip);
-            setTake(take);
-        }
-
-        if (e.fullName === 'searchPanel.text') {
-            const searchText = e.value;
-            setKeyword(searchText);
-        }
-    }
+    })
 
     return (
         <StandardDataGridComponent
             ref={itemDataGridRef}
             height={"100%"}
-            dataSource={item}
+            dataSource={itemStore}
             className={className}
             searchPanel={true}
             pager={true}
@@ -77,7 +45,7 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
             allowColumnReordering={false}
             allowEditing={true}
             onLoading={loading}
-            onOptionChanged={handlePagerChange}
+            remoteOperations={{ paging: true, filtering: true, sorting: true }}
         >
             <Column
                 caption="Product Code"
@@ -88,10 +56,10 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
                 caption="Product Name"
                 dataField="description"
             />
-            <Column
+            {/* <Column
                 caption="UOM"
                 dataField="UOM"
-            />
+            /> */}
             <Column
                 dataField="itemTypeCode"
                 caption="Product Type"
@@ -102,12 +70,12 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
             />
 
             <Column
-                caption="Bal"
-                dataField=""
+                caption="Bal Qty"
+                dataField="balQty"
             />
 
             <Column
-                caption="Status"
+                caption="Active"
                 dataField="isActive"
                 dataType="boolean"
             />
@@ -128,7 +96,7 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
                             <div className=" text-green-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
                                     e.stopPropagation(); // prevent row click event (select)
-                                    onEdit(cellData.data);
+                                    onEdit(cellData.data, "edit");
                                 }}>
                                 <Pencil size={20} />
                             </div>

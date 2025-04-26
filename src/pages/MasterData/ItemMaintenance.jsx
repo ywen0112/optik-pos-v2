@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
+import { Plus } from "lucide-react";
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
 
-import ProductDataGrid from "../../Components/DataGrid/ProductDataGrid"
+import ProductDataGrid from "../../Components/DataGrid/Product/ProductDataGrid"
 import UpdateProductModal from "../../modals/MasterData/Product/AddProductModal";
 import { GetItem, DeleteItem, SaveItem, NewItem } from "../../api/maintenanceapi";
 
@@ -16,7 +17,6 @@ const ItemMaintenance = () => {
     const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
 
-    const [items, setItems] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
     const [formAction, setFormAction] = useState(null);
     const [isUpdateModalOpen, setIsUpdateModelOpen] = useState(false);
@@ -62,6 +62,7 @@ const ItemMaintenance = () => {
                 setLoading(false);
             }
         } else {
+            setLoading(false)
             setSelectedItem(item);
             setIsUpdateModelOpen(true);
         }
@@ -119,7 +120,7 @@ const ItemMaintenance = () => {
     };
 
     const confirmationTitleMap = {
-        add: "Confirm Add",
+        add: "Confirm New",
         edit: "Confirm Edit",
         delete: "Confirm Delete"
     };
@@ -153,25 +154,20 @@ const ItemMaintenance = () => {
             />
 
             <div className="text-right p-2">
-                <button className="bg-secondary text-white px-4 py-2 rounded mb-2 hover:bg-secondary/90 transition" onClick={handleAddItem}>
-                    + New
-                </button>
+            <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end" onClick={handleAddItem}>
+          <Plus size={20}/> New
+        </button>
             </div>
 
             <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
-                {loading ? (
-                    <p className="text-center py-4 text-gray-500">Loading...</p>
-                ) : (
-
+                
                     <ProductDataGrid
-                        datasource={items}
                         className={"p-2"}
                         companyId={companyId}
                         onError={setErrorModal}
                         onDelete={handleDeleteClick}
                         onEdit={handleOpenModal}
                     />
-                )}
             </div>
             
         </div>

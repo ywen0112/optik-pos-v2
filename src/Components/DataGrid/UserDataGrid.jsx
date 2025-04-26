@@ -5,72 +5,39 @@ import { Column } from "devextreme-react/cjs/data-grid";
 import StandardDataGridComponent from "../BaseDataGrid";
 import { GetCreditorRecords } from "../../api/maintenanceapi";
 import { GetUserRecords } from "../../api/userapi";
+import CustomStore from "devextreme/data/custom_store";
 
 
 const UserDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
-    const [user, setUser] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [skip, setSkip] = useState(0)
-    const [take, setTake] = useState(10)
-    const [keyword, setKeyword] = useState("")
 
     const userDataGridRef = useRef(null);
 
-    useEffect(() => {
-        fetchUsers();
-    }, [skip, take, keyword])
+    const userStore = new CustomStore({
+        key: "userId",
+            load: async (loadOptions) => {
+              const skip = loadOptions.skip ?? 0;
+              const take = loadOptions.take ?? 10;
+              const keyword = loadOptions.searchValue || "";
+        
+              try {
+                const data = await GetUserRecords({ companyId, offset: skip, limit: take, keyword });
+                return {
+                  data: data.data || [],
+                  totalCount: data.totalRecords || 0
+                };
+              } catch (error) {
+                onError({ title: "Fetch Error", message: error.message });
+                return { data: [], totalCount: 0 };
+              }
+            }
+    })
 
-    useEffect(() => {
-        fetchUsers();
-    }, [onEdit, onDelete ])
-
-    useEffect(() =>{
-        setSkip(0)
-        setTake(10)
-    }, [keyword])
-
-    const fetchUsers = async () => {
-        setLoading(true);
-    
-        try {
-          const data = await GetUserRecords({companyId: companyId, keyword: keyword, offset: skip, limit: take});
-          if (data.success) {
-          const records = data.data || [];
-          const total = data.data.totalRecords || 0;
-    
-          setUser(records);
-          
-          } else throw new Error(data.errorMessage || "Failed to fetch users.");
-        } catch (error) {
-            onError({ title: "Fetch Error", message: error.message });
-        } finally {
-          setLoading(false);
-        }
-      };
-    
-    const handlePagerChange = (e) =>{
-        if (e.fullName === 'paging.pageSize' || e.fullName === 'paging.pageIndex') {
-            const gridInstance = userDataGridRef.current.instance;
-      
-            const pageSize = gridInstance.pageSize();
-            const pageIndex = gridInstance.pageIndex(); 
-            const skip = pageIndex * pageSize;
-            const take = pageSize;
-
-            setSkip(skip);
-            setTake(take);
-        }
-
-        if(e.fullName === 'searchPanel.text'){
-            const searchText = e.value;
-            setKeyword(searchText);
-        }
-    }
     return (
         <StandardDataGridComponent
             ref={userDataGridRef}
             height={"100%"}
-            dataSource={user}
+            dataSource={userStore}
             className={className}
             searchPanel={true}
             pager={true}
@@ -81,7 +48,7 @@ const UserDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
             allowColumnReordering={false}
             allowEditing={true}
             onLoading={loading}
-            onOptionChanged={handlePagerChange}            
+            remoteOperations={{ paging: true, filtering: true, sorting: true }}         
         >
             <Column
                 dataField="userName"
@@ -95,7 +62,7 @@ const UserDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
                 width={"50%"}
             />
             <Column
-                dataField="userRoleId"
+                dataField="userRoleCode"
                 caption="User Role"
                 width={"30%"}
             />
@@ -110,20 +77,22 @@ const UserDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
                     )
                 }}
                 cellRender={(cellData) => {
+                    if(cellData.data.userRoleCode === "SUPER ADMIN") return null;                    
                     return (
                         <div className="flex flex-row justify-center space-x-2">
                             <div className=" text-green-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
                                     e.stopPropagation(); // prevent row click event (select)
                                     onEdit(cellData.data, "edit");
+                                    fetchUsers();
                                 }}>
                                 <Pencil size={20} />
                             </div>
                             <div className=" text-red-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
                                     e.stopPropagation(); // prevent row click event (select)
-
                                     onDelete(cellData.data.creditorId);
+                                    fetchUsers();
                                 }}>
                                 <TrashIcon size={20} />
                             </div>

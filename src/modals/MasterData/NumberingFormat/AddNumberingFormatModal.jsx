@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Plus } from 'lucide-react';
+import DocNoYearlyNumberingDataGrid from "../../../Components/DataGrid/DocNoYearlyNumberingDataGrid";
+import { GetMonthlyNo } from "../../../api/maintenanceapi";
 
 const AddNumberingFormatModal = ({
   selectedFormat,
@@ -9,79 +11,26 @@ const AddNumberingFormatModal = ({
   onError,
   onClose,
 }) => {
-  const [formData, setFormData] = useState({
-    isDefault: true,
-    name: "",
-    docType: "",
-    nextNo: "",
-    numberingFormat: "",
-    sample: "",
-    oneMonthOneSet: false,
-    monthlyNumbers: [],
-  });
+  const [formData, setFormData] = useState(null);
 
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-  
+  useEffect(()=>{
+    setFormData(selectedFormat);
+  },[isOpen])
+
   const getCurrentYear = () => new Date().getFullYear();
-
-  useEffect(() => {
-    if (isOpen) {
-      setFormData(prev => ({
-        ...prev,
-        ...selectedFormat,
-        monthlyNumbers: selectedFormat?.monthlyNumbers?.length
-          ? selectedFormat.monthlyNumbers
-          : [{ year: getCurrentYear(), months: Array(12).fill(1) }],
-      }));
-    }
-  }, [isOpen, selectedFormat, isEdit]);
-
-
-  useEffect(() => {
-    if (isOpen) {
-      setFormData(prev => ({
-        ...prev,
-        ...selectedFormat,
-        monthlyNumbers: selectedFormat?.monthlyNumbers || [],
-      }));
-    }
-  }, [isOpen, selectedFormat]);
-
-  const addRow = () => {
-    const lastRow = formData.monthlyNumbers[formData.monthlyNumbers.length - 1];
-    const newYear = lastRow ? lastRow.year + 1 : getCurrentYear();
-  
-    const newRow = {
-      year: newYear,
-      months: Array(12).fill(1),
-    };
-  
+ 
+  const addRow = async () => {
+    const newByMonths = await GetMonthlyNo({});
+    const lastRow = formData.docNoFormatYearlyNumbers[formData.docNoFormatYearlyNumbers.length -1];
+    const newYear = lastRow ? lastRow.year +1 : getCurrentYear();
+    newByMonths.data.year = newYear;
     setFormData(prev => ({
       ...prev,
-      monthlyNumbers: [...(prev.monthlyNumbers || []), newRow],
+      docNoFormatYearlyNumbers: [...(prev.docNoFormatYearlyNumbers || []), newByMonths.data],
     }));
-  };  
+  }; 
 
-  const updateMonthValue = (rowIndex, monthIndex, value) => {
-    const updatedRows = [...formData.monthlyNumbers];
-    updatedRows[rowIndex].months[monthIndex] = parseInt(value) || 0;
-    setFormData({ ...formData, monthlyNumbers: updatedRows });
-  };
-
-  const updateYearValue = (rowIndex, value) => {
-    const updatedRows = [...formData.monthlyNumbers];
-    updatedRows[rowIndex].year = parseInt(value) || getCurrentYear();
-    setFormData({ ...formData, monthlyNumbers: updatedRows });
-  };
-
-  const deleteRow = (rowIndex) => {
-    const updatedRows = formData.monthlyNumbers.filter((_, idx) => idx !== rowIndex);
-    setFormData({ ...formData, monthlyNumbers: updatedRows });
-  };
-
+ 
   if (!isOpen) return null;
 
   return (
@@ -89,7 +38,7 @@ const AddNumberingFormatModal = ({
       <div className="bg-white p-6 rounded-lg shadow-lg w-1/2 max-h-[90vh] overflow-y-auto text-secondary">
       <div className="flex flex-row justify-between">
             <h3 className="font-semibold mb-4">
-                {isEdit ? "Edit Numbering Format" : "Add Numbering Format"}
+                {isEdit ? "Edit Numbering Format" : "New Numbering Format"}
             </h3>
             <div className='col-span-4' onClick={onClose}>
                 <X size={20} />
@@ -97,36 +46,13 @@ const AddNumberingFormatModal = ({
         </div>
 
         <div className="grid grid-cols-4 gap-1">
-            <div className="col-span-4 mt-2">
-              <div className="flex items-center space-x-2">
-                  <input
-                  type="checkbox"
-                  checked={formData.isDefault}
-                  readOnly
-                  className="bg-gray-200"
-                  />
-                  <label>Default</label>
-              </div>
-            </div>
-
-          <div className="col-span-2 mt-2">
-            <label className="block mb-2">Name</label>
-            <input
-              type="text"
-              className="mr-2 border w-full h-[40px] px-2 bg-gray-200"
-              placeholder="Name"
-              value={formData.name}
-              readOnly
-            />
-          </div>
-
-          <div className="col-span-2 mt-2">
+          <div className="col-span-4 mt-2">
             <label className="block mb-2">Doc Type</label>
             <input
               type="text"
               className="mr-2 border w-full h-[40px] px-2 bg-gray-200"
               placeholder="Doc Type"
-              value={formData.docType}
+              value={formData?.docType}
               readOnly
             />
           </div>
@@ -138,7 +64,7 @@ const AddNumberingFormatModal = ({
               step="1" 
               min="0"
               className="mr-2 border w-full h-[40px] px-2"
-              value={formData.nextNo}
+              value={formData?.nextNumber}
               onChange={(e) => {
                 const intValue = e.target.value.replace(/[^0-9]/g, ''); // remove non-numeric
                 setFormData({ ...formData, nextNo: intValue });
@@ -155,9 +81,9 @@ const AddNumberingFormatModal = ({
             <input
               type="text"
               className="mr-2 border w-full h-[40px] px-2"
-              value={formData.numberingFormat}
+              value={formData?.format}
               onChange={(e) =>
-                setFormData({ ...formData, numberingFormat: e.target.value })
+                setFormData({ ...formData, format: e.target.value })
               }
             />
             <label className="block mb-2 text-gray-400">CS-&lt;@yymm&gt;-&lt;000&gt;</label>
@@ -167,7 +93,7 @@ const AddNumberingFormatModal = ({
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
-                checked={formData.oneMonthOneSet}
+                checked={formData?.oneMonthOneSet}
                 onChange={(e) => setFormData({ ...formData, oneMonthOneSet: e.target.checked })}
               />
               <label>Each month with different running set number</label>
@@ -178,18 +104,18 @@ const AddNumberingFormatModal = ({
           </div>
         </div>
 
-        <div className={`mt-4 overflow-x-auto ${!formData.oneMonthOneSet ? "opacity-50 pointer-events-none" : ""}`}>
+        <div className={`mt-4 overflow-x-auto ${!formData?.oneMonthOneSet ? "opacity-50 pointer-events-none" : ""}`}>
         <button
           onClick={addRow}
           className="mt-2 flex items-center gap-1 px-3 py-1 border rounded bg-gray-100 hover:bg-gray-200 mb-4"
-          disabled={!formData.oneMonthOneSet}
+          disabled={!formData?.oneMonthOneSet}
         >
           <Plus size={16} />
         </button>
 
-        <table className="w-full text-center border border-collapse">
+        {/* <table className="w-full text-center border border-collapse">
           <thead>
-            <tr className="bg-primary text-white">
+            <tr className="bg-secondary text-white">
               <th className="border px-2 py-1">Year</th>
               {months.map((m, i) => (
                 <th key={i} className="border px-2 py-1">{m}</th>
@@ -244,7 +170,11 @@ const AddNumberingFormatModal = ({
               </tr>
             ))}
           </tbody>
-        </table>
+        </table> */}
+
+        <DocNoYearlyNumberingDataGrid
+          data = {formData?.docNoFormatYearlyNumbers}
+        />
       </div>
 
         <div className="mt-6 flex justify-end space-x-2">
@@ -257,10 +187,10 @@ const AddNumberingFormatModal = ({
             <button
               className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
               onClick={() => {
-                if (!formData.name?.trim()) {
+                if (!formData?.format?.trim()) {
                   onError({
                     title: "Validation Error",
-                    message: "Name is required.",
+                    message: "format is required.",
                   });
                   return;
                 }

@@ -50,7 +50,7 @@ export const getInfoLookUp = ({type, companyId, keyword, offset, limit}) =>{
         companyId,
         keyword,
         offset,
-        limit,
+        limit
     });
 
     return postRequest(url, body);

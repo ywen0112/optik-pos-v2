@@ -13,8 +13,6 @@ const AddSupplierModal = ({
     isActive: true,
     creditorCode: "",
     companyName: "",
-    identityNo: "",
-    dob: "",
     address: "",
     remark: "",
     phone1: "",
@@ -27,8 +25,6 @@ const AddSupplierModal = ({
       isActive: true,
       creditorCode: "",
       companyName: "",
-      identityNo: "",
-      dob: "",
       address: "",
       remark: "",
       phone1: "",
@@ -48,8 +44,6 @@ const AddSupplierModal = ({
             isActive: true,
             creditorCode: "",
             companyName: "",
-            identityNo: "",
-            dob: "",
             address: "",
             remark: "",
             phone1: "",
@@ -67,7 +61,7 @@ const AddSupplierModal = ({
       <div className="bg-white p-6 rounded-lg shadow-lg w-1/2 max-h-[90vh] overflow-y-auto text-secondary">
         <div className="flex flex-row justify-between">
           <h3 className="font-semibold mb-4">
-            {isEdit ? "Edit Supplier" : "Add Supplier"}
+            {isEdit ? "Edit Supplier" : "New Supplier"}
           </h3>
           <div className='col-span-4' onClick={handleClose}>
             <X size={20} />
@@ -115,26 +109,27 @@ const AddSupplierModal = ({
           </div>
 
           <div className="col-span-2 mt-2">
-            <label className="block mb-2">IC</label>
+            <label className="block mb-2">Registration No.</label>
             <input
               type="text"
               className="mr-2 border w-full h-[40px] px-2"
-              placeholder="IC"
-              value={formData.identityNo}
+              placeholder="Registration No."
+              value={formData.registrationNo}
               onChange={(e) =>
-                setFormData({ ...formData, identityNo: e.target.value })
+                setFormData({ ...formData, registrationNo: e.target.value })
               }
             />
           </div>
 
           <div className="col-span-2 mt-2">
-            <label className="block mb-2">D.O.B</label>
+            <label className="block mb-2">Attention</label>
             <input
-              type="date"
+              type="text"
               className="mr-2 border w-full h-[40px] px-2"
-              value={formData.dob}
+              placeholder="Attention"
+              value={formData.attention}
               onChange={(e) =>
-                setFormData({ ...formData, dob: e.target.value })
+                setFormData({ ...formData, attention: e.target.value })
               }
             />
           </div>

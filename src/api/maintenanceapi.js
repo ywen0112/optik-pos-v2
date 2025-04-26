@@ -7,55 +7,6 @@ const getCreditor = `${ApiBaseUrl}Creditor/Get`;
 const saveCreditor = `${ApiBaseUrl}Creditor/Save`;
 const deleteCreditor = `${ApiBaseUrl}Creditor/Delete`;
 
-//debtor
-const getDebtorRecords = `${ApiBaseUrl}Debtor/GetRecords`;
-const newDebtor = `${ApiBaseUrl}Debtor/New`;
-const getDebtor = `${ApiBaseUrl}Debtor/Get`;
-const saveDebtor = `${ApiBaseUrl}Debtor/Save`;
-const deleteDebtor = `${ApiBaseUrl}Debtor/Delete`;
-const getLatestDebtorContactLens = `${ApiBaseUrl}Debtor/GetLatestDebtorContactLens`;
-const getLatestDebtorSpectacles = `${ApiBaseUrl}Debtor/GetLatestDebtorSpectacles`;
-
-//userRole
-const getUserRoleRecords = `${ApiBaseUrl}UserRole/GetRecords`;
-const newUserRole = `${ApiBaseUrl}UserRole/New`;
-const getUserRole = `${ApiBaseUrl}UserRole/Get`;
-const saveUserRole = `${ApiBaseUrl}UserRole/Save`;
-const deleteUserRole = `${ApiBaseUrl}UserRole/Delete`;
-
-//item
-const getItemsRecords = `${ApiBaseUrl}Item/GetRecords`;
-const newItem = `${ApiBaseUrl}Item/New`;
-const getItem = `${ApiBaseUrl}Item/Get`;
-const saveItem = `${ApiBaseUrl}Item/Save`;
-const deleteItem = `${ApiBaseUrl}Item/Delete`;
-
-//itemGroup
-const getItemGroupsRecords = `${ApiBaseUrl}ItemGroup/GetRecords`;
-const newItemGroup = `${ApiBaseUrl}ItemGroup/New`;
-const getItemGroup = `${ApiBaseUrl}ItemGroup/Get`;
-const saveItemGroup = `${ApiBaseUrl}ItemGroup/Save`;
-const deleteItemGroup = `${ApiBaseUrl}ItemGroup/Delete`;
-
-//itemType
-const getItemTypesRecords = `${ApiBaseUrl}ItemType/GetRecords`;
-const newItemType = `${ApiBaseUrl}ItemType/New`;
-const getItemType = `${ApiBaseUrl}ItemType/Get`;
-const saveItemType = `${ApiBaseUrl}ItemType/Save`;
-const deleteItemType = `${ApiBaseUrl}ItemType/Delete`;
-
-//paymentMethod
-const getPaymentMethodsRecords = `${ApiBaseUrl}PaymentMethod/GetRecords`;
-const newPaymentMethod = `${ApiBaseUrl}PaymentMethod/New`;
-const editPaymentMethod = `${ApiBaseUrl}PaymentMethod/Edit`;
-const savePaymentMethod = `${ApiBaseUrl}PaymentMethod/Save`;
-const deletePaymentMethod = `${ApiBaseUrl}PaymentMethod/Delete`;
-
-//DocNoFormat
-const getDocNoFormat = `${ApiBaseUrl}DocNoFormat/Get`;
-const newDocNoFormatByYear = `${ApiBaseUrl}DocNoFormat/New`;
-const saveDocNoFormat = `${ApiBaseUrl}DocNoFormat/Save`;
-
 export const GetCreditorRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
@@ -87,15 +38,15 @@ export const GetCreditor = ({companyId, userId, id}) =>{
     return postRequest(getCreditor, body);
 };
 
-export const SaveCreditor = ({actionData, creditorId, creditorCode, companyName, isActive, identityNo, dob, address, remark, phone1, phone2, emailAddress}) =>{
+export const SaveCreditor = ({actionData, creditorId, creditorCode, companyName, isActive, registrationNo, attention, address, remark, phone1, phone2, emailAddress}) =>{
     const body = JSON.stringify({
         actionData,
         creditorId,
         creditorCode,
         companyName,
         isActive,
-        identityNo,
-        dob,
+        registrationNo,
+        attention,
         address,
         remark,
         phone1,
@@ -115,6 +66,15 @@ export const DeleteCreditor = ({companyId, userId, id}) =>{
 
     return postRequest(deleteCreditor, body);
 };
+
+//debtor
+const getDebtorRecords = `${ApiBaseUrl}Debtor/GetRecords`;
+const newDebtor = `${ApiBaseUrl}Debtor/New`;
+const getDebtor = `${ApiBaseUrl}Debtor/Get`;
+const saveDebtor = `${ApiBaseUrl}Debtor/Save`;
+const deleteDebtor = `${ApiBaseUrl}Debtor/Delete`;
+const getLatestDebtorContactLens = `${ApiBaseUrl}Debtor/GetLatestDebtorContactLens`;
+const getLatestDebtorSpectacles = `${ApiBaseUrl}Debtor/GetLatestDebtorSpectacles`;
 
 export const GetDebtorRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
@@ -203,6 +163,13 @@ export const GetLatestDebtorSpectacles = ({companyId, userId, id}) =>{
     return postRequest(getLatestDebtorSpectacles, body);
 };
 
+//userRole
+const getUserRoleRecords = `${ApiBaseUrl}UserRole/GetRecords`;
+const newUserRole = `${ApiBaseUrl}UserRole/New`;
+const getUserRole = `${ApiBaseUrl}UserRole/Get`;
+const saveUserRole = `${ApiBaseUrl}UserRole/Save`;
+const deleteUserRole = `${ApiBaseUrl}UserRole/Delete`;
+
 export const GetUserRoleRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
@@ -255,6 +222,13 @@ export const DeleteUserRole = ({companyId, userId, id}) =>{
 
     return postRequest(deleteUserRole, body);
 };
+
+//item
+const getItemsRecords = `${ApiBaseUrl}Item/GetRecords`;
+const newItem = `${ApiBaseUrl}Item/New`;
+const getItem = `${ApiBaseUrl}Item/Get`;
+const saveItem = `${ApiBaseUrl}Item/Save`;
+const deleteItem = `${ApiBaseUrl}Item/Delete`;
 
 export const GetItemsRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
@@ -315,6 +289,13 @@ export const DeleteItem = ({companyId, userId, id}) =>{
     return postRequest(deleteItem, body);
 };
 
+//itemGroup
+const getItemGroupsRecords = `${ApiBaseUrl}ItemGroup/GetRecords`;
+const newItemGroup = `${ApiBaseUrl}ItemGroup/New`;
+const getItemGroup = `${ApiBaseUrl}ItemGroup/Get`;
+const saveItemGroup = `${ApiBaseUrl}ItemGroup/Save`;
+const deleteItemGroup = `${ApiBaseUrl}ItemGroup/Delete`;
+
 export const GetItemGroupsRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
@@ -370,6 +351,14 @@ export const DeleteItemGroup = ({companyId, userId, id}) =>{
     return postRequest(deleteItemGroup, body);
 };
 
+
+//itemType
+const getItemTypesRecords = `${ApiBaseUrl}ItemType/GetRecords`;
+const newItemType = `${ApiBaseUrl}ItemType/New`;
+const getItemType = `${ApiBaseUrl}ItemType/Get`;
+const saveItemType = `${ApiBaseUrl}ItemType/Save`;
+const deleteItemType = `${ApiBaseUrl}ItemType/Delete`;
+
 export const GetItemTypesRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
@@ -421,6 +410,13 @@ export const DeleteItemType = ({companyId, userId, id}) =>{
 
     return postRequest(deleteItemType, body);
 };
+
+//paymentMethod
+const getPaymentMethodsRecords = `${ApiBaseUrl}PaymentMethod/GetRecords`;
+const newPaymentMethod = `${ApiBaseUrl}PaymentMethod/New`;
+const editPaymentMethod = `${ApiBaseUrl}PaymentMethod/Edit`;
+const savePaymentMethod = `${ApiBaseUrl}PaymentMethod/Save`;
+const deletePaymentMethod = `${ApiBaseUrl}PaymentMethod/Delete`;
 
 export const GetPaymentMethodRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
@@ -474,7 +470,25 @@ export const DeletePaymentMethod = ({companyId, userId, id}) =>{
     return postRequest(deletePaymentMethod, body);
 };
 
-export const GetDocNoRecords = ({companyId, userId, id}) =>{
+
+//DocNoFormat
+const getDocNoFormatRecords = `${ApiBaseUrl}DocNoFormat/GetRecords`;
+const getDocNoFormat = `${ApiBaseUrl}DocNoFormat/Get`;
+const newDocNoFormatByYear = `${ApiBaseUrl}DocNoFormat/New`;
+const saveDocNoFormat = `${ApiBaseUrl}DocNoFormat/Save`;
+
+export const GetDocNoRecords = ({companyId, keyword, offset, limit}) =>{
+    const body = JSON.stringify({
+        companyId,
+        keyword,
+        offset,
+        limit,
+    });
+
+    return postRequest(getDocNoFormatRecords, body);
+};
+
+export const GetDocNoRecord = ({companyId, userId, id}) =>{
     const body = JSON.stringify({
         companyId,
         userId,
@@ -490,11 +504,43 @@ export const GetMonthlyNo = () =>{
     return postRequest(newDocNoFormatByYear, body);
 };
 
-export const  SaveDocNoFormat = ({actionData, docNoFormats}) =>{
+export const  SaveDocNoFormat = ({actionData,  docNoFormatYearlyNumbers, docType, format, nextNumber, oneMonthOneSet}) =>{
     const body = JSON.stringify({
         actionData,
-        docNoFormats,
+        docNoFormatYearlyNumbers,
+        docType,
+        format,
+        nextNumber,
+        oneMonthOneSet,
     });
 
     return postRequest(saveDocNoFormat, body);
+}
+
+//ItemOpening
+const newItemOpening = `${ApiBaseUrl}ItemOpeningBalance/New`;
+const getItemOpeningRecords = `${ApiBaseUrl}ItemOpeningBalance/Get`;
+const saveItemOpening = `${ApiBaseUrl}ItemOpeningBalance/Save`;
+
+export const NewItemOpening = ({}) =>{
+    return postRequest(newItemOpening, null);
+};
+
+export const GetItemOpeningRecords = ({companyId, userId, id}) =>{
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        id,
+    });
+
+    return postRequest(getItemOpeningRecords, body);
+};
+
+export const SaveItemOpening = ({actionData, itemOpeningBalances}) =>{
+    const body = JSON.stringify({
+        actionData,
+        itemOpeningBalances,
+    });
+
+    return postRequest(saveItemOpening, body);
 }

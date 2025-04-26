@@ -63,10 +63,10 @@ const AddPaymentModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-1/2 max-h-[90vh] overflow-y-auto text-secondary">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-1/4 max-h-[90vh] overflow-y-auto text-secondary">
         <div className="flex flex-row justify-between">
           <h3 className="font-semibold mb-4">
-            {isEdit ? "Edit Payment Method" : "Add Payment Method"}
+            {isEdit ? "Edit Payment Method" : "New Payment Method"}
           </h3>
           <div className='col-span-4' onClick={onClose}>
             <X size={20} />
@@ -121,7 +121,7 @@ const AddPaymentModal = ({
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end space-x-2">
+          <div className="mt-6 col-span-2 flex justify-end space-x-2">
             <button
               className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700"
               onClick={onClose}

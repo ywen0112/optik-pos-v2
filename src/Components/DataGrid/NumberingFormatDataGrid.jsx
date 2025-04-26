@@ -3,75 +3,57 @@ import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 import StandardDataGridComponent from "../BaseDataGrid";
 import { GetDocNoRecords } from "../../api/maintenanceapi";
+import CustomStore from "devextreme/data/custom_store";
 
 
-const NumberingFormatDataGrid = ({ className, onError, onDelete, onEdit }) => {
+const NumberingFormatDataGrid = ({ className, onError, onEdit }) => {
   const companyId = sessionStorage.getItem("companyId");
-  const userId = sessionStorage.getItem("userId");
-  const [format, setFormat] = useState([]);
+
   const [loading, setLoading] = useState(false);
-  const [skip, setSkip] = useState(0);
-  const [take, setTake] = useState(10);
-  const [keyword, setKeyword] = useState("")
 
   const formatDataGridRef = useRef(null);
 
-  useEffect(() => {
-loadFormats();
-  }, [skip, take, keyword]);
+  const formatStore = new CustomStore({
+    key: "docType",
+    load: async (loadOptions) => {
+      const skip = loadOptions.skip ?? 0;
+      const take = loadOptions.take ?? 10;
+      const keyword = loadOptions.searchValue || "";
 
-  useEffect(() => {
-    loadFormats();
-}, [onEdit, onDelete ])
-
-  const loadFormats = async () => {
-    setLoading(true);
-    const data = await GetDocNoRecords({companyId: companyId, userId: userId, id: userId});
-    setFormat(data.data.docNoFormats);
-    setLoading(false);
-  };
-
-  const handlePagerChange = (e) => {
-    if (e.fullName === "paging.pageSize" || e.fullName === "paging.pageIndex") {
-      const gridInstance = formatDataGridRef.current.instance;
-
-      const pageSize = gridInstance.pageSize();
-      const pageIndex = gridInstance.pageIndex();
-      const skip = pageIndex * pageSize;
-      const take = pageSize;
-
-      setSkip(skip);
-      setTake(take);
+      try {
+        const data = await GetDocNoRecords({ companyId, offset: skip, limit: take, keyword });
+        return {
+          data: data.data || [],
+          totalCount: data.totalRecords || 0
+        };
+      } catch (error) {
+        onError({ title: "Fetch Error", message: error.message });
+        return { data: [], totalCount: 0 };
+      }
     }
+  })
 
-    if(e.fullName === 'searchPanel.text'){
-      const searchText = e.value;
-      setKeyword(searchText);
-    }
-  }
   return (
     <StandardDataGridComponent
       ref={formatDataGridRef}
       height={"100%"}
-      dataSource={format}
+      dataSource={formatStore}
       className={className}
       searchPanel={true}
-      pager={true}
-      pageSizeSelector={true}
+      pager={false}
+      pageSizeSelector={false}
       columnChooser={true}
       showBorders={true}
       allowColumnResizing={false}
       allowColumnReordering={false}
       allowEditing={true}
       onLoading={loading}
-      onOptionChanged={handlePagerChange}
+      remoteOperations={{ paging: true, filtering: true, sorting: true }}
     >
       <Column dataField="docType" caption="Doc Type" allowEditing={false} width={"20%"} />
-      <Column dataField="name" caption="Name" width={"20%"} />
-      <Column dataField="nextNo" caption="Next No" width={"20%"} />
-      <Column dataField="numberingFormat" caption="Format" width={"20%"} />
+      <Column dataField="nextNumber" caption="Next No" width={"20%"} />
+      <Column dataField="format" caption="Format" width={"20%"} />
       <Column dataField="oneMonthOneSet" caption="One Month One Set" dataType="boolean" width={"20%"} />
-      <Column dataField="sample" caption="Sample" width={"20%"} />
       <Column
         caption="Action"
         width={"15%"}
@@ -89,7 +71,7 @@ loadFormats();
             >
               <Pencil size={20} />
             </div>
-            
+
           </div>
         )}
       />

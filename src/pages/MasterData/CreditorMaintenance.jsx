@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
@@ -85,8 +86,8 @@ const CreditorMaintenance = () => {
           creditorCode: data.creditorCode,
           companyName: data.companyName,
           isActive: data.isActive,
-          identityNo: data.identityNo,
-          dob: data.dob,
+          registrationNo: data.registrationNo,
+          attention: data.attention,
           address: data.address,
           remark: data.remark,
           phone1: data.phone1,
@@ -112,7 +113,7 @@ const CreditorMaintenance = () => {
   };
 
   const confirmationTitleMap = {
-    add: "Confirm Add",
+    add: "Confirm New",
     edit: "Confirm Edit",
     delete: "Confirm Delete"
   };
@@ -146,15 +147,13 @@ const CreditorMaintenance = () => {
       />
 
       <div className="text-right p-2">
-        <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2" onClick={handleAddNew}>
-          + New
+        <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end" onClick={handleAddNew}>
+          <Plus size={20}/> New
         </button>
       </div>
 
       <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
-        {loading ? (
-          <p className="text-center py-4 text-gray-500">Loading...</p>
-        ) : (
+        
           <SupplierDataGrid
             className={"p-2"}
             companyId={companyId}
@@ -164,7 +163,6 @@ const CreditorMaintenance = () => {
           >
           </SupplierDataGrid>
 
-        )}
       </div>
 
     </div>

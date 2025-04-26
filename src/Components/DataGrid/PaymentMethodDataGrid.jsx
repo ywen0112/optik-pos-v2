@@ -3,76 +3,40 @@ import { Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 import StandardDataGridComponent from "../BaseDataGrid";
 import { GetPaymentMethodRecords } from "../../api/maintenanceapi";
+import CustomStore from "devextreme/data/custom_store";
 
 const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
   const companyId = sessionStorage.getItem("companyId");
-  const userId = sessionStorage.getItem("userId");
-  const [method, setMethod] = useState([]);
+
   const [loading, setLoading] = useState(false);
-  const [skip, setSkip] = useState(0);
-  const [take, setTake] = useState(10);
-  const [keyword, setKeyword] = useState("");
 
   const methodDataGridRef = useRef(null);
 
-  useEffect(() => {
-    loadPaymentMethodData();
-  }, [skip, take, keyword]);
+  const methodStore = new CustomStore({
+    key: "paymentMethodId",
+    load: async (loadOptions) => {
+      const skip = loadOptions.skip ?? 0;
+      const take = loadOptions.take ?? 10;
+      const keyword = loadOptions.searchValue || "";
 
-  useEffect(() => {
-    loadPaymentMethodData();
-  }, [onEdit, onDelete])
-
-  useEffect(() => {
-    loadPaymentMethodData();
-  }, [onEdit, onDelete]);
-
-  useEffect(() => {
-    setSkip(0);
-    setTake(10);
-  }, [keyword]);
-
-  const loadPaymentMethodData = async () => {
-    setLoading(true);
-    try {
-      const data = await GetPaymentMethodRecords({ companyId: companyId, keyword: keyword, offset: skip, limit: take });
-      if (data.success) {
-        const records = data.data || [];
-        const total = data.data.totalRecords || 0;
-        setMethod(records);
-      } else throw new Error(data.errorMessage || "Failed to fetch Payment Method.");
-
-    } catch (error) {
-      onError({ title: "Fetch Error", message: error.Message });
-    } finally {
-      setLoading(false);
+      try {
+        const data = await GetPaymentMethodRecords({ companyId, offset: skip, limit: take, keyword });
+        return {
+          data: data.data || [],
+          totalCount: data.totalRecords || 0
+        };
+      } catch (error) {
+        onError({ title: "Fetch Error", message: error.message });
+        return { data: [], totalCount: 0 };
+      }
     }
-  };
-
-  const handlePagerChange = (e) => {
-    if (e.fullName === "paging.pageSize" || e.fullName === "paging.pageIndex") {
-      const gridInstance = methodDataGridRef.current.instance;
-
-      const pageSize = gridInstance.pageSize();
-      const pageIndex = gridInstance.pageIndex();
-      const skip = pageIndex * pageSize;
-      const take = pageSize;
-
-      setSkip(skip);
-      setTake(take);
-    }
-
-    if (e.fullName === 'searchPanel.text') {
-      const searchText = e.value;
-      setKeyword(searchText);
-    }
-  };
+  })
 
   return (
     <StandardDataGridComponent
       ref={methodDataGridRef}
       height={"100%"}
-      dataSource={method}
+      dataSource={methodStore}
       className={className}
       searchPanel={true}
       pager={true}
@@ -83,7 +47,7 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
       allowColumnReordering={false}
       allowEditing={true}
       onLoading={loading}
-      onOptionChanged={handlePagerChange}
+      remoteOperations={{ paging: true, filtering: true, sorting: true }}
     >
       <Column dataField="paymentMethodCode" caption="Payment Method" allowEditing={false} width={"20%"} />
       <Column dataField="paymentType" caption="Payment Method Type" width={"50%"} />
@@ -99,7 +63,6 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
               className="text-green-600 hover:cursor-pointer flex justify-center"
               onClick={(e) => {
                 e.stopPropagation();
-
                 onEdit(cellData.data, "edit");
                 loadPaymentMethodData();
               }}
@@ -111,6 +74,7 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(cellData.data.paymentMethodId);
+                loadPaymentMethodData();
               }}
             >
               <TrashIcon size={20} />

@@ -1,11 +1,15 @@
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NumberingFormatDataGrid from "../../Components/DataGrid/NumberingFormatDataGrid";
 import AddNumberingFormatModal from "../../modals/MasterData/NumberingFormat/AddNumberingFormatModal";
+import { GetDocNoRecord, SaveDocNoFormat } from "../../api/maintenanceapi";
 
 const NumberingFormat = () => {
+  const companyId = sessionStorage.getItem("companyId");
+  const userId = sessionStorage.getItem("userId");
   const [formats, setFormats] = useState([]);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
@@ -13,52 +17,37 @@ const NumberingFormat = () => {
   const [selectedFormat, setSelectedFormat] = useState(null);
   const [formAction, setFormAction] = useState(null);
   const [isUpdateModelOpen, setIsUpdateModelOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const handleOpenModal = (format, mode) => {
-    setSelectedFormat(format);
+  const handleOpenModal = async (format, mode) => {
+    const data = await GetDocNoRecord({ companyId: companyId, userId: userId, id: format.docType })
+    setSelectedFormat(data.data);
     setFormAction(mode);
     setIsUpdateModelOpen(true);
   };
 
-  const handleDeleteClick = (id) => {
-    setDeleteTarget(id);
-    setConfirmModal({ isOpen: true, action: "delete" });
-  };
-
-  const confirmAction = () => {
-    const action = confirmModal.action;
+  const confirmAction = async ({isOpen, action, data}) => {
     setSaving(true);
     setConfirmModal({ isOpen: false, action: null });
 
-    setTimeout(() => {
-      if (action === "delete") {
-        setFormats((prev) => prev.filter((f) => f.formatId !== deleteTarget));
-        console.log("Deleting formatId:", deleteTarget);
-        console.log("Current formats:", formats);
-        setNotifyModal({ isOpen: true, message: "Numbering format deleted successfully!" });
-      } else {
-        if (formAction === "edit") {
-          setFormats((prev) =>
-            prev.map((f) =>
-                f.formatId === selectedFormat.formatId ? selectedFormat : f
-            )
-          );
+    if (action === "edit") {
+      try{
+        const res = await SaveDocNoFormat({...data})
+        if (res.success){
           setNotifyModal({ isOpen: true, message: "Numbering format updated successfully!" });
-        } else {
-          const newFormat = {
-            ...selectedFormat,
-            formatId: Date.now().toString(), 
-          };
-          setFormats((prev) => [...prev, newFormat]);
-          setNotifyModal({ isOpen: true, message: "Numbering format added successfully!" });
-        }
-        setSelectedFormat(null);
-        setIsUpdateModelOpen(false);
+        }else throw new Error(data.errorMessage || "Failed to edit doc number format");
+      }catch(error){
+        setErrorModal({title:"Edit Error", message: error.message });
+      }finally{
+        setSaving(false);
       }
-      setSaving(false);
-    }, 500);
+      
+    }
+    setSelectedFormat(null);
+    setIsUpdateModelOpen(false);
+
+    setSaving(false);
+
   };
 
   const handleCloseUpdateModal = () => {
@@ -67,7 +56,7 @@ const NumberingFormat = () => {
   };
 
   const confirmationTitleMap = {
-    add: "Confirm Add",
+    add: "Confirm New",
     edit: "Confirm Edit",
     delete: "Confirm Delete",
   };
@@ -106,20 +95,11 @@ const NumberingFormat = () => {
         onError={setErrorModal}
         onClose={handleCloseUpdateModal}
       />
-      {/* <div className="text-right p-2">
-        <button
-          className="bg-secondary text-white px-4 py-1 rounded hover:bg-secondary/90 transition"
-          onClick={handleAddNew}
-        >
-          + New
-        </button>
-      </div> */}
+
       <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
         <NumberingFormatDataGrid
-          numberingFormatRecords={formats}
           className="p-2"
           onError={setErrorModal}
-          onDelete={handleDeleteClick}
           onEdit={handleOpenModal}
         />
       </div>

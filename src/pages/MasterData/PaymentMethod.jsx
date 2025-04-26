@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import PaymentMethodDataGrid from "../../Components/DataGrid/PaymentMethodDataGrid";
-import AddPaymentModal from "../../modals/AddPaymentModal";
+import AddPaymentModal from "../../modals/MasterData/AddPaymentMethodModal";
 import { DeletePaymentMethod, NewPaymentMethod, SavePaymentMethod } from "../../api/maintenanceapi";
 
 const PaymentMethod = () => {
@@ -90,7 +91,7 @@ const PaymentMethod = () => {
   };
 
   const confirmationTitleMap = {
-    add: "Confirm Add",
+    add: "Confirm New",
     edit: "Confirm Edit",
     delete: "Confirm Delete",
   };
@@ -130,20 +131,17 @@ const PaymentMethod = () => {
         onClose={handleCloseUpdateModal}
       />
       <div className="text-right p-2">
-        <button
-          className="bg-secondary text-white px-4 py-2 mb-2 rounded hover:bg-secondary/90 transition"
-          onClick={handleAddNew}
-        >
-          + New
+      <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end" onClick={handleAddNew}>
+          <Plus size={20}/> New
         </button>
       </div>
       <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
         <PaymentMethodDataGrid
-          methodRecords={formats}
           className="p-2"
           onError={setErrorModal}
           onDelete={handleDeleteClick}
           onEdit={handleOpenModal}
+          actionDone={saving}
         />
       </div>
     </div>

@@ -1,16 +1,61 @@
-import { Wrench } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import ProductOpeningDataGrid from "../../Components/DataGrid/Product/ProductOpeningDataGrid";
+import { NewItemOpening, GetItemOpeningRecords, SaveItemOpening } from "../../api/maintenanceapi";
 
 const ItemOpening = () => {
+  const companyId = sessionStorage.getItem("companyId");
+  const userId = sessionStorage.getItem("userId");
+  const [records, setRecords] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [errorModal, setErrorModal] = useState({ title: "", message: "" });
+  
+
+  useEffect(()=>{
+    fetchItemOpeningRecords();
+  }, [])
+
+  const fetchItemOpeningRecords = async () =>{
+    setLoading(true);
+    try{
+      const res = await GetItemOpeningRecords({companyId: companyId, userId: userId, id: userId});
+      if(res.success){
+        setRecords(res.data.itemOpeningBalances);
+        setTotal(res.totalRecords);
+      }else throw new Error(data.errorMessage, "Failed to get Product Opening Records");
+    }catch(error){
+      setErrorModal({title: "Error", message: error.message})
+    }finally{
+      setLoading(false);
+    }
+  }
+
+  const onLookUpSelected = (newValue) =>{
+    setRecords(prev => {
+      const exists = prev.find(record => record.itemOpeningBalanceId === newValue.itemOpeningBalanceId);
+      if(exists){
+        return prev.map(record =>
+          record.itemOpeningBalanceId === newValue.itemOpeningBalanceId ? { ...record, ...newValue } : record 
+        );
+      }else{
+        return [...prev, newValue];
+      }
+    })
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full bg-secondary from-gray-800 to-gray-900 text-white p-4">
-      <div className="flex flex-col items-center space-y-4">
-        <Wrench className="w-16 h-16 text-yellow-400 animate-pulse" />
-        <h1 className="text-3xl font-bold">This Page Under Maintenance</h1>
-        <p className="text-gray-300 text-center max-w-md">
-          We're working hard to bring this feature to you soon. Please check back later!
-        </p>
+    <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
+       
+          <ProductOpeningDataGrid
+            className={"p-2"}
+            dataRecords={records}
+            totalRecords={total}
+            onSelect={onLookUpSelected}
+          />
+        
       </div>
-    </div>
+
   );
 };
 
