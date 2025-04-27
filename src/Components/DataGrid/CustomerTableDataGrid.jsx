@@ -53,31 +53,25 @@ const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
                 dataField="debtorCode"
                 caption="Customer Code"
                 allowEditing={false}
-                width={"15%"}
+                width={"150px"}
             />
             <Column
                 dataField="companyName"
-                caption="Name"
-                width={"80%"}
+                caption="Customer Name"
+                
             />
             <Column
                 dataField="isActive"
-                caption="Is Active"
+                caption="Active"
                 type="boolean"
-                width={"10%"}
-            />
-            <Column
-                dataField="isDefault"
-                caption="Default"
-                type="boolean"
-                width={"10%"}
+                width={"100px"}
             />
             <Column
                 caption="Action"
-                width={"10%"}
+                width={"150px"}
                 headerCellRender={() => {
                     return (
-                        <div className="  font-bold text-white">
+                        <div className="font-bold text-white">
                             Action
                         </div>
                     )

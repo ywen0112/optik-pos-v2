@@ -50,7 +50,7 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
             <Column
                 caption="Product Code"
                 dataField="itemCode"
-                width={"10%"}
+                width={"150px"}
             />
             <Column
                 caption="Product Name"
@@ -63,26 +63,30 @@ const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) =>
             <Column
                 dataField="itemTypeCode"
                 caption="Product Type"
+                width={"150px"}
             />
             <Column
                 dataField="itemGroupCode"
                 caption="Product Group"
+                width={"150px"}
             />
 
             <Column
                 caption="Bal Qty"
                 dataField="balQty"
+                width={"70px"}
             />
 
             <Column
                 caption="Active"
                 dataField="isActive"
                 dataType="boolean"
+                width={"70px"}
             />
 
             <Column
                 caption="Action"
-                width={"10%"}
+                width={"150px"}
                 headerCellRender={() => {
                     return (
                         <div className="  font-bold text-white">

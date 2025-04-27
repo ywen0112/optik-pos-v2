@@ -50,7 +50,8 @@ const AccessRightMaintenance = () => {
   };
 
   const handleInputChange = (e) => {
-    setSelectedAccessRight({ ...selectedAccessRight, description: e.target.value });
+    const value = e.target.value.slice(0, 100); 
+    setSelectedAccessRight({ ...selectedAccessRight, description: value });
   };
 
   const handleDeleteClick = (id) => {
@@ -146,57 +147,71 @@ const AccessRightMaintenance = () => {
 
 
       {selectedAccessRight && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[600px] max-h-[90vh] overflow-y-auto text-secondary text-xs scrollbar-hide">
-            <h3 className="font-semibold mb-4">
-              {formAction === "view"
-                ? "View User Role"
-                : formAction === "edit"
-                  ? "Edit User Role"
-                  : "New User Role"}
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-full h-full flex flex-col text-secondary text-xs scrollbar-hide">
+      {/* Header */}
+      <div className="flex-none">
+        <h3 className="font-semibold mb-4">
+          {formAction === "view"
+            ? "View User Role"
+            : formAction === "edit"
+            ? "Edit User Role"
+            : "New User Role"}
+        </h3>
+      </div>
 
-            </h3>
-            <div className="mb-4">
-              <label className="block mb-1">User Role</label>
-              <input
-                type="text"
-                value={selectedAccessRight.description}
-                readOnly={formAction === "view"}
-                onChange={handleInputChange}
-                className={`mt-1 w-full p-2 border rounded ${formAction === "view" ? "bg-gray-100" : "bg-white"}`}
-              />
-            </div>
-            <div className="mb-2 font-semibold">Access Rights</div>
-            <div className="overflow-x-auto">
-             <UserRoleDetailTableDataGrid
-              action={formAction}
-              selectedRole={selectedAccessRight.accessRights}
-              className={""}
-              onEdit={handleDetailEdit}
-             />
-            </div>
-            <div className="mt-6 flex justify-end space-x-2">
-            <button className="px-4 py-1 rounded text-sm bg-red-500 text-white" onClick={() => setSelectedAccessRight(null)}>Close</button>
-              {formAction !== "view" && (
-                <button
-                  className="px-4 py-1 rounded text-sm bg-green-500 text-white"
-                  onClick={() => {
-                    if (!selectedAccessRight.description.trim()) {
-                      setErrorModal({
-                        title: "Validation Error",
-                        message: "User Role is required.",
-                      });
-                      return;
-                    }
-                    setConfirmModal({ isOpen: true, action: formAction });
-                  }}
-                >Save</button>
-              )}
-              
-            </div>
-          </div>
+      <div className="flex-1">
+        <div className="mb-4">
+          <label className="block mb-1">User Role</label>
+          <input
+            type="text"
+            value={selectedAccessRight.description}
+            readOnly={formAction === "view"}
+            onChange={handleInputChange}
+            className={`mt-1 w-full p-2 border rounded ${formAction === "view" ? "bg-gray-100" : "bg-white"}`}
+          />
         </div>
-      )}
+        <div className="mb-2 font-semibold">Access Rights</div>
+        <div className="overflow-x-auto">
+          <UserRoleDetailTableDataGrid
+            action={formAction}
+            selectedRole={selectedAccessRight.accessRights}
+            className={""}
+            onEdit={handleDetailEdit}
+          />
+        </div>
+      </div>
+
+      {/* Footer Buttons */}
+      <div className="flex-none mt-6 flex justify-end space-x-2">
+        <button
+          className="px-4 py-1 rounded text-sm bg-red-500 text-white"
+          onClick={() => setSelectedAccessRight(null)}
+        >
+          Close
+        </button>
+        {formAction !== "view" && (
+          <button
+            className="px-4 py-1 rounded text-sm bg-green-500 text-white"
+            onClick={() => {
+              if (!selectedAccessRight.description.trim()) {
+                setErrorModal({
+                  title: "Validation Error",
+                  message: "User Role is required.",
+                });
+                return;
+              }
+              setConfirmModal({ isOpen: true, action: formAction });
+            }}
+          >
+            Save
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
 
     </div>
   );

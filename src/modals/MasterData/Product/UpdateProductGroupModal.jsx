@@ -73,7 +73,7 @@ const UpdateProductGroupModal = ({
                                             ...prev,
                                             isNormalItem: true,
                                             isSpectacles: false,
-                                            isContactLenses: false,
+                                            isContactLens: false,
                                         }))
                                     }
                                 />
@@ -89,7 +89,7 @@ const UpdateProductGroupModal = ({
                                             ...prev,
                                             isNormalItem: false,
                                             isSpectacles: true,
-                                            isContactLenses: false,
+                                            isContactLens: false,
                                         }))
                                     }
                                 />
@@ -100,13 +100,13 @@ const UpdateProductGroupModal = ({
 
                                 <input
                                     type="checkbox"
-                                    checked={formData?.isContactLenses}
+                                    checked={formData?.isContactLens}
                                     onChange={() =>
                                         setFormData(prev => ({
                                             ...prev,
                                             isNormalItem: false,
                                             isSpectacles: false,
-                                            isContactLenses: true,
+                                            isContactLens: true,
                                         }))
                                     }
                                 />

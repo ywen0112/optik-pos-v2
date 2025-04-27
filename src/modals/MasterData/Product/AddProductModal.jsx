@@ -36,8 +36,8 @@ const UpdateProductModal = ({
     useEffect(() => {
         if (isOpen) {
             setFormData(selectedItem);
-            setProductGroup({itemGroupId: selectedItem.itemGroupId});
-            setProductType({itemTypeId: selectedItem.itemTypeId});
+            setProductGroup({ itemGroupId: selectedItem.itemGroupId });
+            setProductType({ itemTypeId: selectedItem.itemTypeId });
         }
     }, [isOpen, selectedItem, isEdit]);
 
@@ -54,7 +54,7 @@ const UpdateProductModal = ({
     const productGroupStore = new CustomStore({
         key: "itemGroupId",
 
-        load: async (loadOptions) =>{
+        load: async (loadOptions) => {
             const filter = loadOptions.filter;
             let keyword = filter?.[2]?.[2] || "";
 
@@ -67,12 +67,12 @@ const UpdateProductModal = ({
                 companyId,
             };
             const res = await getInfoLookUp(params);
-            return{
+            return {
                 data: res.data,
                 totalCount: res.totalRecords,
             };
         },
-        byKey: async (key) =>{
+        byKey: async (key) => {
             const res = await GetItemGroup({
                 companyId,
                 userId,
@@ -85,7 +85,7 @@ const UpdateProductModal = ({
     const productTypeStore = new CustomStore({
         key: "itemTypeId",
 
-        load: async (loadOptions) =>{
+        load: async (loadOptions) => {
             const filter = loadOptions.filter;
             let keyword = filter?.[2]?.[2] || "";
 
@@ -98,12 +98,12 @@ const UpdateProductModal = ({
                 companyId,
             };
             const res = await getInfoLookUp(params);
-            return{
+            return {
                 data: res.data,
                 totalCount: res.totalRecords,
             };
         },
-        byKey: async (key) =>{
+        byKey: async (key) => {
             const res = await GetItemType({
                 companyId,
                 userId,
@@ -113,11 +113,11 @@ const UpdateProductModal = ({
         }
     })
 
-    const productGroupDataGridOnSelectionChanged = useCallback((e)=>{
+    const productGroupDataGridOnSelectionChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
-        if(selected && selected.itemGroupId !== productGroup.itemGroupId){
-            setFormData(prev => ({...prev, itemGroupId: selected.itemGroupId}));
-            setProductGroup({itemGroupId: selected.itemGroupId, itemGroupCode: selected.itemGroupCode, description:selected.description})
+        if (selected && selected.itemGroupId !== productGroup.itemGroupId) {
+            setFormData(prev => ({ ...prev, itemGroupId: selected.itemGroupId }));
+            setProductGroup({ itemGroupId: selected.itemGroupId, itemGroupCode: selected.itemGroupCode, description: selected.description })
             setIsGroupBoxOpened(false);
         }
     }, []);
@@ -139,29 +139,29 @@ const UpdateProductModal = ({
             <Scrolling mode="infinite" />
             <Paging enabled pageSize={5} />
             <SearchPanel visible={true} highlightSearchText />
-            <Column dataField="itemGroupCode" caption="Code"/>
+            <Column dataField="itemGroupCode" caption="Code" />
             <Column dataField="description" caption="Desc" />
         </DataGrid>
     ), [productGroup, productGroupDataGridOnSelectionChanged]);
 
-    const handleProductGroupGridBoxValueChanges = (e) =>{
-        if(!e.value){
-            setProductGroup({itemGroupId: "", itemGroupCode: "", description: ""})
+    const handleProductGroupGridBoxValueChanges = (e) => {
+        if (!e.value) {
+            setProductGroup({ itemGroupId: "", itemGroupCode: "", description: "" })
         }
     }
 
-    const onProductGroupGridBoxOpened = useCallback((e)=>{
-        if(e.name === 'opened'){
+    const onProductGroupGridBoxOpened = useCallback((e) => {
+        if (e.name === 'opened') {
             setIsGroupBoxOpened(e.value);
         }
-    },[])
+    }, [])
 
-    
+
     const handleTypeSelection = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
-        if (selected  && productType.itemTypeId  !== selected.itemTypeId) {
-            setFormData(prev => ({...prev, itemTypeId: selected.itemTypeId}));
-            setProductType({itemTypeId: selected.itemTypeId, itemTypeCode: selected.itemTypeCode, description: selected.description});
+        if (selected && productType.itemTypeId !== selected.itemTypeId) {
+            setFormData(prev => ({ ...prev, itemTypeId: selected.itemTypeId }));
+            setProductType({ itemTypeId: selected.itemTypeId, itemTypeCode: selected.itemTypeCode, description: selected.description });
             setIsTypeBoxOpened(false);
         }
     }, [])
@@ -184,21 +184,21 @@ const UpdateProductModal = ({
             <Paging enabled pageSize={5} />
             <SearchPanel visible={true} highlightSearchText />
             <Column dataField="itemTypeCode" caption="Code" />
-            <Column dataField="description" caption="Desc"/>
+            <Column dataField="description" caption="Desc" />
         </DataGrid>
     ), [productType, handleTypeSelection]);
 
-    const handleProductTypeChanged = (e) =>{
-        if(!e.value){
-            setProductType({itemTypeId: "", itemGroupCode: "", description: ""});
+    const handleProductTypeChanged = (e) => {
+        if (!e.value) {
+            setProductType({ itemTypeId: "", itemGroupCode: "", description: "" });
         }
     }
 
-    const onProductTypeGridBoxOpened = useCallback((e)=>{
-        if(e.name === 'opened'){
+    const onProductTypeGridBoxOpened = useCallback((e) => {
+        if (e.name === 'opened') {
             setIsTypeBoxOpened(e.value);
         }
-    },[]);
+    }, []);
 
     if (!isOpen) return null;
 
@@ -217,24 +217,24 @@ const UpdateProductModal = ({
 
                     <div className="grid grid-cols-4 gap-1">
                         <div className='col-span-4 flex flex-row'>
-                        <div className='w-1/4'>Product Code</div>
-                        <div className='w-1/4'>Product Type</div>
-                        <div className='w-1/4'>Product Group</div>
-                        <div className=" w-1/4 flex flex-row justify-end ">
-                            <input
-                                type="checkbox"
-                                checked={formData?.isActive}
-                                className="mr-2"
-                                onChange={(e) =>
-                                    setFormData({ ...formData, isActive: e.target.checked })
-                                }
-                            />
-                            <div className='flex items-center'>Active</div>
+                            <div className='w-1/4'>Product Code</div>
+                            <div className='w-1/4'>Product Type</div>
+                            <div className='w-1/4'>Product Group</div>
+                            <div className=" w-1/4 flex flex-row justify-end ">
+                                <input
+                                    type="checkbox"
+                                    checked={formData?.isActive}
+                                    className="mr-2"
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, isActive: e.target.checked })
+                                    }
+                                />
+                                <div className='flex items-center'>Active</div>
 
-                        </div>
+                            </div>
                         </div>
                         <div className="flex flex-col">
-                            
+
                             <input
                                 type="text"
                                 placeholder="Product Code"
@@ -244,7 +244,7 @@ const UpdateProductModal = ({
                             />
                         </div>
                         <div className="flex flex-col">
-                            
+
                             <DropDownBox
                                 id="ProductTypeSelection"
                                 value={productType?.itemTypeId}
@@ -264,7 +264,7 @@ const UpdateProductModal = ({
                             />
                         </div>
                         <div className="flex flex-col">
-                            
+
                             <DropDownBox
                                 id="ProductGroupSelection"
                                 value={productGroup?.itemGroupId}
@@ -283,7 +283,7 @@ const UpdateProductModal = ({
                                 }}
                             />
                         </div>
-                        
+
                         <div className="flex flex-col col-span-2 mt-2">
                             <div>Product Name</div>
                             <input
@@ -362,15 +362,15 @@ const UpdateProductModal = ({
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
-                        <div className="flex flex-col col-span-2 mt-2">
+                        <div className="flex flex-col col-span-2 row-span-2 mt-2">
                             <div>Remark</div>
                             <textarea
                                 type="text"
-                                rows={6}
+                                rows={7}
                                 placeholder="Remark"
                                 value={formData?.remark}
                                 onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
-                                className="mr-2 mt-2 border w-full h-[90px] px-2 py-2"
+                                className="mr-2 mt-2 border w-full h-full px-2 py-2"
                             />
                         </div>
                         <div className="flex flex-col col-span-2 mt-2">
@@ -383,73 +383,81 @@ const UpdateProductModal = ({
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
-                        <div className="col-span-2 w-full h-full border-2 shadow-xl border-slate-500 p-2">
-
-                        <div className="flex flex-col col-span-2 mt-2">
+                        <div className="col-span-2 w-full h-full ">
                             <div className='flex flex-row'>
-                                <div>Commission</div>
                                 <input
                                     type="checkbox"
                                     checked={hasCommission}
-                                    className="ml-2"
+                                    className="mr-2"
                                     onChange={(e) =>
                                         setHasCommission(e.target.checked)
                                     }
                                 />
+                                <div>Commission</div>
+
                             </div>
-                            <div className={`flex-col items-center transition-opacity duration-200 ${hasCommission ? '' : 'opacity-50 pointer-events-none select-none'}`}>
-                                <input
-                                    type="number"
-                                    placeholder="Commission Value"
-                                    step="0.01"
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
-                                            setFormData({...formData, itemCommission:{...formData.itemCommission, value:val}});
-                                        }
-                                    }}
-                                    value={formData?.itemCommission?.value}
-                                    className="mt-2 border w-full h-[40px] px-2"
-                                />
-                                <div className="flex-row space-x-5">
-                                    <label>Percentage</label>
+                            <div className="flex flex-col col-span-2 mt-2 border-[1px]  border-[#e5e7eb] p-2">
+
+                                <div className={`flex-col items-center transition-opacity duration-200 ${hasCommission ? '' : 'opacity-50 pointer-events-none select-none'}`}>
+
+                                    <div className="flex-row space-x-2">
+
+                                        <input
+                                            className='mt-2'
+                                            type="checkbox"
+                                            checked={formData?.itemCommission?.isPercentage}
+                                            onChange={() => {
+                                                setFormData({
+                                                    ...formData,
+                                                    itemCommission: {
+                                                        ...formData.itemCommission,
+                                                        isPercentage: true,
+                                                        isFlat: false,
+                                                    },
+                                                });
+                                            }}
+                                        />
+                                        <label>Percentage</label>
+
+
+                                        <input
+                                            type="checkbox"
+                                            className='mt-2'
+                                            checked={formData?.itemCommission?.isFlat}
+                                            onChange={() => {
+                                                setFormData({
+                                                    ...formData,
+                                                    itemCommission: {
+                                                        ...formData.itemCommission,
+                                                        isPercentage: false,
+                                                        isFlat: true,
+                                                    },
+                                                });
+                                            }}
+                                        />
+                                        <label>Flat Rate</label>
+                                    </div>
                                     <input
-                                        type="checkbox"
-                                        checked={formData?.itemCommission?.isPercentage}
-                                        onChange={() => {
-                                            setFormData({
-                                                ...formData,
-                                                itemCommission: {
-                                                    ...formData.itemCommission,
-                                                    isPercentage: true,
-                                                    isFlat: false,
-                                                },
-                                            });
+                                        type="number"
+                                        placeholder="Commission Value"
+                                        step="0.01"
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+                                                setFormData({ ...formData, itemCommission: { ...formData.itemCommission, value: val } });
+                                            }
                                         }}
+                                        value={formData?.itemCommission?.value}
+                                        className="mt-2 border w-full h-[40px] px-2"
                                     />
 
-                                    <label>Flat Rate</label>
-                                    <input
-                                        type="checkbox"
-                                        checked={formData?.itemCommission?.isFlat}
-                                        onChange={() => {
-                                            setFormData({
-                                                ...formData,
-                                                itemCommission: {
-                                                    ...formData.itemCommission,
-                                                    isPercentage: false,
-                                                    isFlat: true,
-                                                },
-                                            });
-                                        }}
-                                    />
+
+
                                 </div>
 
                             </div>
+                        </div>
 
-                        </div>
-                        </div>
-                        
                     </div>
 
                     <div className="absolute bottom-0 right-0 bg-white py-4 pr-6 flex justify-end w-full border-t">
@@ -458,8 +466,8 @@ const UpdateProductModal = ({
                                 Cancel
                             </button>
                             <button className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
-                                onClick={() =>{
-                                    if(!formData?.description.trim()){
+                                onClick={() => {
+                                    if (!formData?.description.trim()) {
                                         onError({
                                             title: "Validation Error",
                                             message: "Item Name is required.",
@@ -467,8 +475,8 @@ const UpdateProductModal = ({
                                         return;
                                     }
                                     onConfirm({
-                                        isOpen:true,
-                                        action: isEdit ? "edit": "add",
+                                        isOpen: true,
+                                        action: isEdit ? "edit" : "add",
                                         data: formData,
                                     });
                                 }}

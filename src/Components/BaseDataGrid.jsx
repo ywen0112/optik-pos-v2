@@ -39,12 +39,17 @@ const StandardDataGridComponent = ({
     onLoading,
     onOptionChanged,
     columns,
+    keyExpr,
     onRowUpdated,
+    onRowInserted,
+    onEditCanceled,
     ...rest
 }) => {
     return (
         <DataGrid
             ref={ref}
+            keyExpr={keyExpr}
+            onEditCanceled={onEditCanceled}
             height={height}
             className={className}
             dataSource={dataSource}
@@ -56,6 +61,7 @@ const StandardDataGridComponent = ({
             showRowLines
             hoverStateEnabled
             showBorders
+            onRowInserted={onRowInserted}
             onRowUpdated={onRowUpdated}
             onOptionChanged={onOptionChanged}
             onEditorPreparing={(e) => {

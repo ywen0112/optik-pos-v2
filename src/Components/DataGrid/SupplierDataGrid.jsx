@@ -53,22 +53,22 @@ const SupplierDataGrid = ({className, companyId, onError, onDelete, onEdit}) => 
                 dataField="creditorCode"
                 caption="Supplier Code"
                 allowEditing={false}
-                width={"15%"}
+                width={"150px"}
             />
             <Column
                 dataField="companyName"
-                caption="Name"
-                width={"80%"}
+                caption=" Supplier Name"
+                
             />
             <Column
                 dataField="isActive"
                 caption="Active"
                 type="boolean"
-                width={"10%"}
+                width={"100px"}
             />
             <Column
                 caption="Action"
-                width={"10%"}
+                width={"150px"}
                 headerCellRender={() => {
                     return (
                         <div className="font-bold text-white">

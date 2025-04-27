@@ -9,7 +9,7 @@ const UserRoleDetailTableDataGrid = ({selectedRole, className, onEdit, action}) 
         <StandardDataGridComponent
             className={className}
             ref = {userRoleDetailDataGridRef}
-            height={"100%"}
+            height={"400px"}
             dataSource={selectedRole}
             searchPanel={false}
             pager={false}
@@ -20,6 +20,8 @@ const UserRoleDetailTableDataGrid = ({selectedRole, className, onEdit, action}) 
             allowColumnReordering={false}
             allowEditing={true}
             onRowUpdated={onEdit}
+            scrollingMode="virtual"
+            
         >
             <Editing
                 mode="cell"

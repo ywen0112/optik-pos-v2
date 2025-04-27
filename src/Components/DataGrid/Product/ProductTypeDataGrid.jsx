@@ -52,15 +52,15 @@ const ProductTypeDataGrid = ({ className, companyId, onError, onDelete, onEdit }
             <Column
                 caption="Product Type"
                 dataField="itemTypeCode"
-                width={"10%"}
+                width={"150px"}
             />
             <Column
-                caption="Description"
+                caption="Product Type Description"
                 dataField="description"
             />
             <Column
                 caption="Action"
-                width={"10%"}
+                width={"150px"}
                 headerCellRender={() => {
                     return (
                         <div className="font-bold text-white">

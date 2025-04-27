@@ -23,6 +23,7 @@ const AddCustomerModal = ({
     const [activeTab, setActiveTab] = useState("General");
     const [debtorFormData, setDebtorFormData] = useState({
         isActive: true,
+        debtorId: "",
         debtorCode: "",
         companyName: "",
         identityNo: "",
@@ -492,7 +493,7 @@ const AddCustomerModal = ({
                                 ...debtorFormData,
                                 ...medicalInfoData,
                                 };
-
+                                console.log(selectedCustomer)
                                 onConfirm({
                                 isOpen: true,
                                 action: isEdit ? "edit" : "add",

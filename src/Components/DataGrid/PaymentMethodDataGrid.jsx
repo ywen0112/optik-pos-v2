@@ -49,8 +49,8 @@ const PaymentMethodDataGrid = ({ className, onError, onDelete, onEdit }) => {
       onLoading={loading}
       remoteOperations={{ paging: true, filtering: true, sorting: true }}
     >
-      <Column dataField="paymentMethodCode" caption="Payment Method" allowEditing={false} width={"20%"} />
-      <Column dataField="paymentType" caption="Payment Method Type" width={"50%"} />
+      <Column dataField="paymentMethodCode" caption="Payment Method" allowEditing={false} width={"200px"} />
+      <Column dataField="paymentType" caption="Payment Method Type" />
       <Column
         caption="Action"
         width={"150px"}
