@@ -361,93 +361,24 @@ const AddCustomerModal = ({
                     }
                 }
     
-                // try {
-                //     const response = await GetDebtorSalesHistorys({
-                //         companyId,
-                //         offset: skip,
-                //         limit: take,
-                //         keyword,
-                //         fromDate,
-                //         toDate
-                //     });
+                try {
+                    const response = await GetDebtorSalesHistorys({
+                        companyId,
+                        offset: skip,
+                        limit: take,
+                        keyword,
+                        fromDate,
+                        toDate
+                    });
     
-                //     return {
-                //         data: response?.data || [],
-                //         totalCount: response?.totalRecords || 0
-                //     };
-                // } catch (error) {
-                //     onError({ title: "Fetch Error", message: error.message });
-                //     return { data: [], totalCount: 0 };
-                // }
-
-                const dummySales = [
-                    {
-                      docNo: "INV-1001",
-                      docDate: "2025-04-27",
-                      docType: "Invoice",
-                      refNo: "REF-123",
-                      salesPerson: "John Doe",
-                      roundingAdjustment: 0,
-                      total: 500,
-                      isVoid: false,
-                      details: [
-                        {
-                          itemCode: "ITEM-001",
-                          uom: "PCS",
-                          description: "Eyeglass Frame",
-                          desc2: "Black, Large",
-                          qty: 1,
-                          unitPrice: 250,
-                          discount: "0%",
-                          discountAmount: 0,
-                          subTotal: 250,
-                          classification: "Frame"
-                        },
-                        {
-                          itemCode: "ITEM-002",
-                          uom: "PCS",
-                          description: "Prescription Lens",
-                          desc2: "Anti-Blue",
-                          qty: 2,
-                          unitPrice: 125,
-                          discount: "0%",
-                          discountAmount: 0,
-                          subTotal: 250,
-                          classification: "Lens"
-                        }
-                      ]
-                    },
-                    {
-                      docNo: "INV-1002",
-                      docDate: "2025-04-26",
-                      docType: "Invoice",
-                      refNo: "REF-124",
-                      salesPerson: "Jane Smith",
-                      roundingAdjustment: -0.5,
-                      total: 299.5,
-                      isVoid: false,
-                      details: [
-                        {
-                          itemCode: "ITEM-003",
-                          uom: "BOX",
-                          description: "Contact Lens Daily",
-                          desc2: "30 pcs pack",
-                          qty: 1,
-                          unitPrice: 300,
-                          discount: "0.5%",
-                          discountAmount: 1.5,
-                          subTotal: 298.5,
-                          classification: "Lens"
-                        }
-                      ]
-                    }
-                  ];
-              
-                  return {
-                    data: dummySales,
-                    totalCount: dummySales.length
-                };
-    
+                    return {
+                        data: response?.data || [],
+                        totalCount: response?.totalRecords || 0
+                    };
+                } catch (error) {
+                    onError({ title: "Fetch Error", message: error.message });
+                    return { data: [], totalCount: 0 };
+                }
             }
         });
     
