@@ -11,6 +11,22 @@ const SalesHistoryDataGrid = ({ salesHistoryStore, className }) => {
   const [toDate, setToDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
 
+  const formatDateLocalFrom = (date) => {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}T00:00:00`;
+  };
+
+  const formatDateLocalToTo = (date) => {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}T23:59:59`;
+  };
+
   const handleDateChange = () => {
     if (salesDataGridRef.current) {
       salesDataGridRef.current.instance.refresh();
@@ -61,8 +77,8 @@ const SalesHistoryDataGrid = ({ salesHistoryStore, className }) => {
             skip,
             take,
             filter: [
-              ["fromDate", "=", fromDate ? fromDate.toISOString() : null],
-              ["toDate", "=", toDate ? toDate.toISOString() : null],
+              ["fromDate", "=", formatDateLocalFrom(fromDate)],
+              ["toDate", "=", formatDateLocalToTo(toDate)],
               ["keyword", "contains", keyword],
             ],
           });

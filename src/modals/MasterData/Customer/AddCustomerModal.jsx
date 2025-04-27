@@ -335,21 +335,29 @@ const AddCustomerModal = ({
                 const skip = loadOptions.skip ?? 0;
                 const take = loadOptions.take ?? 10;
                 const keyword = loadOptions.filter?.[2][2] || "";
-                const getLocalISOString = () => {
-                    const now = new Date();
-                    const timezoneOffset = now.getTimezoneOffset() * 60000; 
-                    const localISOTime = new Date(now.getTime() - timezoneOffset).toISOString().slice(0, -1); 
-                    return localISOTime;
+                const formatDateLocalFrom = (date) => {
+                    if (!date) return null;
+                    const year = date.getFullYear();
+                    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                    const day = date.getDate().toString().padStart(2, "0");
+                    return `${year}-${month}-${day}T00:00:00`;
                 };
-                let fromDate = getLocalISOString;
-                let toDate = getLocalISOString;
+                const formatDateLocalTo = (date) => {
+                    if (!date) return null;
+                    const year = date.getFullYear();
+                    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                    const day = date.getDate().toString().padStart(2, "0");
+                    return `${year}-${month}-${day}T23:59:59`;
+                };
+                let fromDate = formatDateLocalFrom;
+                let toDate = formatDateLocalTo;
     
                 if (Array.isArray(loadOptions.filter)) {
                     if (loadOptions.filter[0]?.[0] === "fromDate") {
-                        fromDate = loadOptions.filter[0]?.[2] || getLocalISOString;
+                        fromDate = loadOptions.filter[0]?.[2] || formatDateLocalFrom;
                     }
                     if (loadOptions.filter[1]?.[0] === "toDate") {
-                        toDate = loadOptions.filter[1]?.[2] || getLocalISOString;
+                        toDate = loadOptions.filter[1]?.[2] || formatDateLocalTo;
                     }
                 }
     
