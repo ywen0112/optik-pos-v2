@@ -266,10 +266,10 @@ const AddCustomerModal = ({
                         <button
                             className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
                             onClick={() => {
-                                if (!debtorFormData.debtorCode.trim()) {
+                                if (!debtorFormData.debtorCode.trim() && !debtorFormData.companyName.trim) {
                                 onError({
                                     title: "Validation Error",
-                                    message: "Customer Code is required.",
+                                    message: "Customer Code & Name is required.",
                                 });
                                 return;
                                 }
