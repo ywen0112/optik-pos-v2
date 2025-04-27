@@ -75,6 +75,8 @@ const saveDebtor = `${ApiBaseUrl}Debtor/Save`;
 const deleteDebtor = `${ApiBaseUrl}Debtor/Delete`;
 const getLatestDebtorContactLens = `${ApiBaseUrl}Debtor/GetLatestDebtorContactLens`;
 const getLatestDebtorSpectacles = `${ApiBaseUrl}Debtor/GetLatestDebtorSpectacles`;
+const getDebtorRXHistorys = `${ApiBaseUrl}Debtor/GetDebtorRXHistorys`;
+const getDebtorSalesHistorys = `${ApiBaseUrl}Debtor/GetDebtorSalesHistorys`;
 
 export const GetDebtorRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
@@ -161,6 +163,32 @@ export const GetLatestDebtorSpectacles = ({companyId, userId, id}) =>{
     });
 
     return postRequest(getLatestDebtorSpectacles, body);
+};
+
+export const GetDebtorSalesHistorys = ({companyId, keyword, offset, limit, fromDate, toDate}) =>{
+    const body = JSON.stringify({
+        companyId,
+        fromDate,
+        toDate,
+        keyword,
+        offset,
+        limit, 
+    });
+
+    return postRequest(getDebtorSalesHistorys, body);
+};
+
+export const GetDebtorRXHistorys = ({companyId, keyword, offset, limit, fromDate, toDate}) =>{
+    const body = JSON.stringify({
+        companyId,
+        fromDate,
+        toDate,
+        keyword,
+        offset,
+        limit, 
+    });
+
+    return postRequest(getDebtorRXHistorys, body);
 };
 
 //userRole

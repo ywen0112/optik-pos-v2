@@ -20,7 +20,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
           <input
             type="text"
             readOnly
-            className="col-span-2 border px-2 h-[40px] ml-2 cursor-not-allowed"
+            className="col-span-2 border px-2 h-[40px] ml-2 "
             value={latesSpecRXData.docDate}
           />
 
@@ -34,7 +34,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 checked={latesSpecRXData.dominentRightEye}
                 readOnly
                 disabled
-                className="cursor-not-allowed"
+                className=""
               />
               <label>Right</label>
             </div>
@@ -45,7 +45,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
               <input
                 type="text"
                 readOnly
-                className="mr-2 border w-full h-[40px] px-2 cursor-not-allowed"
+                className="mr-2 border w-full h-[40px] px-2 "
                 placeholder="Spectacles Type"
                 value={latesSpecRXData.spectaclesType}
               />
@@ -54,7 +54,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
               <input
                 type="text"
                 readOnly
-                className="mr-2 border w-full h-[40px] px-2 cursor-not-allowed"
+                className="mr-2 border w-full h-[40px] px-2 "
                 placeholder="Optical Height"
                 value={latesSpecRXData.opticalHeight}
               />
@@ -63,7 +63,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
               <input
                 type="text"
                 readOnly
-                className="mr-2 border w-full h-[40px] px-2 cursor-not-allowed"
+                className="mr-2 border w-full h-[40px] px-2 "
                 placeholder="Segment Height"
                 value={latesSpecRXData.segmentHeight}
               />
@@ -74,7 +74,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 checked={latesSpecRXData.dominentLeftEye}
                 readOnly
                 disabled
-                className="cursor-not-allowed"
+                className=""
               />
               <label>Left</label>
             </div>
@@ -106,7 +106,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 key={`r-${field}`}
                 type="text"
                 readOnly
-                className="border px-2 h-[40px] cursor-not-allowed"
+                className="border px-2 h-[40px] "
                 value={latesSpecRXData[
                   activeSpectaclesTab === 'SpecDistance' ? `r_D_${field}` : `r_R_${field}`
                 ] || ""}
@@ -119,7 +119,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 key={`l-${field}`}
                 type="text"
                 readOnly
-                className="border px-2 h-[40px] cursor-not-allowed"
+                className="border px-2 h-[40px] "
                 value={latesSpecRXData[
                   activeSpectaclesTab === 'SpecDistance' ? `l_D_${field}` : `l_R_${field}`
                 ] || ""}
@@ -140,7 +140,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
           <input
             type="text"
             readOnly
-            className="col-span-2 border px-2 h-[40px] ml-2 cursor-not-allowed"
+            className="col-span-2 border px-2 h-[40px] ml-2 "
             value={latestLensRXData.docDate}
           />
 
@@ -171,7 +171,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 key={`lens-r-${field}`}
                 type="text"
                 readOnly
-                className="border px-2 h-[40px] cursor-not-allowed"
+                className="border px-2 h-[40px] "
                 value={latestLensRXData[
                   activeLensTab === 'LensDistance' ? `r_D_${field}` : `r_R_${field}`
                 ] || ""}
@@ -185,7 +185,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 key={`lens-l-${field}`}
                 type="text"
                 readOnly
-                className="border px-2 h-[40px] cursor-not-allowed"
+                className="border px-2 h-[40px] "
                 value={latestLensRXData[
                   activeLensTab === 'LensDistance' ? `l_D_${field}` : `l_R_${field}`
                 ] || ""}

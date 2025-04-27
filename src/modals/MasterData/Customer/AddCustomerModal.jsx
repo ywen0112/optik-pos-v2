@@ -4,7 +4,10 @@ import CustomerGeneral from "./CustomerGeneral";
 import CustomerMedicalInfo from "./CustomerMedicalInfo";
 import CustomerLatestRX from "./CustomrLastestRX";
 import CustomerHistoryRX from "./CustomerHistoryRX";
-import { GetLatestDebtorContactLens, GetLatestDebtorSpectacles } from "../../../api/maintenanceapi";
+import { GetDebtorRXHistorys, GetDebtorSalesHistorys, GetLatestDebtorContactLens, GetLatestDebtorSpectacles } from "../../../api/maintenanceapi";
+import CustomStore from "devextreme/data/custom_store";
+import ErrorModal from "../../ErrorModal";
+import SalesHistory from "./SalesHistory";
 
 const AddCustomerModal = ({
     selectedCustomer,
@@ -16,6 +19,7 @@ const AddCustomerModal = ({
     companyId, 
     userId
 }) => {
+    const [errorModal, setErrorModal] = useState({ title: "", message: "" });
     const [activeTab, setActiveTab] = useState("General");
     const [debtorFormData, setDebtorFormData] = useState({
         isActive: true,
@@ -121,11 +125,8 @@ const AddCustomerModal = ({
         l_R_ADD: ""
     });
 
-    const [historyRXData, setHistoryRXData] = useState ({
-        docDate: new Date().toISOString().split("T")[0],
-        historyRight: false,
-        historyLeft: false,
-    })
+    const [rxHistoryStore, setRxHistoryStore] = useState(null);
+    const [salesHistoryStore, setSalesHistoryStore] = useState(null);
 
     const handleClose = () =>{
         setDebtorFormData({
@@ -232,12 +233,8 @@ const AddCustomerModal = ({
             l_R_ADD: ""
         });
 
-        setHistoryRXData ({
-            docDate: new Date().toISOString().split("T")[0],
-            historyRight: false,
-            historyLeft: false,
-        });
-
+        setRxHistoryStore([]);
+        setSalesHistoryStore([]);
         onClose();
     }
 
@@ -283,6 +280,100 @@ const AddCustomerModal = ({
                 onError({ title: "Fetch Error", message: error.message });
             }
         };
+
+        const rxHistoryStore = new CustomStore({
+            key: "docNo",
+            load: async (loadOptions) => {
+                const skip = loadOptions.skip ?? 0;
+                const take = loadOptions.take ?? 10;
+                const keyword = loadOptions.filter?.[2][2] || "";
+                const getLocalISOString = () => {
+                    const now = new Date();
+                    const timezoneOffset = now.getTimezoneOffset() * 60000; // offset in milliseconds
+                    const localISOTime = new Date(now.getTime() - timezoneOffset).toISOString().slice(0, -1); // remove Z
+                    return localISOTime;
+                };
+                let fromDate = getLocalISOString;
+                let toDate = getLocalISOString;
+    
+                if (Array.isArray(loadOptions.filter)) {
+                    if (loadOptions.filter[0]?.[0] === "fromDate") {
+                        fromDate = loadOptions.filter[0]?.[2] || getLocalISOString;
+                    }
+                    if (loadOptions.filter[1]?.[0] === "toDate") {
+                        toDate = loadOptions.filter[1]?.[2] || getLocalISOString;
+                    }
+                }
+    
+                try {
+                    const response = await GetDebtorRXHistorys({
+                        companyId,
+                        offset: skip,
+                        limit: take,
+                        keyword,
+                        fromDate,
+                        toDate
+                    });
+    
+                    return {
+                        data: response?.data || [],
+                        totalCount: response?.totalRecords || 0
+                    };
+                } catch (error) {
+                    onError({ title: "Fetch Error", message: error.message });
+                    return { data: [], totalCount: 0 };
+                }
+            }
+        });
+    
+        setRxHistoryStore(rxHistoryStore);
+
+        const salesHistoryStore = new CustomStore({
+            key: "docNo",
+            load: async (loadOptions) => {
+                const skip = loadOptions.skip ?? 0;
+                const take = loadOptions.take ?? 10;
+                const keyword = loadOptions.filter?.[2][2] || "";
+                const getLocalISOString = () => {
+                    const now = new Date();
+                    const timezoneOffset = now.getTimezoneOffset() * 60000; 
+                    const localISOTime = new Date(now.getTime() - timezoneOffset).toISOString().slice(0, -1); 
+                    return localISOTime;
+                };
+                let fromDate = getLocalISOString;
+                let toDate = getLocalISOString;
+    
+                if (Array.isArray(loadOptions.filter)) {
+                    if (loadOptions.filter[0]?.[0] === "fromDate") {
+                        fromDate = loadOptions.filter[0]?.[2] || getLocalISOString;
+                    }
+                    if (loadOptions.filter[1]?.[0] === "toDate") {
+                        toDate = loadOptions.filter[1]?.[2] || getLocalISOString;
+                    }
+                }
+    
+                try {
+                    const response = await GetDebtorSalesHistorys({
+                        companyId,
+                        offset: skip,
+                        limit: take,
+                        keyword,
+                        fromDate,
+                        toDate
+                    });
+    
+                    return {
+                        data: response?.data || [],
+                        totalCount: response?.totalRecords || 0
+                    };
+                } catch (error) {
+                    onError({ title: "Fetch Error", message: error.message });
+                    return { data: [], totalCount: 0 };
+                }
+            }
+        });
+    
+        setSalesHistoryStore(salesHistoryStore);
     
         if (selectedCustomer) {
             setDebtorFormData({
@@ -308,12 +399,6 @@ const AddCustomerModal = ({
                 ocularOthers: selectedCustomer.ocularOthers ?? "",
             });
     
-            setHistoryRXData({
-                docDate: selectedCustomer.historyDocDate ?? new Date().toISOString().split("T")[0],
-                historyRight: selectedCustomer.historyRight ?? false,
-                historyLeft: selectedCustomer.historyLeft ?? false,
-            });
-    
             fetchLatestSpectacles();
             fetchLatestLens();
         } else {
@@ -325,6 +410,7 @@ const AddCustomerModal = ({
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             <div className="bg-white w-full h-full p-6 text-secondary">
                 <div className="sticky top-0 bg-white z-10">
                     <div className="flex flex-row justify-between">
@@ -338,7 +424,7 @@ const AddCustomerModal = ({
 
                 {/* Tabs */}
                 <div className="flex space-x-4 mb-4">
-                    {['General', 'Medical Info', 'Latest RX', 'History RX'].map(tab => (
+                    {['General', 'Medical Info', 'Latest RX', 'History RX', 'Sales History'].map(tab => (
                     <button
                         key={tab}
                         className={`px-4 py-2 rounded ${activeTab === tab ? 'bg-primary text-white' : 'bg-gray-200'}`}
@@ -364,7 +450,21 @@ const AddCustomerModal = ({
                 )}
 
                 {activeTab === "History RX" && (
-                    <CustomerHistoryRX historyRXData={historyRXData} setHistoryRXData={setHistoryRXData} />
+                    <CustomerHistoryRX 
+                    rxHistoryStore={rxHistoryStore} 
+                    className={"p-2"}
+                    companyId={companyId}
+                    onError={setErrorModal}
+                    />
+                )}
+
+                {activeTab === "Sales History" && (
+                    <SalesHistory 
+                    salesHistoryStore={salesHistoryStore} 
+                    className={"p-2"}
+                    companyId={companyId}
+                    onError={setErrorModal}
+                    />
                 )}
                 </div>
 
@@ -391,7 +491,6 @@ const AddCustomerModal = ({
                                 const mergedData = {
                                 ...debtorFormData,
                                 ...medicalInfoData,
-                                ...historyRXData,
                                 };
 
                                 onConfirm({
