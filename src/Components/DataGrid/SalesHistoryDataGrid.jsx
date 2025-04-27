@@ -111,46 +111,36 @@ const SalesHistoryDataGrid = ({ salesHistoryStore, className }) => {
       <MasterDetail
         enabled={true}
         component={({ data }) => (
-            <div className="px-1 py-2 bg-gray-50 rounded">
+          <div className="px-1 py-2 bg-gray-50 rounded">
             <h5 className="font-semibold mb-2">Sales Details</h5>
 
-            <div className="overflow-x-auto">
-                <table className="w-full text-left border">
-                <thead className="bg-gray-100">
-                    <tr>
-                    <th className="border px-1 py-2">Item Code</th>
-                    <th className="border px-1 py-2">Description</th>
-                    <th className="border px-1 py-2">Desc2</th>
-                    <th className="border px-1 py-2">UOM</th>
-                    <th className="border px-1 py-2">Qty</th>
-                    <th className="border px-1 py-2">Unit Price</th>
-                    <th className="border px-1 py-2">Discount</th>
-                    <th className="border px-1 py-2">Discount Amount</th>
-                    <th className="border px-1 py-2">SubTotal</th>
-                    <th className="border px-1 py-2">Classification</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {(data?.data?.details ?? []).map((detail, idx) => (
-                    <tr key={idx} className="hover:bg-gray-100">
-                        <td className="border px-1 py-2">{detail.itemCode}</td>
-                        <td className="border px-1 py-2">{detail.description}</td>
-                        <td className="border px-1 py-2">{detail.desc2}</td>
-                        <td className="border px-1 py-2">{detail.uom}</td>
-                        <td className="border px-1 py-2">{detail.qty}</td>
-                        <td className="border px-1 py-2">{detail.unitPrice}</td>
-                        <td className="border px-1 py-2">{detail.discount}</td>
-                        <td className="border px-1 py-2">{detail.discountAmount}</td>
-                        <td className="border px-1 py-2">{detail.subTotal}</td>
-                        <td className="border px-1 py-2">{detail.classification}</td>
-                    </tr>
-                    ))}
-                </tbody>
-                </table>
-            </div>
-            </div>
+            <StandardDataGridComponent
+              height="auto"
+              dataSource={data?.data?.details || []}
+              showBorders={true}
+              columnAutoWidth={true}
+              allowColumnResizing={true}
+              allowColumnReordering={true}
+              pager={false}            
+              pageSizeSelector={false}
+              searchPanel={false}
+              remoteOperations={false}
+              columnChooser={false}
+            >
+              <Column dataField="itemCode" caption="Item Code" />
+              <Column dataField="description" caption="Description" />
+              <Column dataField="desc2" caption="Desc2" />
+              <Column dataField="uom" caption="UOM" />
+              <Column dataField="qty" caption="Qty" alignment="left" dataType="number" />
+              <Column dataField="unitPrice" caption="Unit Price" alignment="left" format="currency" />
+              <Column dataField="discount" caption="Discount" alignment="left" />
+              <Column dataField="discountAmount" caption="Discount Amount" alignment="left" format="currency" />
+              <Column dataField="subTotal" caption="SubTotal" alignment="left" format="currency" />
+              <Column dataField="classification" caption="Classification" />
+            </StandardDataGridComponent>
+          </div>
         )}
-        />
+      />
     </StandardDataGridComponent>
     </div>
   );
