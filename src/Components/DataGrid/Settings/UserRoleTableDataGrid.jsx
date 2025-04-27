@@ -53,16 +53,15 @@ const UserRoleTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
                 dataField="userRoleCode"
                 caption="User Role Code"
                 allowEditing={false}
-                width={"10%"}
+                width={"150px"}
             />
             <Column
                 dataField="description"
                 caption="Name"
-                width={"80%"}
             />
             <Column
                 caption="Action"
-                width={"10%"}
+                width={"150px"}
                 headerCellRender={() => {
                     return (
                         <div className="  font-bold text-white">

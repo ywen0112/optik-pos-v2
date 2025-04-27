@@ -50,13 +50,13 @@ const NumberingFormatDataGrid = ({ className, onError, onEdit }) => {
       onLoading={loading}
       remoteOperations={{ paging: true, filtering: true, sorting: true }}
     >
-      <Column dataField="docType" caption="Doc Type" allowEditing={false} width={"20%"} />
-      <Column dataField="nextNumber" caption="Next No" width={"20%"} />
-      <Column dataField="format" caption="Format" width={"20%"} />
-      <Column dataField="oneMonthOneSet" caption="One Month One Set" dataType="boolean" width={"20%"} />
+      <Column dataField="docType" caption="Doc Type" allowEditing={false} width={"200px"} />
+      <Column dataField="nextNumber" caption="Next No" width={"70px"} />
+      <Column dataField="format" caption="Format"/>
+      <Column dataField="oneMonthOneSet" caption="One Month One Set" dataType="boolean" width={"200px"} />
       <Column
         caption="Action"
-        width={"15%"}
+        width={"150px"}
         headerCellRender={() => (
           <div className="font-bold text-white">Action</div>
         )}

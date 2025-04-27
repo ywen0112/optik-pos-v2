@@ -399,7 +399,7 @@ const SalesOrder = () => {
           price: 100.00,
           isNormalItem: true,
           isSpectacles: false,
-          isContactLenses: false
+          iscontctLens: false
         },
         {
           itemId: "2",
@@ -409,7 +409,7 @@ const SalesOrder = () => {
           price: 200.00,
           isNormalItem: false,
           isSpectacles: true,
-          isContactLenses: false
+          iscontctLens: false
         },
         {
           itemId: "3",
@@ -419,7 +419,7 @@ const SalesOrder = () => {
           price: 150.00,
           isNormalItem: false,
           isSpectacles: false,
-          isContactLenses: true
+          iscontctLens: true
         },
         {
           itemId: "4",
@@ -429,7 +429,7 @@ const SalesOrder = () => {
           price: 300.00,
           isNormalItem: false,
           isSpectacles: true,
-          isContactLenses: false,
+          iscontctLens: false,
         }
       ];      
 

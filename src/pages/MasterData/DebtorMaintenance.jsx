@@ -79,6 +79,7 @@ const DebtorMaintenance = () => {
           setNotifyModal({ isOpen: true, message: "Customer deleted successfully!" });
         } else throw new Error(data.errorMessage || "Failed to delete customer.");
       } else {
+        console.log(data.actionData)
         const saveRes = await SaveDebtor ({
           actionData: data.actionData,
           debtorId: data.debtorId,

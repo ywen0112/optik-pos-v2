@@ -58,6 +58,7 @@ const SalesOrderItemTable = ({ data, itemSource, onDataChange, height = 245, han
       <Column
         dataField="itemCode"
         caption="Item Code"
+        width={"100px"}
         editCellComponent={(props) => (
           <ItemDropDownBoxComponent
             data={itemSource}
@@ -78,30 +79,32 @@ const SalesOrderItemTable = ({ data, itemSource, onDataChange, height = 245, han
         allowEditing={false}
         showInColumnChooser={false} />
       <Column dataField="description" caption="Description" />
-      <Column dataField="uom" caption="UOM" />
+      <Column dataField="uom" caption="UOM" width={"80px"} />
       <Column
         dataField="qty"
         caption="Qty"
         dataType="number"
         value={itemQty}
         onValueChanged={(e) => setItemQty(e.target.value)}
+        width={"50px"}
       />
-      <Column dataField="price" caption="Unit Price" dataType="number" />
+      <Column dataField="price" width={"80px"} caption="Unit Price" dataType="number" />
       <Column
         value={false}
         dataField="isDiscByPercent"
-        caption="Disc By Percent"
+        caption="Discount %"
         dataType="boolean"
-
+        width={"90px"}
 
       />
-      <Column dataField="discAmt" caption="Disc Amnt" dataType="number" value={0} />
+      <Column dataField="discAmt" caption="Disc Amnt" dataType="number" value={0} width={"80px"}/>
       <Column dataField="amount"
         caption="Amount"
         dataType="number"
+        width={"80px"}
       />
 
-      <Column type="buttons" caption="Action">
+      <Column type="buttons" width={"80px"} caption="Action">
         <Button name="delete" />
       </Column>
     </DataGrid>

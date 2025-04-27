@@ -18,6 +18,7 @@ const AddCustomerModal = ({
     const [activeTab, setActiveTab] = useState("General");
     const [debtorFormData, setDebtorFormData] = useState({
         isActive: true,
+        debtorId: "",
         debtorCode: "",
         companyName: "",
         identityNo: "",
@@ -132,6 +133,7 @@ const AddCustomerModal = ({
                 setDebtorFormData({
                     isActive: selectedCustomer.isActive ?? true,
                     debtorCode: selectedCustomer.debtorCode ?? "",
+                    debtorId: selectedCustomer.debtorId ?? "",
                     companyName: selectedCustomer.companyName ?? "",
                     identityNo: selectedCustomer.identityNo ?? "",
                     dob: selectedCustomer.dob ?? "",
@@ -280,7 +282,7 @@ const AddCustomerModal = ({
                                 ...latesRXData,
                                 ...historyRXData,
                                 };
-
+                                console.log(selectedCustomer)
                                 onConfirm({
                                 isOpen: true,
                                 action: isEdit ? "edit" : "add",

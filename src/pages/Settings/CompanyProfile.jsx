@@ -5,6 +5,7 @@ import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import { UploadCloud } from "lucide-react";
 
+import company_icon from "../../assets/company_icon.svg";
 import { SaveCompany } from "../../api/companyapi";
 
 const CompanyProfile = () => {
@@ -146,9 +147,9 @@ const CompanyProfile = () => {
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
             </div>
-            <div className="bg-black ml-80 w-40 h-40 flex justify-center rounded-full items-center relative overflow-hidden group">
+            <div className="bg-gray-600 ml-80 w-40 h-40 flex justify-center rounded-full items-center relative overflow-hidden group">
               <img
-                src={`data:image/png;base64,${companyLogo}`}
+                src={companyLogo ? `data:image/png;base64,${companyLogo}` : company_icon}
                 className="w-full h-full rounded-full object-cover"
               />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">

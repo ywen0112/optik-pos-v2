@@ -70,7 +70,7 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
                 columns={ItemGridColumns}
                 hoverStateEnabled={true}
                 showBorders={true}
-                selectedRowKeys={[selectedItem.itemId]}
+                selectedRowKeys={[selectedItem?.itemId]}
                 onRowClick={(e) => {
                     const selected = e.data;
                     const match = dataGridDataSource.find(item => item.itemId === selected.itemId);
@@ -142,7 +142,6 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
                                 : item
                         )
                     );
-                    console.log(dataGridDataSource)
                 }}
                 
                 
@@ -165,7 +164,7 @@ const CashSalesItemDataGrid = ({ dataGridDataSource, onSelectionChange, height }
                     editCellComponent={(props) => (
                         <DropDownBox
                             id="itemSelection"
-                            value={selectedItem.itemId}
+                            value={selectedItem?.itemId}
                             openOnFieldClick={true}
                             valueExpr='itemId'
                             displayExpr={itemGridBoxDisplayExpr}

@@ -50,15 +50,15 @@ const ProductGroupDataGrid = ({ className, companyId, onError, onDelete, onEdit 
             <Column
                 caption="Product Group"
                 dataField="itemGroupCode"
-                width={"15%"}
+                width={"150px"}
             />
             <Column
-                caption="Description"
+                caption="Product Group Description"
                 dataField="description"
             />
             <Column
                 caption="Action"
-                width={"10%"}
+                width={"150px"}
                 headerCellRender={() => {
                     return (
                         <div className="font-bold text-white ">
