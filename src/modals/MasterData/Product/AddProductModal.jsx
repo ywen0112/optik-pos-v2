@@ -24,87 +24,20 @@ const UpdateProductModal = ({
     onError,
     onClose
 }) => {
-    const [formData, setFormData] = useState({
-        isActive: true,
-        itemCode: "",
-        description: "",
-        desc2: "",
-        itemGroupId: "",
-        itemTypeId: "",
-        remark: "",
-        itemUOM: {
-            itemUOMId: "",
-            uom: "",
-            rate: null,
-            price: null,
-            barcode: "",
-            classfication: null,
-        },
-        itemCommission: {
-            isFlat: true,
-            isPercentage: false,
-            value: 0,
-        }
-    });
+    const [formData, setFormData] = useState(null);
 
     const handleClose = () => {
-        setFormData({
-            isActive: true,
-            itemCode: "",
-            description: "",
-            desc2: "",
-            itemGroupId: "",
-            itemTypeId: "",
-            remark: "",
-            itemUOM: {
-                itemUOMId: "",
-                uom: "",
-                rate: null,
-                price: null,
-                barcode: "",
-                classfication: null,
-            },
-            itemCommission: {
-                isFlat: true,
-                isPercentage: false,
-                value: 0,
-            }
-        });
-
+        setFormData(null);
+        setProductGroup(null);
+        setProductType(null);
         onClose();
     }
 
     useEffect(() => {
-        if (isOpen && isEdit) {
-            console.log(selectedItem)
-            setFormData(selectedItem)
-        }
-        else if (isOpen) {
-            console.log(selectedItem)
-            setFormData(selectedItem
-                ?? {
-                isActive: true,
-                itemCode: "",
-                description: "",
-                desc2: "",
-                itemGroupId: "",
-                itemTypeId: "",
-                remark: "",
-                itemUOM: {
-                    itemUOMId: "",
-                    uom: "",
-                    rate: null,
-                    price: null,
-                    barcode: "",
-                    classfication: null,
-                },
-                itemCommission: {
-                    isFlat: true,
-                    isPercentage: false,
-                    value: 0,
-                }
-            }
-            )
+        if (isOpen) {
+            setFormData(selectedItem);
+            setProductGroup({itemGroupId: selectedItem.itemGroupId});
+            setProductType({itemTypeId: selectedItem.itemTypeId});
         }
     }, [isOpen, selectedItem, isEdit]);
 
@@ -136,7 +69,7 @@ const UpdateProductModal = ({
             const res = await getInfoLookUp(params);
             return{
                 data: res.data,
-                totalCount: loadOptions.skip + res.data.count,
+                totalCount: res.totalRecords,
             };
         },
         byKey: async (key) =>{
@@ -160,14 +93,14 @@ const UpdateProductModal = ({
             const params = {
                 keyword: keyword || "",
                 offset: loadOptions.skip,
-                limit: loadOptions.take,
+                limit: 5,
                 type: "item_type",
                 companyId,
             };
             const res = await getInfoLookUp(params);
             return{
                 data: res.data,
-                totalCount: loadOptions.skip + res.data.count,
+                totalCount: res.totalRecords,
             };
         },
         byKey: async (key) =>{
@@ -182,7 +115,8 @@ const UpdateProductModal = ({
 
     const productGroupDataGridOnSelectionChanged = useCallback((e)=>{
         const selected = e.selectedRowsData?.[0];
-        if(selected){
+        if(selected && selected.itemGroupId !== productGroup.itemGroupId){
+            setFormData(prev => ({...prev, itemGroupId: selected.itemGroupId}));
             setProductGroup({itemGroupId: selected.itemGroupId, itemGroupCode: selected.itemGroupCode, description:selected.description})
             setIsGroupBoxOpened(false);
         }
@@ -195,7 +129,7 @@ const UpdateProductModal = ({
             hoverStateEnabled
             selectedRowKeys={productGroup.itemGroupId}
             onSelectionChanged={productGroupDataGridOnSelectionChanged}
-            height="100%"
+            height={"200px"}
             remoteOperations={{
                 paging: true,
                 filtering: true,
@@ -206,7 +140,7 @@ const UpdateProductModal = ({
             <Paging enabled pageSize={5} />
             <SearchPanel visible={true} highlightSearchText />
             <Column dataField="itemGroupCode" caption="Code"/>
-            <Column dataField="Description" caption="Desc" />
+            <Column dataField="description" caption="Desc" />
         </DataGrid>
     ), [productGroup, productGroupDataGridOnSelectionChanged]);
 
@@ -225,7 +159,8 @@ const UpdateProductModal = ({
     
     const handleTypeSelection = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
-        if (selected) {
+        if (selected  && productType.itemTypeId  !== selected.itemTypeId) {
+            setFormData(prev => ({...prev, itemTypeId: selected.itemTypeId}));
             setProductType({itemTypeId: selected.itemTypeId, itemTypeCode: selected.itemTypeCode, description: selected.description});
             setIsTypeBoxOpened(false);
         }
@@ -238,7 +173,7 @@ const UpdateProductModal = ({
             hoverStateEnabled={true}
             selectedRowKeys={[productType.itemTypeId]}
             onSelectionChanged={handleTypeSelection}
-            height="100%"
+            height={"200px"}
             remoteOperations={{
                 paging: true,
                 filtering: true,
@@ -273,7 +208,7 @@ const UpdateProductModal = ({
                 <div className="bg-white p-6 rounded-lg shadow-lg w-full h-full overflow-y-auto text-secondary">
                     <div className="flex flex-row justify-between">
                         <h3 className="font-semibold mb-4">
-                            {isEdit ? "Edit Product" : "Add Product"}
+                            {isEdit ? "Edit Product" : "New Product"}
                         </h3>
                         <div className='col-span-4' onClick={handleClose}>
                             <X size={20} />
@@ -281,60 +216,14 @@ const UpdateProductModal = ({
                     </div>
 
                     <div className="grid grid-cols-4 gap-1">
-                        <div className="flex flex-col">
-                            <div>Product Code</div>
-                            <input
-                                type="text"
-                                placeholder="Product Code"
-                                value={formData.itemCode}
-                                onChange={(e) => setFormData({ ...formData, itemCode: e.target.value })}
-                                className="mr-2 mt-2 border w-full h-[40px] px-2"
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <div>Product Type</div>
-                            <DropDownBox
-                                id="ProductTypeSelection"
-                                value={productType?.itemTypeId}
-                                placeholder='Product Type'
-                                openOnFieldClick={true}
-                                displayExpr={productTypeGridBoxDisplayExpr}
-                                onValueChanged={handleProductTypeChanged}
-                                valueExpr="itemTypeId"
-                                opened={isTypeBoxOpened}
-                                onOptionChanged={onProductTypeGridBoxOpened}
-                                contentRender={ProductTypeGridRender}
-                                className="border mt-2 rounded px-2 py-1 bg-white w-full"
-                                dataSource={productTypeStore}
-                                dropDownOptions={{
-                                    width: 450
-                                }}
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <div>Product Group</div>
-                            <DropDownBox
-                                id="ProductGroupSelection"
-                                value={productGroup?.itemGroupId}
-                                placeholder='Product Group'
-                                openOnFieldClick={true}
-                                displayExpr={productGroupGridBoxDisplayExpr}
-                                onValueChanged={handleProductGroupGridBoxValueChanges}
-                                valueExpr="itemGroupId"
-                                opened={isGroupBoxOpened}
-                                onOptionChanged={onProductGroupGridBoxOpened}
-                                contentRender={ProductGroupGridRender}
-                                className="border mt-2 rounded px-2 py-1 bg-white w-full"
-                                dataSource={productGroupStore}
-                                dropDownOptions={{
-                                    width: 450
-                                }}
-                            />
-                        </div>
-                        <div className="flex flex-row justify-center">
+                        <div className='col-span-4 flex flex-row'>
+                        <div className='w-1/4'>Product Code</div>
+                        <div className='w-1/4'>Product Type</div>
+                        <div className='w-1/4'>Product Group</div>
+                        <div className=" w-1/4 flex flex-row justify-end ">
                             <input
                                 type="checkbox"
-                                checked={formData.isActive}
+                                checked={formData?.isActive}
                                 className="mr-2"
                                 onChange={(e) =>
                                     setFormData({ ...formData, isActive: e.target.checked })
@@ -343,12 +232,64 @@ const UpdateProductModal = ({
                             <div className='flex items-center'>Active</div>
 
                         </div>
+                        </div>
+                        <div className="flex flex-col">
+                            
+                            <input
+                                type="text"
+                                placeholder="Product Code"
+                                value={formData?.itemCode}
+                                onChange={(e) => setFormData({ ...formData, itemCode: e.target.value })}
+                                className="mr-2 mt-2 border w-full h-[40px] px-2"
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            
+                            <DropDownBox
+                                id="ProductTypeSelection"
+                                value={productType?.itemTypeId}
+                                placeholder='Product Type'
+                                openOnFieldClick={true}
+                                opened={isTypeBoxOpened}
+                                displayExpr={productTypeGridBoxDisplayExpr}
+                                onValueChanged={handleProductTypeChanged}
+                                valueExpr="itemTypeId"
+                                onOptionChanged={onProductTypeGridBoxOpened}
+                                contentRender={ProductTypeGridRender}
+                                className="border mt-2 rounded px-2 py-[2px] bg-white w-full"
+                                dataSource={productTypeStore}
+                                dropDownOptions={{
+                                    width: 450
+                                }}
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            
+                            <DropDownBox
+                                id="ProductGroupSelection"
+                                value={productGroup?.itemGroupId}
+                                placeholder='Product Group'
+                                openOnFieldClick={true}
+                                opened={isGroupBoxOpened}
+                                displayExpr={productGroupGridBoxDisplayExpr}
+                                onValueChanged={handleProductGroupGridBoxValueChanges}
+                                valueExpr="itemGroupId"
+                                onOptionChanged={onProductGroupGridBoxOpened}
+                                contentRender={ProductGroupGridRender}
+                                className="border mt-2 rounded px-2 py-[2px] bg-white w-full"
+                                dataSource={productGroupStore}
+                                dropDownOptions={{
+                                    width: 450
+                                }}
+                            />
+                        </div>
+                        
                         <div className="flex flex-col col-span-2 mt-2">
                             <div>Product Name</div>
                             <input
                                 type="text"
                                 placeholder="Product Name"
-                                value={formData.description}
+                                value={formData?.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
@@ -358,7 +299,7 @@ const UpdateProductModal = ({
                             <input
                                 type="text"
                                 placeholder="Product Description"
-                                value={formData.desc2}
+                                value={formData?.desc2}
                                 onChange={(e) => setFormData({ ...formData, desc2: e.target.value })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
@@ -368,7 +309,7 @@ const UpdateProductModal = ({
                             <input
                                 type="text"
                                 placeholder="Product UOM"
-                                value={formData.itemUOM?.uom}
+                                value={formData?.itemUOM?.uom}
                                 onChange={(e) => setFormData({ ...formData, itemUOM: { ...formData.itemUOM, uom: e.target.value } })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
@@ -379,7 +320,7 @@ const UpdateProductModal = ({
                                 type="number"
                                 placeholder="Product Price"
                                 step="0.01"
-                                value={formData.itemUOM?.price}
+                                value={formData?.itemUOM?.price}
                                 onChange={(e) => {
                                     const val = e.target.value;
                                     if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
@@ -422,15 +363,27 @@ const UpdateProductModal = ({
                             />
                         </div>
                         <div className="flex flex-col col-span-2 mt-2">
+                            <div>Remark</div>
+                            <textarea
+                                type="text"
+                                rows={6}
+                                placeholder="Remark"
+                                value={formData?.remark}
+                                onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
+                                className="mr-2 mt-2 border w-full h-[90px] px-2 py-2"
+                            />
+                        </div>
+                        <div className="flex flex-col col-span-2 mt-2">
                             <div>Barcode</div>
                             <input
                                 type="text"
                                 placeholder="Product Barcode"
-                                value={formData.itemUOM?.barcode}
+                                value={formData?.itemUOM?.barcode}
                                 onChange={(e) => setFormData({ ...formData, itemUOM: { ...formData.itemUOM, barcode: e.target.value } })}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
+                        <div className="col-span-2 w-full h-full border-2 shadow-xl border-slate-500 p-2">
 
                         <div className="flex flex-col col-span-2 mt-2">
                             <div className='flex flex-row'>
@@ -455,14 +408,14 @@ const UpdateProductModal = ({
                                             setFormData({...formData, itemCommission:{...formData.itemCommission, value:val}});
                                         }
                                     }}
-                                    value={formData.itemCommission?.value}
+                                    value={formData?.itemCommission?.value}
                                     className="mt-2 border w-full h-[40px] px-2"
                                 />
                                 <div className="flex-row space-x-5">
                                     <label>Percentage</label>
                                     <input
                                         type="checkbox"
-                                        checked={formData.itemCommission?.isPercentage}
+                                        checked={formData?.itemCommission?.isPercentage}
                                         onChange={() => {
                                             setFormData({
                                                 ...formData,
@@ -478,7 +431,7 @@ const UpdateProductModal = ({
                                     <label>Flat Rate</label>
                                     <input
                                         type="checkbox"
-                                        checked={formData.itemCommission?.isFlat}
+                                        checked={formData?.itemCommission?.isFlat}
                                         onChange={() => {
                                             setFormData({
                                                 ...formData,
@@ -495,17 +448,8 @@ const UpdateProductModal = ({
                             </div>
 
                         </div>
-                        <div className="flex flex-col col-span-2 mt-2">
-                            <div>Remark</div>
-                            <textarea
-                                type="text"
-                                rows={6}
-                                placeholder="Remark"
-                                value={formData.remark}
-                                onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
-                                className="mr-2 mt-2 border w-full h-[90px] px-2 py-2"
-                            />
                         </div>
+                        
                     </div>
 
                     <div className="absolute bottom-0 right-0 bg-white py-4 pr-6 flex justify-end w-full border-t">
@@ -515,7 +459,7 @@ const UpdateProductModal = ({
                             </button>
                             <button className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
                                 onClick={() =>{
-                                    if(!formData.description.trim()){
+                                    if(!formData?.description.trim()){
                                         onError({
                                             title: "Validation Error",
                                             message: "Item Name is required.",

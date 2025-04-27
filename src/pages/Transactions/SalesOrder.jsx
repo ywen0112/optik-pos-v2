@@ -57,7 +57,7 @@ const SalesOrder = () => {
     const [newCustomerName, setNewCustomerName] = useState("");
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
 
-    const [selectedItemTypeTitle, setSelectedItemTypeTitle] = useState("");
+    const [isNormalItem, setIsNormalItem] = useState(true);
 
     const intervals = [
         { label: '1 mth', months: 1 },
@@ -427,11 +427,17 @@ const SalesOrder = () => {
           description: "Multifunctional Lens",
           uom: "set",
           price: 300.00,
-          isNormalItem: true,
+          isNormalItem: false,
           isSpectacles: true,
-          isContactLenses: true
+          isContactLenses: false,
         }
       ];      
+
+      const handleCellClick = (rowData) =>{
+        setIsNormalItem(rowData.isNormalItem ?? true);
+      }
+
+      useEffect(() => {console.log(isNormalItem)},[isNormalItem])
 
     return (
         <>
@@ -649,12 +655,12 @@ const SalesOrder = () => {
             <SalesOrderItemTable
                 data={SalesItemTableData}
                 onDataChange={handleSalesItemChange}
-                setSelectedItemTypeTitle={setSelectedItemTypeTitle}
                 itemSource={itemSource}
+                handleCellClick={handleCellClick}
                 />           
             </div>
 
-            <div className="mt-3 p-2 bg-white shadow rounded w-full">
+            <div className={isNormalItem ? "mt-3 p-2 bg-white shadow rounded w-full opacity-30" : "mt-3 p-2 bg-white shadow rounded w-full"}>
                 <div className="mb-4 flex space-x-4 w-full">
                     {["Prescribed RX", "Actual RX"].map((tab) => (
                         <div key={tab} className="relative flex-1">
@@ -747,13 +753,7 @@ const SalesOrder = () => {
                 </div>
 
                 <div className="space-y-2">
-                    <div className="text-center mt-2">
-                    {selectedItemTypeTitle && (
-                    <div className="text-secondary font-semibold px-2">
-                        {selectedItemTypeTitle}
-                    </div>
-                    )}
-                    </div>
+                    
 
                     <div className="overflow-x-auto flex flex-row">
                         <div className="px-2 py-4">

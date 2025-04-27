@@ -12,7 +12,7 @@ import DataGrid, {
 import ItemDropDownBoxComponent from '../DropDownBox/ItemDropDownBoxComponent';
 
 
-const SalesOrderItemTable = ({ data, itemSource, onDataChange, height = 245, setSelectedItemTypeTitle  }) => {
+const SalesOrderItemTable = ({ data, itemSource, onDataChange, height = 245, handleCellClick  }) => {
   const [itemDataGridData, setItemDataGridData] = useState([]);
   const [itemQty, setItemQty] = useState();
 
@@ -37,16 +37,18 @@ const SalesOrderItemTable = ({ data, itemSource, onDataChange, height = 245, set
       showRowLines
       onRowUpdated={(e) => handleRowChange(e.key.__KEY__, e)}
       onRowInserted={(e) => handleRowChange(e.key.__KEY__, e)}
+      onCellClick = {(e) => handleCellClick(e.row.data)}
 
     >
       <Paging enabled={false} />
 
       <Editing
-        mode="cell" // instead of "row"
+        mode="cell"
         allowUpdating
         allowDeleting
         allowAdding
         newRowPosition='last'
+        confirmDelete={false}
       />
 
 
@@ -66,15 +68,7 @@ const SalesOrderItemTable = ({ data, itemSource, onDataChange, height = 245, set
                 updated.push(newValue);
                 return updated;
               });
-            
-              if (newValue) {
-                let title = "";
-                if (newValue.isNormalItem) title = "Normal Item";
-                if (newValue.isSpectacles) title = "Spectacles";
-                if (newValue.isContactLenses) title = "Contact Lens";
-            
-                setSelectedItemTypeTitle(title);
-              }
+              handleCellClick(newValue)
             }}
           />
         )}

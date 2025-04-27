@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
@@ -114,7 +115,7 @@ const DebtorMaintenance = () => {
   };
 
   const confirmationTitleMap = {
-    add: "Confirm Add",
+    add: "Confirm New",
     edit: "Confirm Edit",
     delete: "Confirm Delete"
   };
@@ -150,15 +151,13 @@ const DebtorMaintenance = () => {
       />
 
       <div className="text-right p-2">
-        <button className="bg-secondary text-white px-4 py-2 mb-2 rounded hover:bg-secondary/90 transition" onClick={handleAddNew}>
-          + New
+      <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end" onClick={handleAddNew}>
+          <Plus size={20}/> New
         </button>
       </div>
 
       <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
-        {loading ? (
-          <p className="text-center py-4 text-gray-500">Loading...</p>
-        ) : (
+      
           <CustomerTableDataGrid
             className={"p-2"}
             companyId={companyId}
@@ -168,7 +167,6 @@ const DebtorMaintenance = () => {
           >
           </CustomerTableDataGrid>
 
-        )}
       </div>
 
     </div>

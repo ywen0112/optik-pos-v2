@@ -10,10 +10,11 @@ const MainMenuPage = () => {
                     <h3 className="font-black text-secondary">General</h3>
                 </div>
                 <ul className="space-y-3 text-blue-600 text-[14px]">
-                    {/* <li><Link to="/location">Location</Link></li> */}
                     <li><Link to="/customer">Customer</Link></li>
                     <li><Link to="/supplier">Supplier</Link></li>
                     <li><Link to="/product">Product</Link></li>
+                    <li><Link to="/product-group">Product Group</Link></li>
+                    <li><Link to="/product-type">Product Type</Link></li>
                     <li><Link to="/numbering-format">Numbering Format</Link></li>
                     <li><Link to="/payment-method">Payment Method</Link></li>
                 </ul>

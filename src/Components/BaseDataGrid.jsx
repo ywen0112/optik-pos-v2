@@ -38,6 +38,8 @@ const StandardDataGridComponent = ({
     showBorders,
     onLoading,
     onOptionChanged,
+    columns,
+    onRowUpdated,
     ...rest
 }) => {
     return (
@@ -54,6 +56,7 @@ const StandardDataGridComponent = ({
             showRowLines
             hoverStateEnabled
             showBorders
+            onRowUpdated={onRowUpdated}
             onOptionChanged={onOptionChanged}
             onEditorPreparing={(e) => {
                 if (e.parentType === 'searchPanel') {

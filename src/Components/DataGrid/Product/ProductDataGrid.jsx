@@ -1,42 +1,40 @@
-import { useState, useRef } from "react";
-import { Pencil, TrashIcon } from "lucide-react";
+import StandardDataGridComponent from "../../BaseDataGrid";
 import { Column } from "devextreme-react/cjs/data-grid";
-
-import StandardDataGridComponent from "../BaseDataGrid";
-import { GetDebtorRecords } from "../../api/maintenanceapi";
+import { Eye, TrashIcon, Pencil } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { GetItemsRecords } from "../../../api/maintenanceapi";
 import CustomStore from "devextreme/data/custom_store";
 
-
-const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit }) => {
+const ProductDataGrid = ({ className, companyId, onError, onDelete, onEdit }) => {
     const [loading, setLoading] = useState(false);
 
-    const customerDataGridRef = useRef(null);
-    const customerStore = new CustomStore({
-        key: "debtorId",
-            load: async (loadOptions) => {
-              const skip = loadOptions.skip ?? 0;
-              const take = loadOptions.take ?? 10;
-              const keyword = loadOptions.filter?.[2][2] || "";
-        
-              try {
-                const data = await GetDebtorRecords({ companyId, offset: skip, limit: take, keyword });
+    const itemDataGridRef = useRef(null);
+
+    const itemStore = new CustomStore({
+        key: "itemId",
+        load: async (loadOptions) => {
+            const skip = loadOptions.skip ?? 0;
+            const take = loadOptions.take ?? 10;
+            const keyword = loadOptions.filter?.[2][2] || "";
+
+            try {
+                const data = await GetItemsRecords({ companyId, offset: skip, limit: take, keyword });
                 return {
-                  data: data.data || [],
-                  totalCount: data.totalRecords || 0
+                    data: data.data || [],
+                    totalCount: data.totalRecords || 0
                 };
-              } catch (error) {
+            } catch (error) {
                 onError({ title: "Fetch Error", message: error.message });
                 return { data: [], totalCount: 0 };
-              } 
             }
+        }
     })
-
 
     return (
         <StandardDataGridComponent
-            ref={customerDataGridRef}
+            ref={itemDataGridRef}
             height={"100%"}
-            dataSource={customerStore}
+            dataSource={itemStore}
             className={className}
             searchPanel={true}
             pager={true}
@@ -50,28 +48,38 @@ const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
             remoteOperations={{ paging: true, filtering: true, sorting: true }}
         >
             <Column
-                dataField="debtorCode"
-                caption="Customer Code"
-                allowEditing={false}
-                width={"15%"}
+                caption="Product Code"
+                dataField="itemCode"
+                width={"10%"}
             />
             <Column
-                dataField="companyName"
-                caption="Name"
-                width={"80%"}
+                caption="Product Name"
+                dataField="description"
+            />
+            {/* <Column
+                caption="UOM"
+                dataField="UOM"
+            /> */}
+            <Column
+                dataField="itemTypeCode"
+                caption="Product Type"
             />
             <Column
+                dataField="itemGroupCode"
+                caption="Product Group"
+            />
+
+            <Column
+                caption="Bal Qty"
+                dataField="balQty"
+            />
+
+            <Column
+                caption="Active"
                 dataField="isActive"
-                caption="Is Active"
-                type="boolean"
-                width={"10%"}
+                dataType="boolean"
             />
-            <Column
-                dataField="isDefault"
-                caption="Default"
-                type="boolean"
-                width={"10%"}
-            />
+
             <Column
                 caption="Action"
                 width={"10%"}
@@ -95,7 +103,7 @@ const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
                             <div className=" text-red-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
                                     e.stopPropagation(); // prevent row click event (select)
-                                    onDelete(cellData.data.debtorId);
+                                    onDelete(cellData.data.itemId);
                                 }}>
                                 <TrashIcon size={20} />
                             </div>
@@ -104,8 +112,9 @@ const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
                     );
                 }}
             />
+
         </StandardDataGridComponent>
     )
 }
 
-export default CustomerTableDataGrid;
+export default ProductDataGrid

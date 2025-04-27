@@ -11,7 +11,6 @@ import UserMaintenance from "../pages/Settings/UserMaintenance";
 import AccessRightMaintenance from "../pages/Settings/AccessRightMaintenance";
 import DebtorMaintenance from "../pages/MasterData/DebtorMaintenance";
 import CreditorMaintenance from "../pages/MasterData/CreditorMaintenance";
-import LocationMaintenance from "../pages/MasterData/LocationMaintenance";
 import ItemMaintenance from "../pages/MasterData/ItemMaintenance";
 import UserProfile from "../pages/UserProfile";
 import MainMenuPage from "../pages/MasterData/MainMenuPage";
@@ -26,6 +25,9 @@ import StockAdjustment from "../pages/Transactions/StockAdjustment";
 import GoodsTransit from "../pages/Transactions/GoodsTransit";
 import SalesInquiry from "../pages/Inquiry/SalesInquiry";
 import NumberingFormat from "../pages/MasterData/NumberingFormat";
+
+import ProductTypeMaintenance from "../pages/MasterData/ProductTypeMaintenence";
+import ProductGroupMaintenance from "../pages/MasterData/ProductGroupMaintenance";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -77,8 +79,6 @@ const MainLayout = ({ title }) => {
         return <CreditorMaintenance />;
       case "/product":
         return <ItemMaintenance />;
-      case "/location":
-        return <LocationMaintenance />;
       case "/maintenances/member":
         return <div className="text-secondary">Member Maintenance Page in Maintenance ...</div>;
       case "/maintenances/pwp":
@@ -93,6 +93,10 @@ const MainLayout = ({ title }) => {
         return <ProductInquiry />
       case "/numbering-format":
         return <NumberingFormat />
+      case "/product-group":
+        return <ProductGroupMaintenance />
+      case "/product-type":
+        return <ProductTypeMaintenance />
       default:
         return <Dashboard />;
     }

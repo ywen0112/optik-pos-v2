@@ -56,7 +56,7 @@ try {
       path: "/user-role",
     },
     {
-      label: "Item Opening",
+      label: "Product Opening",
       icon: <PackageOpen className="w-8 h-8 text-primary" />,
       path: "/item-opening",
     },

@@ -1,11 +1,15 @@
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import PaymentMethodDataGrid from "../../Components/DataGrid/PaymentMethodDataGrid";
-import AddPaymentModal from "../../modals/AddPaymentModal";
+import AddPaymentModal from "../../modals/MasterData/AddPaymentMethodModal";
+import { DeletePaymentMethod, NewPaymentMethod, SavePaymentMethod } from "../../api/maintenanceapi";
 
 const PaymentMethod = () => {
+  const companyId = sessionStorage.getItem("companyId");
+  const userId = sessionStorage.getItem("userId");
   const [formats, setFormats] = useState([]);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
@@ -16,14 +20,19 @@ const PaymentMethod = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const handleAddNew = () => {
-    setSelectedFormat({
-        isActive: true,
-        paymentMethod: "",
-        paymentMethodType: "",
-    });
-    setFormAction("add");
-    setIsUpdateModelOpen(true);
+  const handleAddNew = async () => {
+    try {
+      const data = await NewPaymentMethod({ companyId: companyId, userId: userId, id: userId });
+      if (data.success) {
+        setSelectedFormat(data.data)
+        setFormAction("add");
+        setIsUpdateModelOpen(true);
+      } else throw new Error(data.errorMessage || "Failed to create new Payment Method.");
+    } catch (error) {
+      setErrorModal({ title: "New Payment Method Error", message: error.message });
+    }
+
+
   };
 
   const handleOpenModal = (format, mode) => {
@@ -32,41 +41,48 @@ const PaymentMethod = () => {
     setIsUpdateModelOpen(true);
   };
 
-  const handleDeleteClick = (id) => {
+  const handleDeleteClick = async (id) => {
     setDeleteTarget(id);
     setConfirmModal({ isOpen: true, action: "delete" });
   };
 
-  const confirmAction = () => {
-    const action = confirmModal.action;
+  const confirmAction = async ({ isOpen, action, data }) => {
     setSaving(true);
     setConfirmModal({ isOpen: false, action: null });
-
-    setTimeout(() => {
-      if (action === "delete") {
-        setFormats((prev) => prev.filter((f) => f.formatId !== deleteTarget));
-        setNotifyModal({ isOpen: true, message: "Payment Method deleted successfully!" });
-      } else {
-        if (formAction === "edit") {
-          setFormats((prev) =>
-            prev.map((f) =>
-                f.formatId === selectedFormat.formatId ? selectedFormat : f
-            )
-          );
-          setNotifyModal({ isOpen: true, message: "Payment Method updated successfully!" });
-        } else {
-          const newFormat = {
-            ...selectedFormat,
-            formatId: Date.now().toString(), // mock ID
-          };
-          setFormats((prev) => [...prev, newFormat]);
-          setNotifyModal({ isOpen: true, message: "Payment Method added successfully!" });
-        }
-        setSelectedFormat(null);
-        setIsUpdateModelOpen(false);
+    if (action === "delete") {
+      setFormats((prev) => prev.filter((f) => f.formatId !== deleteTarget));
+      try{
+        const result = await DeletePaymentMethod({companyId: companyId, userId: userId, id: deleteTarget})
+        if(result.success){
+          setNotifyModal({ isOpen: true, message: "Payment Method deleted successfully!" });
+        }else throw new Error(result.errorMessage || "Failed to delete payment method");
+      }catch(error){
+        setErrorModal({ title: "Delete Payment Method Error", message: error.message });
       }
-      setSaving(false);
-    }, 500);
+     
+    } else {
+
+      try {
+        const res = await SavePaymentMethod({ ...data });
+        if (res.success) {
+          if (formAction === "edit") {
+            setNotifyModal({ isOpen: true, message: "Payment Method updated successfully!" });
+          } else {
+            setNotifyModal({ isOpen: true, message: "Payment Method added successfully!" });
+          }
+        } else throw new Error(data.errorMessage || "Failed to Save Payment Method.");
+
+      } catch (error) {
+        if (formAction === "edit") {
+          setErrorModal({ title: "Update Payment Method Error", message: error.message });
+        } else {
+          setErrorModal({ title: "Save Payment Method Error", message: error.message });
+        }
+      }
+      setSelectedFormat(null);
+      setIsUpdateModelOpen(false);
+    }
+    setSaving(false);
   };
 
   const handleCloseUpdateModal = () => {
@@ -75,7 +91,7 @@ const PaymentMethod = () => {
   };
 
   const confirmationTitleMap = {
-    add: "Confirm Add",
+    add: "Confirm New",
     edit: "Confirm Edit",
     delete: "Confirm Delete",
   };
@@ -103,7 +119,7 @@ const PaymentMethod = () => {
         title={confirmationTitleMap[confirmModal.action]}
         message={confirmationMessageMap[confirmModal.action]}
         loading={saving}
-        onConfirm={confirmAction}
+        onConfirm={() => confirmAction({isOpen: confirmModal.isOpen, action: confirmModal.action})}
         onCancel={() => setConfirmModal({ isOpen: false, action: null })}
       />
       <AddPaymentModal
@@ -115,20 +131,17 @@ const PaymentMethod = () => {
         onClose={handleCloseUpdateModal}
       />
       <div className="text-right p-2">
-        <button
-          className="bg-secondary text-white px-4 py-2 mb-2 rounded hover:bg-secondary/90 transition"
-          onClick={handleAddNew}
-        >
-          + New
+      <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end" onClick={handleAddNew}>
+          <Plus size={20}/> New
         </button>
       </div>
       <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
         <PaymentMethodDataGrid
-          methodRecords={formats}
           className="p-2"
           onError={setErrorModal}
           onDelete={handleDeleteClick}
           onEdit={handleOpenModal}
+          actionDone={saving}
         />
       </div>
     </div>

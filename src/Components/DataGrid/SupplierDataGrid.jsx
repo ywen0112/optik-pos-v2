@@ -4,72 +4,39 @@ import { Column } from "devextreme-react/cjs/data-grid";
 
 import StandardDataGridComponent from "../BaseDataGrid";
 import { GetCreditorRecords } from "../../api/maintenanceapi";
+import CustomStore from "devextreme/data/custom_store";
 
 
 const SupplierDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
-    const [supplier, setSupplier] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [skip, setSkip] = useState(0)
-    const [take, setTake] = useState(10)
-    const [keyword, setKeyword] = useState("")
 
     const supplierDataGridRef = useRef(null);
 
-    useEffect(() => {
-        fetchSuppliers();
-    }, [skip, take, keyword])
+    const supplierStore = new CustomStore({
+        key: "creditorId",
+            load: async (loadOptions) => {
+              const skip = loadOptions.skip ?? 0;
+              const take = loadOptions.take ?? 10;
+              const keyword = loadOptions.filter?.[2][2] || "";
+        
+              try {
+                const data = await GetCreditorRecords({ companyId, offset: skip, limit: take, keyword });
+                return {
+                  data: data.data || [],
+                  totalCount: data.totalRecords || 0
+                };
+              } catch (error) {
+                onError({ title: "Fetch Error", message: error.message });
+                return { data: [], totalCount: 0 };
+              }
+            }
+    })
 
-    useEffect(() => {
-        fetchSuppliers();
-    }, [onEdit, onDelete ])
-
-    useEffect(() =>{
-        setSkip(0)
-        setTake(10)
-    }, [keyword])
-
-    const fetchSuppliers = async () => {
-        setLoading(true);
-    
-        try {
-          const data = await GetCreditorRecords({companyId: companyId, keyword: keyword, offset: skip, limit: take});
-          if (data.success) {
-          const records = data.data || [];
-          const total = data.data.totalRecords || 0;
-    
-          setSupplier(records);
-          
-          } else throw new Error(data.errorMessage || "Failed to fetch suppliers.");
-        } catch (error) {
-            onError({ title: "Fetch Error", message: error.message });
-        } finally {
-          setLoading(false);
-        }
-      };
-    
-    const handlePagerChange = (e) =>{
-        if (e.fullName === 'paging.pageSize' || e.fullName === 'paging.pageIndex') {
-            const gridInstance = supplierDataGridRef.current.instance;
-      
-            const pageSize = gridInstance.pageSize();
-            const pageIndex = gridInstance.pageIndex(); 
-            const skip = pageIndex * pageSize;
-            const take = pageSize;
-
-            setSkip(skip);
-            setTake(take);
-        }
-
-        if(e.fullName === 'searchPanel.text'){
-            const searchText = e.value;
-            setKeyword(searchText);
-        }
-    }
     return (
         <StandardDataGridComponent
             ref={supplierDataGridRef}
             height={"100%"}
-            dataSource={supplier}
+            dataSource={supplierStore}
             className={className}
             searchPanel={true}
             pager={true}
@@ -80,13 +47,13 @@ const SupplierDataGrid = ({className, companyId, onError, onDelete, onEdit}) => 
             allowColumnReordering={false}
             allowEditing={true}
             onLoading={loading}
-            onOptionChanged={handlePagerChange}            
+            remoteOperations={{ paging: true, filtering: true, sorting: true }}           
         >
             <Column
                 dataField="creditorCode"
                 caption="Supplier Code"
                 allowEditing={false}
-                width={"10%"}
+                width={"15%"}
             />
             <Column
                 dataField="companyName"
@@ -95,13 +62,7 @@ const SupplierDataGrid = ({className, companyId, onError, onDelete, onEdit}) => 
             />
             <Column
                 dataField="isActive"
-                caption="Is Active"
-                type="boolean"
-                width={"10%"}
-            />
-            <Column
-                dataField="isDefault"
-                caption="Default"
+                caption="Active"
                 type="boolean"
                 width={"10%"}
             />

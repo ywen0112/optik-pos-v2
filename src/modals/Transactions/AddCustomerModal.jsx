@@ -77,7 +77,7 @@ const AddExpressCustomerModal = ({
                 <div className="sticky top-0 bg-white z-10">
                     <div className="flex flex-row justify-between">
                         <h3 className="font-semibold mb-4">
-                            {isEdit ? "Edit Customer" : "Add Customer"}
+                            {isEdit ? "Edit Customer" : "New Customer"}
                         </h3>
                         <div className='col-span-4' onClick={onClose}>
                             <X size={20} />

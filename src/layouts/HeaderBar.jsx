@@ -25,7 +25,9 @@ const HeaderBar = ({ currentPage, onToggleSidebar }) => {
     "/supplier": "Supplier",
     "/product": "Product",
     "/payment-method": "Payment Method",
-    "/numbering-format": "Numbering Format"
+    "/numbering-format": "Numbering Format",
+    "/product-group": "Product Group",
+    "/product-type": "Product Type"
   };
 
   const buildBreadcrumb = () => {
