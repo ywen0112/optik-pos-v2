@@ -1,8 +1,6 @@
 const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData }) => {
     return (
-        <div className="w-full h-full border rounded p-4">
-        <h4 className="font-semibold mb-2">Medical Info</h4>
-
+        <div className="w-full h-full overflow-y-auto border rounded p-4">
             <div className="mt-2">
                 <label className="block">Medical History</label>
                 <div className="grid grid-cols-4 gap-1 mb-2">

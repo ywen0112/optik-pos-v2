@@ -1,7 +1,6 @@
 const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
     return (
-        <div className="w-full h-full border rounded p-4">
-        <h4 className="font-semibold mb-2">General</h4>
+        <div className="w-full h-full overflow-y-auto border rounded p-4">
             <div className="grid grid-cols-4 gap-1">
                 <div className="col-span-4 flex justify-between items-center">
                 <label className="block">Customer Code</label>

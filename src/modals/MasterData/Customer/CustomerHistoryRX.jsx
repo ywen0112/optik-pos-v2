@@ -1,8 +1,6 @@
 const CustomerHistoryRX = ({ historyRXData, setHistoryRXData }) => {
     return (
-        <div className="w-full h-full border rounded p-4">
-        <h4 className="font-semibold mb-2">History RX</h4>
-
+        <div className="w-full h-full overflow-y-auto border rounded p-4">
         {/* Spectacles Section */}
         <div className="mb-4">
             <label className="col-span-2">Doc Date</label>

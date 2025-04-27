@@ -4,6 +4,7 @@ import CustomerGeneral from "./CustomerGeneral";
 import CustomerMedicalInfo from "./CustomerMedicalInfo";
 import CustomerLatestRX from "./CustomrLastestRX";
 import CustomerHistoryRX from "./CustomerHistoryRX";
+import { GetLatestDebtorContactLens, GetLatestDebtorSpectacles } from "../../../api/maintenanceapi";
 
 const AddCustomerModal = ({
     selectedCustomer,
@@ -39,28 +40,86 @@ const AddCustomerModal = ({
         ocularOthers: "",
     });
 
-    const [latesRXData, setLatestRXData] = useState({
-        lastUpdate: new Date().toISOString().split("T")[0],
+    const [latesSpecRXData, setLatestSpecRXData] = useState({
+        docDate: new Date().toISOString().split("T")[0],
+        spectaclesType: "",
         opticalHeight: "",
         segmentHeight: "",
-        dominentEye: "",
-        rxRight: false,
-        rxLeft: false,
-        rSPH: "",
-        rCYL: "",
-        rAXIS: "",
-        rVA: "",
-        rPRISM: "",
-        rADD: "",
-        rPD: "",
-        lSPH: "",
-        lCYL: "",
-        lAXIS: "",
-        lVA: "",
-        lPRISM: "",
-        lADD: "",
-        lPD: "",
-    })
+        dominentRightEye: false,
+        dominentLeftEye: false,
+      
+        // Distance - Right Eye
+        r_D_SPH: "",
+        r_D_CYL: "",
+        r_D_AXIS: "",
+        r_D_VA: "",
+        r_D_PRISM: "",
+        r_D_ADD: "",
+        r_D_PD: "",
+      
+        // Distance - Left Eye
+        l_D_SPH: "",
+        l_D_CYL: "",
+        l_D_AXIS: "",
+        l_D_VA: "",
+        l_D_PRISM: "",
+        l_D_ADD: "",
+        l_D_PD: "",
+      
+        // Reading - Right Eye
+        r_R_SPH: "",
+        r_R_CYL: "",
+        r_R_AXIS: "",
+        r_R_VA: "",
+        r_R_PRISM: "",
+        r_R_ADD: "",
+        r_R_PD: "",
+      
+        // Reading - Left Eye
+        l_R_SPH: "",
+        l_R_CYL: "",
+        l_R_AXIS: "",
+        l_R_VA: "",
+        l_R_PRISM: "",
+        l_R_ADD: "",
+        l_R_PD: ""
+    });      
+    
+    const [latestLensRXData, setLatestLensRXData] = useState({
+        docDate: new Date().toISOString().split("T")[0],
+      
+        // Distance - Right Eye
+        r_D_SPH: "",
+        r_D_CYL: "",
+        r_D_AXIS: "",
+        r_D_BC: "",
+        r_D_DIA: "",
+        r_D_ADD: "",
+      
+        // Distance - Left Eye
+        l_D_SPH: "",
+        l_D_CYL: "",
+        l_D_AXIS: "",
+        l_D_BC: "",
+        l_D_DIA: "",
+        l_D_ADD: "",
+      
+        // Reading - Right Eye
+        r_R_SPH: "",
+        r_R_CYL: "",
+        r_R_AXIS: "",
+        r_R_BC: "",
+        r_R_DIA: "",
+        r_R_ADD: "",
+      
+        // Reading - Left Eye
+        l_R_SPH: "",
+        l_R_CYL: "",
+        l_R_AXIS: "",
+        l_R_BC: "",
+        l_R_DIA: "",
+        l_R_ADD: ""
+    });
 
     const [historyRXData, setHistoryRXData] = useState ({
         docDate: new Date().toISOString().split("T")[0],
@@ -92,27 +151,85 @@ const AddCustomerModal = ({
             ocularOthers: "",
         });
 
-        setLatestRXData ({
-            lastUpdate: new Date().toISOString().split("T")[0],
+        setLatestSpecRXData ({
+            docDate: new Date().toISOString().split("T")[0],
+            spectaclesType: "",
             opticalHeight: "",
             segmentHeight: "",
-            dominentEye: "",
-            rxRight: false,
-            rxLeft: false,
-            rSPH: "",
-            rCYL: "",
-            rAXIS: "",
-            rVA: "",
-            rPRISM: "",
-            rADD: "",
-            rPD: "",
-            lSPH: "",
-            lCYL: "",
-            lAXIS: "",
-            lVA: "",
-            lPRISM: "",
-            lADD: "",
-            lPD: "",
+            dominentRightEye: false,
+            dominentLeftEye: false,
+        
+            // Distance - Right Eye
+            r_D_SPH: "",
+            r_D_CYL: "",
+            r_D_AXIS: "",
+            r_D_VA: "",
+            r_D_PRISM: "",
+            r_D_ADD: "",
+            r_D_PD: "",
+        
+            // Distance - Left Eye
+            l_D_SPH: "",
+            l_D_CYL: "",
+            l_D_AXIS: "",
+            l_D_VA: "",
+            l_D_PRISM: "",
+            l_D_ADD: "",
+            l_D_PD: "",
+        
+            // Reading - Right Eye
+            r_R_SPH: "",
+            r_R_CYL: "",
+            r_R_AXIS: "",
+            r_R_VA: "",
+            r_R_PRISM: "",
+            r_R_ADD: "",
+            r_R_PD: "",
+        
+            // Reading - Left Eye
+            l_R_SPH: "",
+            l_R_CYL: "",
+            l_R_AXIS: "",
+            l_R_VA: "",
+            l_R_PRISM: "",
+            l_R_ADD: "",
+            l_R_PD: ""
+        });
+
+        setLatestLensRXData({
+            docDate: new Date().toISOString().split("T")[0],
+      
+            // Distance - Right Eye
+            r_D_SPH: "",
+            r_D_CYL: "",
+            r_D_AXIS: "",
+            r_D_BC: "",
+            r_D_DIA: "",
+            r_D_ADD: "",
+          
+            // Distance - Left Eye
+            l_D_SPH: "",
+            l_D_CYL: "",
+            l_D_AXIS: "",
+            l_D_BC: "",
+            l_D_DIA: "",
+            l_D_ADD: "",
+          
+            // Reading - Right Eye
+            r_R_SPH: "",
+            r_R_CYL: "",
+            r_R_AXIS: "",
+            r_R_BC: "",
+            r_R_DIA: "",
+            r_R_ADD: "",
+          
+            // Reading - Left Eye
+            l_R_SPH: "",
+            l_R_CYL: "",
+            l_R_AXIS: "",
+            l_R_BC: "",
+            l_R_DIA: "",
+            l_R_ADD: ""
         });
 
         setHistoryRXData ({
@@ -125,87 +242,84 @@ const AddCustomerModal = ({
     }
 
     useEffect(() => {
-        if (isOpen) {
-            setActiveTab("General");
+        if (!isOpen) return;
     
-            if (selectedCustomer) {
-                setDebtorFormData({
-                    isActive: selectedCustomer.isActive ?? true,
-                    debtorCode: selectedCustomer.debtorCode ?? "",
-                    companyName: selectedCustomer.companyName ?? "",
-                    identityNo: selectedCustomer.identityNo ?? "",
-                    dob: selectedCustomer.dob ?? "",
-                    address: selectedCustomer.address ?? "",
-                    remark: selectedCustomer.remark ?? "",
-                    phone1: selectedCustomer.phone1 ?? "",
-                    phone2: selectedCustomer.phone2 ?? "",
-                    emailAddress: selectedCustomer.emailAddress ?? "",
+        setActiveTab("General");
+    
+        const fetchLatestSpectacles = async () => {
+            try {
+                const response = await GetLatestDebtorSpectacles({
+                    companyId,
+                    userId,
+                    id: selectedCustomer?.debtorId,
                 });
     
-                setMedicalInfoData({
-                    medicalIsDiabetes: selectedCustomer.medicalIsDiabetes ?? false,
-                    medicalIsHypertension: selectedCustomer.medicalIsHypertension ?? false,
-                    ocularIsSquint: selectedCustomer.ocularIsSquint ?? false,
-                    ocularIsLazyEye: selectedCustomer.ocularIsLazyEye ?? false,
-                    ocularHasSurgery: selectedCustomer.ocularHasSurgery ?? false,
-                    medicalOthers: selectedCustomer.medicalOthers ?? "",
-                    ocularOthers: selectedCustomer.ocularOthers ?? "",
-                });
-            } else {
-                setDebtorFormData({
-                    isActive: true,
-                    debtorCode: "",
-                    companyName: "",
-                    identityNo: "",
-                    dob: "",
-                    address: "",
-                    remark: "",
-                    phone1: "",
-                    phone2: "",
-                    emailAddress: "",
-                });
-    
-                setMedicalInfoData({
-                    medicalIsDiabetes: false,
-                    medicalIsHypertension: false,
-                    ocularIsSquint: false,
-                    ocularIsLazyEye: false,
-                    ocularHasSurgery: false,
-                    medicalOthers: "",
-                    ocularOthers: "",
-                });
+                if (response?.data) {
+                    const specData = response.data;
+                    setLatestSpecRXData(specData);
+                } else {
+                    onError({ title: "Fetch Error", message: response.errorMessage });
+                }
+            } catch (error) {
+                onError({ title: "Fetch Error", message: error.message });
             }
+        };
+
+        const fetchLatestLens = async () => {
+            try {
+                const response = await GetLatestDebtorContactLens({
+                    companyId,
+                    userId,
+                    id: selectedCustomer?.debtorId,
+                });
     
-            setLatestRXData({
-                lastUpdate: new Date().toISOString().split("T")[0],
-                opticalHeight: "",
-                segmentHeight: "",
-                dominentEye: "",
-                rxRight: false,
-                rxLeft: false,
-                rSPH: "",
-                rCYL: "",
-                rAXIS: "",
-                rVA: "",
-                rPRISM: "",
-                rADD: "",
-                rPD: "",
-                lSPH: "",
-                lCYL: "",
-                lAXIS: "",
-                lVA: "",
-                lPRISM: "",
-                lADD: "",
-                lPD: "",
+                if (response?.data) {
+                    const lensData = response.data;
+                    setLatestLensRXData(lensData);
+                } else {
+                    onError({ title: "Fetch Error", message: response.errorMessage });
+                }
+            } catch (error) {
+                onError({ title: "Fetch Error", message: error.message });
+            }
+        };
+    
+        if (selectedCustomer) {
+            setDebtorFormData({
+                isActive: selectedCustomer.isActive ?? true,
+                debtorCode: selectedCustomer.debtorCode ?? "",
+                companyName: selectedCustomer.companyName ?? "",
+                identityNo: selectedCustomer.identityNo ?? "",
+                dob: selectedCustomer.dob ?? "",
+                address: selectedCustomer.address ?? "",
+                remark: selectedCustomer.remark ?? "",
+                phone1: selectedCustomer.phone1 ?? "",
+                phone2: selectedCustomer.phone2 ?? "",
+                emailAddress: selectedCustomer.emailAddress ?? "",
+            });
+    
+            setMedicalInfoData({
+                medicalIsDiabetes: selectedCustomer.medicalIsDiabetes ?? false,
+                medicalIsHypertension: selectedCustomer.medicalIsHypertension ?? false,
+                ocularIsSquint: selectedCustomer.ocularIsSquint ?? false,
+                ocularIsLazyEye: selectedCustomer.ocularIsLazyEye ?? false,
+                ocularHasSurgery: selectedCustomer.ocularHasSurgery ?? false,
+                medicalOthers: selectedCustomer.medicalOthers ?? "",
+                ocularOthers: selectedCustomer.ocularOthers ?? "",
             });
     
             setHistoryRXData({
-                docDate: new Date().toISOString().split("T")[0],
-                historyRight: false,
-                historyLeft: false,
+                docDate: selectedCustomer.historyDocDate ?? new Date().toISOString().split("T")[0],
+                historyRight: selectedCustomer.historyRight ?? false,
+                historyLeft: selectedCustomer.historyLeft ?? false,
             });
+    
+            fetchLatestSpectacles();
+            fetchLatestLens();
+        } else {
+            handleClose();
         }
-    }, [isOpen]);  // ✅ still only depend on isOpen
+    }, [isOpen]);    
     
     if (!isOpen) return null;
 
@@ -236,7 +350,7 @@ const AddCustomerModal = ({
                 </div>
                 </div>
 
-                <div className="overflow-y-auto flex-1 mt-4 h-full mb-10">
+                <div className="overflow-y-auto flex-1 mt-4 h-full">
                 {activeTab === "General" && (
                     <CustomerGeneral debtorFormData={debtorFormData} setDebtorFormData={setDebtorFormData} />
                 )}
@@ -246,7 +360,7 @@ const AddCustomerModal = ({
                 )}
 
                 {activeTab === "Latest RX" && (
-                    <CustomerLatestRX latesRXData={latesRXData} setLatestRXData={setLatestRXData} />
+                    <CustomerLatestRX latesSpecRXData={latesSpecRXData} latestLensRXData={latestLensRXData} />
                 )}
 
                 {activeTab === "History RX" && (
@@ -277,7 +391,6 @@ const AddCustomerModal = ({
                                 const mergedData = {
                                 ...debtorFormData,
                                 ...medicalInfoData,
-                                ...latesRXData,
                                 ...historyRXData,
                                 };
 
@@ -290,6 +403,7 @@ const AddCustomerModal = ({
                                         userId: userId,
                                         id: selectedCustomer?.debtorId || "",
                                     },
+                                    debtorId: selectedCustomer?.debtorId,
                                     ...mergedData
                                 },
                                 });
