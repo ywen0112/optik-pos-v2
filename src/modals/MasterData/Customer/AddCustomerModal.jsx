@@ -16,7 +16,7 @@ const AddCustomerModal = ({
     onConfirm,
     onError,
     onClose,
-    companyId, 
+    companyId,
     userId
 }) => {
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
@@ -32,7 +32,7 @@ const AddCustomerModal = ({
         remark: "",
         phone1: "",
         phone2: "",
-        emailAddress: "",        
+        emailAddress: "",
     });
 
     const [medicalInfoData, setMedicalInfoData] = useState({
@@ -52,7 +52,7 @@ const AddCustomerModal = ({
         segmentHeight: "",
         dominentRightEye: false,
         dominentLeftEye: false,
-      
+
         // Distance - Right Eye
         r_D_SPH: "",
         r_D_CYL: "",
@@ -61,7 +61,7 @@ const AddCustomerModal = ({
         r_D_PRISM: "",
         r_D_ADD: "",
         r_D_PD: "",
-      
+
         // Distance - Left Eye
         l_D_SPH: "",
         l_D_CYL: "",
@@ -70,7 +70,7 @@ const AddCustomerModal = ({
         l_D_PRISM: "",
         l_D_ADD: "",
         l_D_PD: "",
-      
+
         // Reading - Right Eye
         r_R_SPH: "",
         r_R_CYL: "",
@@ -79,7 +79,7 @@ const AddCustomerModal = ({
         r_R_PRISM: "",
         r_R_ADD: "",
         r_R_PD: "",
-      
+
         // Reading - Left Eye
         l_R_SPH: "",
         l_R_CYL: "",
@@ -88,11 +88,11 @@ const AddCustomerModal = ({
         l_R_PRISM: "",
         l_R_ADD: "",
         l_R_PD: ""
-    });      
-    
+    });
+
     const [latestLensRXData, setLatestLensRXData] = useState({
         docDate: new Date().toISOString().split("T")[0],
-      
+
         // Distance - Right Eye
         r_D_SPH: "",
         r_D_CYL: "",
@@ -100,7 +100,7 @@ const AddCustomerModal = ({
         r_D_BC: "",
         r_D_DIA: "",
         r_D_ADD: "",
-      
+
         // Distance - Left Eye
         l_D_SPH: "",
         l_D_CYL: "",
@@ -108,7 +108,7 @@ const AddCustomerModal = ({
         l_D_BC: "",
         l_D_DIA: "",
         l_D_ADD: "",
-      
+
         // Reading - Right Eye
         r_R_SPH: "",
         r_R_CYL: "",
@@ -116,7 +116,7 @@ const AddCustomerModal = ({
         r_R_BC: "",
         r_R_DIA: "",
         r_R_ADD: "",
-      
+
         // Reading - Left Eye
         l_R_SPH: "",
         l_R_CYL: "",
@@ -129,7 +129,7 @@ const AddCustomerModal = ({
     const [rxHistoryStore, setRxHistoryStore] = useState(null);
     const [salesHistoryStore, setSalesHistoryStore] = useState(null);
 
-    const handleClose = () =>{
+    const handleClose = () => {
         setDebtorFormData({
             isActive: true,
             debtorCode: "",
@@ -153,14 +153,14 @@ const AddCustomerModal = ({
             ocularOthers: "",
         });
 
-        setLatestSpecRXData ({
+        setLatestSpecRXData({
             docDate: new Date().toISOString().split("T")[0],
             spectaclesType: "",
             opticalHeight: "",
             segmentHeight: "",
             dominentRightEye: false,
             dominentLeftEye: false,
-        
+
             // Distance - Right Eye
             r_D_SPH: "",
             r_D_CYL: "",
@@ -169,7 +169,7 @@ const AddCustomerModal = ({
             r_D_PRISM: "",
             r_D_ADD: "",
             r_D_PD: "",
-        
+
             // Distance - Left Eye
             l_D_SPH: "",
             l_D_CYL: "",
@@ -178,7 +178,7 @@ const AddCustomerModal = ({
             l_D_PRISM: "",
             l_D_ADD: "",
             l_D_PD: "",
-        
+
             // Reading - Right Eye
             r_R_SPH: "",
             r_R_CYL: "",
@@ -187,7 +187,7 @@ const AddCustomerModal = ({
             r_R_PRISM: "",
             r_R_ADD: "",
             r_R_PD: "",
-        
+
             // Reading - Left Eye
             l_R_SPH: "",
             l_R_CYL: "",
@@ -200,7 +200,7 @@ const AddCustomerModal = ({
 
         setLatestLensRXData({
             docDate: new Date().toISOString().split("T")[0],
-      
+
             // Distance - Right Eye
             r_D_SPH: "",
             r_D_CYL: "",
@@ -208,7 +208,7 @@ const AddCustomerModal = ({
             r_D_BC: "",
             r_D_DIA: "",
             r_D_ADD: "",
-          
+
             // Distance - Left Eye
             l_D_SPH: "",
             l_D_CYL: "",
@@ -216,7 +216,7 @@ const AddCustomerModal = ({
             l_D_BC: "",
             l_D_DIA: "",
             l_D_ADD: "",
-          
+
             // Reading - Right Eye
             r_R_SPH: "",
             r_R_CYL: "",
@@ -224,7 +224,7 @@ const AddCustomerModal = ({
             r_R_BC: "",
             r_R_DIA: "",
             r_R_ADD: "",
-          
+
             // Reading - Left Eye
             l_R_SPH: "",
             l_R_CYL: "",
@@ -241,9 +241,9 @@ const AddCustomerModal = ({
 
     useEffect(() => {
         if (!isOpen) return;
-    
+
         setActiveTab("General");
-    
+
         const fetchLatestSpectacles = async () => {
             try {
                 const response = await GetLatestDebtorSpectacles({
@@ -251,7 +251,7 @@ const AddCustomerModal = ({
                     userId,
                     id: selectedCustomer?.debtorId,
                 });
-    
+
                 if (response?.data) {
                     const specData = response.data;
                     setLatestSpecRXData(specData);
@@ -270,7 +270,7 @@ const AddCustomerModal = ({
                     userId,
                     id: selectedCustomer?.debtorId,
                 });
-    
+
                 if (response?.data) {
                     const lensData = response.data;
                     setLatestLensRXData(lensData);
@@ -296,7 +296,7 @@ const AddCustomerModal = ({
                 };
                 let fromDate = getLocalISOString;
                 let toDate = getLocalISOString;
-    
+
                 if (Array.isArray(loadOptions.filter)) {
                     if (loadOptions.filter[0]?.[0] === "fromDate") {
                         fromDate = loadOptions.filter[0]?.[2] || getLocalISOString;
@@ -305,7 +305,7 @@ const AddCustomerModal = ({
                         toDate = loadOptions.filter[1]?.[2] || getLocalISOString;
                     }
                 }
-    
+
                 try {
                     const response = await GetDebtorRXHistorys({
                         companyId,
@@ -315,7 +315,7 @@ const AddCustomerModal = ({
                         fromDate,
                         toDate
                     });
-    
+
                     return {
                         data: response?.data || [],
                         totalCount: response?.totalRecords || 0
@@ -326,7 +326,7 @@ const AddCustomerModal = ({
                 }
             }
         });
-    
+
         setRxHistoryStore(rxHistoryStore);
 
         const salesHistoryStore = new CustomStore({
@@ -351,7 +351,7 @@ const AddCustomerModal = ({
                 };
                 let fromDate = formatDateLocalFrom;
                 let toDate = formatDateLocalTo;
-    
+
                 if (Array.isArray(loadOptions.filter)) {
                     if (loadOptions.filter[0]?.[0] === "fromDate") {
                         fromDate = loadOptions.filter[0]?.[2] || formatDateLocalFrom;
@@ -360,7 +360,7 @@ const AddCustomerModal = ({
                         toDate = loadOptions.filter[1]?.[2] || formatDateLocalTo;
                     }
                 }
-    
+
                 try {
                     const response = await GetDebtorSalesHistorys({
                         companyId,
@@ -370,7 +370,7 @@ const AddCustomerModal = ({
                         fromDate,
                         toDate
                     });
-    
+
                     return {
                         data: response?.data || [],
                         totalCount: response?.totalRecords || 0
@@ -381,9 +381,9 @@ const AddCustomerModal = ({
                 }
             }
         });
-    
+
         setSalesHistoryStore(salesHistoryStore);
-    
+
         if (selectedCustomer) {
             setDebtorFormData({
                 isActive: selectedCustomer.isActive ?? true,
@@ -397,7 +397,7 @@ const AddCustomerModal = ({
                 phone2: selectedCustomer.phone2 ?? "",
                 emailAddress: selectedCustomer.emailAddress ?? "",
             });
-    
+
             setMedicalInfoData({
                 medicalIsDiabetes: selectedCustomer.medicalIsDiabetes ?? false,
                 medicalIsHypertension: selectedCustomer.medicalIsHypertension ?? false,
@@ -407,19 +407,19 @@ const AddCustomerModal = ({
                 medicalOthers: selectedCustomer.medicalOthers ?? "",
                 ocularOthers: selectedCustomer.ocularOthers ?? "",
             });
-    
+
             fetchLatestSpectacles();
             fetchLatestLens();
         } else {
             handleClose();
         }
-    }, [isOpen]);    
-    
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
+            <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             <div className="bg-white w-full h-full p-6 text-secondary">
                 <div className="sticky top-0 bg-white z-10">
                     <div className="flex flex-row justify-between">
@@ -431,50 +431,67 @@ const AddCustomerModal = ({
                         </div>
                     </div>
 
-                {/* Tabs */}
-                <div className="flex space-x-4 mb-4">
-                    {['General', 'Medical Info', 'Latest RX', 'History RX', 'Sales History'].map(tab => (
-                    <button
-                        key={tab}
-                        className={`px-4 py-2 rounded ${activeTab === tab ? 'bg-primary text-white' : 'bg-gray-200'}`}
-                        onClick={() => setActiveTab(tab)}
-                    >
-                        {tab}
-                    </button>
-                    ))}
-                </div>
+                    {/* Tabs */}
+                    {isEdit && (
+                        <div className="flex space-x-4 mb-4">
+                            {['General', 'Medical Info', 'Latest RX', 'History RX', 'Sales History'].map(tab => (
+                                <button
+                                    key={tab}
+                                    className={`px-4 py-2 rounded ${activeTab === tab ? 'bg-primary text-white' : 'bg-gray-200'}`}
+                                    onClick={() => setActiveTab(tab)}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                    {!isEdit && (
+                        <div className="flex space-x-4 mb-4">
+                            {['General', 'Medical Info'].map(tab => (
+                                <button
+                                    key={tab}
+                                    className={`px-4 py-2 rounded ${activeTab === tab ? 'bg-primary text-white' : 'bg-gray-200'}`}
+                                    onClick={() => setActiveTab(tab)}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+
                 </div>
 
                 <div className="overflow-y-auto flex-1 mt-4 h-full">
-                {activeTab === "General" && (
-                    <CustomerGeneral debtorFormData={debtorFormData} setDebtorFormData={setDebtorFormData} />
-                )}
+                    {activeTab === "General" && (
+                        <CustomerGeneral debtorFormData={debtorFormData} setDebtorFormData={setDebtorFormData} />
+                    )}
 
-                {activeTab === "Medical Info" && (
-                    <CustomerMedicalInfo medicalInfoData={medicalInfoData} setMedicalInfoData={setMedicalInfoData} />
-                )}
+                    {activeTab === "Medical Info" && (
+                        <CustomerMedicalInfo medicalInfoData={medicalInfoData} setMedicalInfoData={setMedicalInfoData} />
+                    )}
 
-                {activeTab === "Latest RX" && (
-                    <CustomerLatestRX latesSpecRXData={latesSpecRXData} latestLensRXData={latestLensRXData} />
-                )}
+                    {activeTab === "Latest RX" && isEdit && (
+                        <CustomerLatestRX latesSpecRXData={latesSpecRXData} latestLensRXData={latestLensRXData} />
+                    )}
 
-                {activeTab === "History RX" && (
-                    <CustomerHistoryRX 
-                    rxHistoryStore={rxHistoryStore} 
-                    className={"p-2"}
-                    companyId={companyId}
-                    onError={setErrorModal}
-                    />
-                )}
+                    {activeTab === "History RX" && isEdit && (
+                        <CustomerHistoryRX
+                            rxHistoryStore={rxHistoryStore}
+                            className={"p-2"}
+                            companyId={companyId}
+                            onError={setErrorModal}
+                        />
+                    )}
 
-                {activeTab === "Sales History" && (
-                    <SalesHistory 
-                    salesHistoryStore={salesHistoryStore} 
-                    className={"p-2"}
-                    companyId={companyId}
-                    onError={setErrorModal}
-                    />
-                )}
+                    {activeTab === "Sales History" && isEdit && (
+                        <SalesHistory
+                            salesHistoryStore={salesHistoryStore}
+                            className={"p-2"}
+                            companyId={companyId}
+                            onError={setErrorModal}
+                        />
+                    )}
                 </div>
 
                 {/* Action Buttons */}
@@ -490,40 +507,40 @@ const AddCustomerModal = ({
                             className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
                             onClick={() => {
                                 if (!debtorFormData.debtorCode.trim() && !debtorFormData.companyName.trim) {
-                                onError({
-                                    title: "Validation Error",
-                                    message: "Customer Code & Name is required.",
-                                });
-                                return;
+                                    onError({
+                                        title: "Validation Error",
+                                        message: "Customer Code & Name is required.",
+                                    });
+                                    return;
                                 }
 
                                 const mergedData = {
-                                ...debtorFormData,
-                                ...medicalInfoData,
+                                    ...debtorFormData,
+                                    ...medicalInfoData,
                                 };
                                 console.log(selectedCustomer)
                                 onConfirm({
-                                isOpen: true,
-                                action: isEdit ? "edit" : "add",
-                                data: {
-                                    actionData: {
-                                        companyId: companyId, 
-                                        userId: userId,
-                                        id: selectedCustomer?.debtorId || "",
+                                    isOpen: true,
+                                    action: isEdit ? "edit" : "add",
+                                    data: {
+                                        actionData: {
+                                            companyId: companyId,
+                                            userId: userId,
+                                            id: selectedCustomer?.debtorId || "",
+                                        },
+                                        debtorId: selectedCustomer?.debtorId,
+                                        ...mergedData
                                     },
-                                    debtorId: selectedCustomer?.debtorId,
-                                    ...mergedData
-                                },
                                 });
                             }}
-                            >
+                        >
                             Save
                         </button>
                     </div>
                 </div>
             </div>
-        </div>    
-  );
+        </div>
+    );
 };
 
 export default AddCustomerModal;
