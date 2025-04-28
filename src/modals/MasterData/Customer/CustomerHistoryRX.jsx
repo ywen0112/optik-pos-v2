@@ -1,13 +1,21 @@
 import { useState, useEffect } from "react";
-import CustomerHistoryRXDataGrid from "../../../Components/DataGrid/CustomerHistoryRXDataGrid";
 import { Plus } from 'lucide-react';
+import CustomStore from "devextreme/data/custom_store";
+import NotificationModal from "../../NotificationModal";
+import ConfirmationModal from "../../ConfirmationModal";
+import CustomerHistoryRXDataGrid from "../../../Components/DataGrid/CustomerHistoryRXDataGrid";
 import AddHistoryRXModal from "./AddHistoryRXModal";
+import { NewSpectacles, NewContactLens, SaveSpectacles, SaveContactLensProfile } from "../../../api/eyepowerapi";
+import { GetDebtorRXHistorys } from "../../../api/maintenanceapi";
 
-const CustomerHistoryRX = ({ rxHistoryStore }) => {
+const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
+  const userId = sessionStorage.getItem("userId");
   const [activeTab, setActiveTab] = useState("Prescribed");
   const [selectedRX, setSelectedRX] = useState(null);
-  const [isModalOpened, setIsModalOpened] = useState({isOpen: false, type: ""});
-
+  const [saving, setSaving] = useState(false);
+  const [isModalOpened, setIsModalOpened] = useState({ isOpen: false, type: "", data: null });
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null })
+  const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
   const specFields = ["SPH", "CYL", "AXIS", "VA", "PRISM", "ADD", "PD"];
   const lensFields = ["SPH", "CYL", "AXIS", "BC", "DIA", "ADD"];
 
@@ -27,38 +35,145 @@ const CustomerHistoryRX = ({ rxHistoryStore }) => {
     return target ? target[`${eye}_${field}`] ?? "" : "";
   };
 
-  useEffect(() => {
-    if (rxHistoryStore) {
-      rxHistoryStore.load().then((data) => {
-        if (data?.length > 0) {
-          setSelectedRX(data[0]);
-        }
-      });
+  const rxHistoryStore = new CustomStore({
+              key: "docNo",
+              load: async (loadOptions) => {
+                  const skip = loadOptions.skip ?? 0;
+                  const take = loadOptions.take ?? 10;
+                  const keyword = loadOptions.filter?.[2][2] || "";
+                  const getLocalISOString = () => {
+                      const now = new Date();
+                      const timezoneOffset = now.getTimezoneOffset() * 60000; // offset in milliseconds
+                      const localISOTime = new Date(now.getTime() - timezoneOffset).toISOString().slice(0, -1); // remove Z
+                      return localISOTime;
+                  };
+                  let fromDate = getLocalISOString;
+                  let toDate = getLocalISOString;
+                  if (Array.isArray(loadOptions.filter)) {
+                      if (loadOptions.filter[0]?.[0] === "fromDate") {
+                          fromDate = loadOptions.filter[0]?.[2] || getLocalISOString;
+                      }
+                      if (loadOptions.filter[1]?.[0] === "toDate") {
+                          toDate = loadOptions.filter[1]?.[2] || getLocalISOString;
+                      }
+                  }
+  
+                  try {
+                      const response = await GetDebtorRXHistorys({
+                          companyId: customerId,
+                          offset: skip,
+                          limit: take,
+                          keyword,
+                          fromDate,
+                          toDate
+                      });
+                      return {
+                          data: response?.data || [],
+                          totalCount: response?.totalRecords || 0
+                      };
+                  } catch (error) {
+                      onError({ title: "Fetch Error", message: error.message });
+                      return { data: [], totalCount: 0 };
+                  }
+              }
+          });
+  
+
+  // useEffect(() => {
+  //   if (rxHistoryStore) {
+  //     rxHistoryStore.load().then((data) => {
+  //       if (data?.length > 0) {
+  //         setSelectedRX(data[0]);
+  //       }
+  //     });
+  //   }
+  // }, [rxHistoryStore]);
+
+  const openAddNewModal = async ({ type }) => {
+    let data = null;
+    try {
+      if (type === "Specs") {
+        const res = await NewSpectacles({ companyId: companyId, userId: userId, id: customerId });
+        if (res.success) {
+          data = res.data;
+        } else throw new Error(res.errorMessage || "Failed to create new Spectacles Eye Power");
+      } else if (type === "Lens") {
+        const res = await NewContactLens({ companyId: companyId, userId: userId, id: userId });
+        if (res.success) {
+          data = res.data;
+        } else throw new Error(res.errorMessage || "Failed to create new Contact Lens Eye Power");
+      }
+      setIsModalOpened({ isOpen: true, type: type, data: data });
+    } catch (error) {
+      onError({ title: "New Eye Power Error", message: error.message })
     }
-  }, [rxHistoryStore]);
 
-  const openAddNewModal = ({type}) => {
-    setIsModalOpened({isOpen: true, type: type});
   }
 
-  const handleModalClose = () =>{
-    setIsModalOpened({isOpen: false, type: ""})
+  const handleModalClose = () => {
+    setIsModalOpened({ isOpen: false, type: "", data: null })
   }
+
+  const confirmAction = async () =>{
+    setSaving(true)
+    setConfirmModal({ isOpen: false, action: null });
+    try{
+      if(confirmModal.action === "add"){
+        console.log(confirmModal.type)
+        if(confirmModal.type === "Specs"){
+          const res = await SaveSpectacles(confirmModal.data)
+          if(res.success){
+            setNotifyModal({ isOpen: true, message: "Spectacles Eye Power Records saved successfully!" });
+          }else throw new Error(res.errorMessage || "Failed to save Spectacles Eye Power Records");
+        }else if(confirmModal.type === "Lens"){
+          const res = await SaveContactLensProfile(confirmModal.data)
+          if(res.success){
+            setNotifyModal({ isOpen: true, message: "Contact Lens Eye Power Records saved successfully!" });
+          }else throw new Error(res.errorMessage || "Failed to save Contact Lens Eye Power Records");
+        }
+      }
+    }catch(error){
+      onError({title: "Add Error", message: error.message});
+    }finally{
+      setIsModalOpened({isOpen: false, type: "", data: null});
+      setSaving(false);
+    }
+  }
+
+  const confirmationTitleMap = {
+    add: "Confirm New",
+  };
+
+  const confirmationMessageMap = {
+    add: "Are you sure you want to add this eye power record?",
+  };
 
   return (
     <>
-    <AddHistoryRXModal
-      isOpen={isModalOpened.isOpen}
-      type={isModalOpened.type}
-      handleClose={handleModalClose}
-    />
+      <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmationTitleMap[confirmModal.action]}
+        message={confirmationMessageMap[confirmModal.action]}
+        loading={saving}
+        onConfirm={() => confirmAction()}
+        onCancel={() => setConfirmModal({ isOpen: false, action: null })}
+      />
+
+      <AddHistoryRXModal
+        isOpen={isModalOpened.isOpen}
+        type={isModalOpened.type}
+        handleClose={handleModalClose}
+        data={isModalOpened.data}
+        onConfirm={setConfirmModal}
+      />
 
       <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-y-auto">
         <div className="text-right p-2 flex-row flex justify-end space-x-2">
-          <button onClick={() => openAddNewModal({type: "Specs"})} className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end">
+          <button onClick={() => openAddNewModal({ type: "Specs" })} className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end">
             <Plus size={20} /> New Spectacles
           </button>
-          <button onClick={() => openAddNewModal({type: "Lens"})} className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end">
+          <button onClick={() => openAddNewModal({ type: "Lens" })} className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end">
             <Plus size={20} /> New Contact Lens
           </button>
         </div>
@@ -190,7 +305,7 @@ const CustomerHistoryRX = ({ rxHistoryStore }) => {
         </div>
       </div>
 
-      
+
     </>
 
   );

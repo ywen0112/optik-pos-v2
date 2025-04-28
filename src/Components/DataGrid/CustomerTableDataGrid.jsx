@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Pencil, TrashIcon } from "lucide-react";
+import { Eye, Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 
 import StandardDataGridComponent from "../BaseDataGrid";
@@ -78,7 +78,15 @@ const CustomerTableDataGrid = ({ className, companyId, onError, onDelete, onEdit
                 }}
                 cellRender={(cellData) => {
                     return (
+
                         <div className="flex flex-row justify-center space-x-2">
+                            <div className=" text-blue-400 hover:cursor-pointer flex justify-center "
+                                onClick={(e) => {
+                                    e.stopPropagation(); // prevent row click event (select)
+                                    onEdit(cellData.data, "view");
+                                }}>
+                                <Eye size={20} />
+                            </div>
                             <div className=" text-green-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
                                     e.stopPropagation(); // prevent row click event (select)

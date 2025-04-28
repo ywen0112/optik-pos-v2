@@ -12,6 +12,7 @@ import SalesHistory from "./SalesHistory";
 const AddCustomerModal = ({
     selectedCustomer,
     isEdit,
+    isView,
     isOpen,
     onConfirm,
     onError,
@@ -21,6 +22,7 @@ const AddCustomerModal = ({
 }) => {
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
     const [activeTab, setActiveTab] = useState("General");
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
     const [debtorFormData, setDebtorFormData] = useState({
         isActive: true,
         debtorId: "",
@@ -125,10 +127,6 @@ const AddCustomerModal = ({
         l_R_DIA: "",
         l_R_ADD: ""
     });
-
-    const [rxHistoryStore, setRxHistoryStore] = useState(null);
-    const [salesHistoryStore, setSalesHistoryStore] = useState(null);
-
     const handleClose = () => {
         setDebtorFormData({
             isActive: true,
@@ -234,8 +232,6 @@ const AddCustomerModal = ({
             l_R_ADD: ""
         });
 
-        setRxHistoryStore([]);
-        setSalesHistoryStore([]);
         onClose();
     }
 
@@ -282,108 +278,6 @@ const AddCustomerModal = ({
             }
         };
 
-        const rxHistoryStore = new CustomStore({
-            key: "docNo",
-            load: async (loadOptions) => {
-                const skip = loadOptions.skip ?? 0;
-                const take = loadOptions.take ?? 10;
-                const keyword = loadOptions.filter?.[2][2] || "";
-                const getLocalISOString = () => {
-                    const now = new Date();
-                    const timezoneOffset = now.getTimezoneOffset() * 60000; // offset in milliseconds
-                    const localISOTime = new Date(now.getTime() - timezoneOffset).toISOString().slice(0, -1); // remove Z
-                    return localISOTime;
-                };
-                let fromDate = getLocalISOString;
-                let toDate = getLocalISOString;
-
-                if (Array.isArray(loadOptions.filter)) {
-                    if (loadOptions.filter[0]?.[0] === "fromDate") {
-                        fromDate = loadOptions.filter[0]?.[2] || getLocalISOString;
-                    }
-                    if (loadOptions.filter[1]?.[0] === "toDate") {
-                        toDate = loadOptions.filter[1]?.[2] || getLocalISOString;
-                    }
-                }
-
-                try {
-                    const response = await GetDebtorRXHistorys({
-                        companyId,
-                        offset: skip,
-                        limit: take,
-                        keyword,
-                        fromDate,
-                        toDate
-                    });
-
-                    return {
-                        data: response?.data || [],
-                        totalCount: response?.totalRecords || 0
-                    };
-                } catch (error) {
-                    onError({ title: "Fetch Error", message: error.message });
-                    return { data: [], totalCount: 0 };
-                }
-            }
-        });
-
-        setRxHistoryStore(rxHistoryStore);
-
-        const salesHistoryStore = new CustomStore({
-            key: "docNo",
-            load: async (loadOptions) => {
-                const skip = loadOptions.skip ?? 0;
-                const take = loadOptions.take ?? 10;
-                const keyword = loadOptions.filter?.[2][2] || "";
-                const formatDateLocalFrom = (date) => {
-                    if (!date) return null;
-                    const year = date.getFullYear();
-                    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-                    const day = date.getDate().toString().padStart(2, "0");
-                    return `${year}-${month}-${day}T00:00:00`;
-                };
-                const formatDateLocalTo = (date) => {
-                    if (!date) return null;
-                    const year = date.getFullYear();
-                    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-                    const day = date.getDate().toString().padStart(2, "0");
-                    return `${year}-${month}-${day}T23:59:59`;
-                };
-                let fromDate = formatDateLocalFrom;
-                let toDate = formatDateLocalTo;
-
-                if (Array.isArray(loadOptions.filter)) {
-                    if (loadOptions.filter[0]?.[0] === "fromDate") {
-                        fromDate = loadOptions.filter[0]?.[2] || formatDateLocalFrom;
-                    }
-                    if (loadOptions.filter[1]?.[0] === "toDate") {
-                        toDate = loadOptions.filter[1]?.[2] || formatDateLocalTo;
-                    }
-                }
-
-                try {
-                    const response = await GetDebtorSalesHistorys({
-                        companyId,
-                        offset: skip,
-                        limit: take,
-                        keyword,
-                        fromDate,
-                        toDate
-                    });
-
-                    return {
-                        data: response?.data || [],
-                        totalCount: response?.totalRecords || 0
-                    };
-                } catch (error) {
-                    onError({ title: "Fetch Error", message: error.message });
-                    return { data: [], totalCount: 0 };
-                }
-            }
-        });
-
-        setSalesHistoryStore(salesHistoryStore);
-
         if (selectedCustomer) {
             setDebtorFormData({
                 isActive: selectedCustomer.isActive ?? true,
@@ -424,7 +318,7 @@ const AddCustomerModal = ({
                 <div className="sticky top-0 bg-white z-10">
                     <div className="flex flex-row justify-between">
                         <h3 className="font-semibold mb-4">
-                            {isEdit ? "Edit Customer" : "New Customer"}
+                            {isEdit ? "Edit Customer" : isView ? "View Customer" : "New Customer"}
                         </h3>
                         <div className='col-span-4' onClick={handleClose}>
                             <X size={20} />
@@ -432,33 +326,20 @@ const AddCustomerModal = ({
                     </div>
 
                     {/* Tabs */}
-                    {isEdit && (
-                        <div className="flex space-x-4 mb-4">
-                            {['General', 'Medical Info', 'Latest RX', 'History RX', 'Sales History'].map(tab => (
-                                <button
-                                    key={tab}
-                                    className={`px-4 py-2 rounded ${activeTab === tab ? 'bg-primary text-white' : 'bg-gray-200'}`}
-                                    onClick={() => setActiveTab(tab)}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                    {!isEdit && (
-                        <div className="flex space-x-4 mb-4">
-                            {['General', 'Medical Info'].map(tab => (
-                                <button
-                                    key={tab}
-                                    className={`px-4 py-2 rounded ${activeTab === tab ? 'bg-primary text-white' : 'bg-gray-200'}`}
-                                    onClick={() => setActiveTab(tab)}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
+                    <div className="flex space-x-4 mb-4">
+                        {(isView || isEdit ?
+                            ['General', 'Medical Info', 'Latest RX', 'History RX', 'Sales History'] :
+                            ['General', 'Medical Info']
+                        ).map(tab => (
+                            <button
+                                key={tab}
+                                className={`px-4 py-2 rounded ${activeTab === tab ? 'bg-primary text-white' : 'bg-gray-200'}`}
+                                onClick={() => setActiveTab(tab)}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
 
                 </div>
 
@@ -471,22 +352,22 @@ const AddCustomerModal = ({
                         <CustomerMedicalInfo medicalInfoData={medicalInfoData} setMedicalInfoData={setMedicalInfoData} />
                     )}
 
-                    {activeTab === "Latest RX" && isEdit && (
+                    {activeTab === "Latest RX" && (isEdit || isView) && (
                         <CustomerLatestRX latesSpecRXData={latesSpecRXData} latestLensRXData={latestLensRXData} />
                     )}
 
-                    {activeTab === "History RX" && isEdit && (
+                    {activeTab === "History RX" && (isEdit || isView) &&(
                         <CustomerHistoryRX
-                            rxHistoryStore={rxHistoryStore}
                             className={"p-2"}
                             companyId={companyId}
                             onError={setErrorModal}
+                            onConfirm={setConfirmModal}
+                            customerId={selectedCustomer?.debtorId}
                         />
                     )}
 
-                    {activeTab === "Sales History" && isEdit && (
+                    {activeTab === "Sales History" && (isEdit || isView) &&(
                         <SalesHistory
-                            salesHistoryStore={salesHistoryStore}
                             className={"p-2"}
                             companyId={companyId}
                             onError={setErrorModal}
@@ -495,7 +376,7 @@ const AddCustomerModal = ({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="sticky bottom-0 bg-white z-10 border-t pt-4 pb-6">
+                {!isView && (<div className="sticky bottom-0 bg-white z-10 border-t pt-4 pb-6">
                     <div className="flex justify-end space-x-2">
                         <button
                             className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700"
@@ -537,7 +418,7 @@ const AddCustomerModal = ({
                             Save
                         </button>
                     </div>
-                </div>
+                </div>)}
             </div>
         </div>
     );

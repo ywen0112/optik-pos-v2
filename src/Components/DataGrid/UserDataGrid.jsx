@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Pencil, TrashIcon } from "lucide-react";
+import { Eye, Pencil, TrashIcon } from "lucide-react";
 import { Column } from "devextreme-react/cjs/data-grid";
 
 import StandardDataGridComponent from "../BaseDataGrid";
@@ -8,29 +8,29 @@ import { GetUserRecords } from "../../api/userapi";
 import CustomStore from "devextreme/data/custom_store";
 
 
-const UserDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
+const UserDataGrid = ({ className, companyId, onError, onDelete, onEdit }) => {
     const [loading, setLoading] = useState(false);
 
     const userDataGridRef = useRef(null);
 
     const userStore = new CustomStore({
         key: "userId",
-            load: async (loadOptions) => {
-              const skip = loadOptions.skip ?? 0;
-              const take = loadOptions.take ?? 10;
-              const keyword = loadOptions.filter?.[2][2] || "";
-        
-              try {
+        load: async (loadOptions) => {
+            const skip = loadOptions.skip ?? 0;
+            const take = loadOptions.take ?? 10;
+            const keyword = loadOptions.filter?.[2][2] || "";
+
+            try {
                 const data = await GetUserRecords({ companyId, offset: skip, limit: take, keyword });
                 return {
-                  data: data.data || [],
-                  totalCount: data.totalRecords || 0
+                    data: data.data || [],
+                    totalCount: data.totalRecords || 0
                 };
-              } catch (error) {
+            } catch (error) {
                 onError({ title: "Fetch Error", message: error.message });
                 return { data: [], totalCount: 0 };
-              }
             }
+        }
     })
 
     return (
@@ -48,7 +48,7 @@ const UserDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
             allowColumnReordering={false}
             allowEditing={true}
             onLoading={loading}
-            remoteOperations={{ paging: true, filtering: true, sorting: true }}         
+            remoteOperations={{ paging: true, filtering: true, sorting: true }}
         >
             <Column
                 dataField="userName"
@@ -77,9 +77,27 @@ const UserDataGrid = ({className, companyId, onError, onDelete, onEdit}) => {
                     )
                 }}
                 cellRender={(cellData) => {
-                    if(cellData.data.userRoleCode === "SUPER ADMIN") return null;                    
+                    if (cellData.data.userRoleCode === "SUPER ADMIN") return (
+
+                        <div className="flex flex-row justify-center space-x-2">
+                            <div className=" text-blue-400 hover:cursor-pointer flex justify-center "
+                                onClick={(e) => {
+                                    e.stopPropagation(); // prevent row click event (select)
+                                    onEdit(cellData.data, "view");
+                                }}>
+                                <Eye size={20} />
+                            </div>
+                        </div>
+                    );
                     return (
                         <div className="flex flex-row justify-center space-x-2">
+                            <div className=" text-blue-400 hover:cursor-pointer flex justify-center "
+                                onClick={(e) => {
+                                    e.stopPropagation(); // prevent row click event (select)
+                                    onEdit(cellData.data, true);
+                                }}>
+                                <Eye size={20} />
+                            </div>
                             <div className=" text-green-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
                                     e.stopPropagation(); // prevent row click event (select)

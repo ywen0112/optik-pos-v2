@@ -11,7 +11,6 @@ const DebtorMaintenance = () => {
   const companyId = sessionStorage.getItem("companyId");
   const userId = sessionStorage.getItem("userId");
 
-  const [loading, setLoading] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
@@ -23,9 +22,8 @@ const DebtorMaintenance = () => {
   const [saving, setSaving] = useState(false);
 
   const handleAddNew = async () => {
-    setLoading(true);
     try {
-      const data = await NewDebtor({companyId: companyId, userId: userId, id: userId});
+      const data = await NewDebtor({ companyId: companyId, userId: userId, id: userId });
       if (data.success) {
         setSelectedDebtor(data.data);
         setFormAction("add");
@@ -33,50 +31,46 @@ const DebtorMaintenance = () => {
       } else throw new Error(data.errorMessage || "Failed to create new customer.");
     } catch (error) {
       setErrorModal({ title: "New Customer Error", message: error.message });
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleOpenModal = async (debtor, mode) => {
-    if (mode === "edit") {
-      setLoading(true);
-      try {
-        const data = await GetDebtor({companyId: companyId, userId: userId, id: debtor.debtorId});
-        if (data.success) {
-          setSelectedDebtor(data.data);
+
+    try {
+      const data = await GetDebtor({ companyId: companyId, userId: userId, id: debtor.debtorId });
+      if (data.success) {
+        setSelectedDebtor(data.data);
+        if (mode === "edit") {
           setFormAction("edit");
           setIsUpdateModelOpen(true);
-        } else throw new Error(data.errorMessage || "Failed to fetch debtor data");
-      } catch (error) {
-        setErrorModal({ title: "Edit Error", message: error.message });
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setSelectedDebtor(debtor);
-      setIsUpdateModelOpen(true);
+        } else if (mode === "view") {
+          setFormAction("view");
+          setIsUpdateModelOpen(true);
+        }
+      } else throw new Error(data.errorMessage || "Failed to fetch debtor data");
+    } catch (error) {
+      setErrorModal({ title: "Edit Error", message: error.message });
     }
-  };
+  }
+
 
   const handleDeleteClick = (id) => {
     setDeleteTarget(id);
     setConfirmModal({ isOpen: true, action: "delete" });
   };
 
-  const confirmAction = async ({action, data}) => {
+  const confirmAction = async ({ action, data }) => {
     setSaving(true);
     setConfirmModal({ isOpen: false, action: null });
 
     try {
       if (action === "delete") {
-        const data = await DeleteDebtor({companyId: companyId, userId: userId, id: deleteTarget})
+        const data = await DeleteDebtor({ companyId: companyId, userId: userId, id: deleteTarget })
         if (data.success) {
           setNotifyModal({ isOpen: true, message: "Customer deleted successfully!" });
         } else throw new Error(data.errorMessage || "Failed to delete customer.");
       } else {
-        console.log(data.actionData)
-        const saveRes = await SaveDebtor ({
+        const saveRes = await SaveDebtor({
           actionData: data.actionData,
           debtorId: data.debtorId,
           debtorCode: data.debtorCode,
@@ -136,13 +130,14 @@ const DebtorMaintenance = () => {
         title={confirmationTitleMap[confirmModal.action]}
         message={confirmationMessageMap[confirmModal.action]}
         loading={saving}
-        onConfirm={() => confirmAction({action: confirmModal.action})}
+        onConfirm={() => confirmAction({ action: confirmModal.action })}
         onCancel={() => setConfirmModal({ isOpen: false, action: null })}
       />
 
       <AddCustomerModal
         selectedCustomer={selectedDebtor}
         isEdit={formAction === "edit"}
+        isView={formAction === "view"}
         isOpen={isUpdateModelOpen}
         onConfirm={confirmAction}
         onError={setErrorModal}
@@ -152,21 +147,21 @@ const DebtorMaintenance = () => {
       />
 
       <div className="text-right p-2">
-      <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end" onClick={handleAddNew}>
-          <Plus size={20}/> New
+        <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end" onClick={handleAddNew}>
+          <Plus size={20} /> New
         </button>
       </div>
 
       <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
-      
-          <CustomerTableDataGrid
-            className={"p-2"}
-            companyId={companyId}
-            onError={setErrorModal}
-            onDelete={handleDeleteClick}
-            onEdit={handleOpenModal}
-          >
-          </CustomerTableDataGrid>
+
+        <CustomerTableDataGrid
+          className={"p-2"}
+          companyId={companyId}
+          onError={setErrorModal}
+          onDelete={handleDeleteClick}
+          onEdit={handleOpenModal}
+        >
+        </CustomerTableDataGrid>
 
       </div>
 

@@ -66,24 +66,7 @@ const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick }) =>
       <StandardDataGridComponent
         ref={historyRXDataGridRef}
         height={"100%"}
-        dataSource={{
-          ...rxHistoryStore,
-          load: (loadOptions) => {
-            const skip = loadOptions.skip ?? 0;
-            const take = loadOptions.take ?? 10;
-            const keyword = loadOptions.filter?.[2]?.[2] || "";
-
-            return rxHistoryStore.load({
-              skip,
-              take,
-              filter: [
-                ["fromDate", "=", formatDateLocalFrom(fromDate)],
-                ["toDate", "=", formatDateLocalTo(toDate)],
-                ["keyword", "contains", keyword],
-              ],
-            });
-          },
-        }}
+        dataSource={rxHistoryStore}
         className={className}
         searchPanel={true}
         pager={true}

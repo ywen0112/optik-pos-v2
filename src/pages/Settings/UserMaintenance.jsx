@@ -145,7 +145,7 @@ const UserMaintenance = () => {
         ...prev,
         userRoleId: selected.userRoleId
       }));
-      
+
       setUserRole(selected);
       setIsUserRoleBoxOpened(false);
     }
@@ -211,9 +211,9 @@ const UserMaintenance = () => {
       <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.type] || "Confirm Action"} message={confirmationMessageMap[confirmModal.type] || "Are you sure?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
       <div className="text-right p-2">
-        
+
         <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90 transition mb-2 flex flex-row justify-self-end" onClick={() => setShowInviteModal(true)}>
-          <Plus size={20}/> New
+          <Plus size={20} /> New
         </button>
       </div>
       <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
@@ -236,7 +236,7 @@ const UserMaintenance = () => {
           <div className="bg-white rounded-lg shadow-lg p-6 w-[500px] max-w-full text-secondary text-xs">
             <div className="flex flex-row justify-between">
               <h3 className="font-semibold mb-4">
-                Edit User
+                {viewMode ? "View User" : "Edit User"}
               </h3>
               <div className='col-span-4' onClick={() => setEditUser(null)}>
                 <X size={20} />
@@ -256,49 +256,58 @@ const UserMaintenance = () => {
 
               <div className="col-span-2 mt-2">
                 <label className="block mb-2">User Role</label>
-                <DropDownBox
-                  id="UserRoleSelection"
-                  value={userRole?.userRoleId}
-                  placeholder="User Role"
-                  openOnFieldClick={true}
-                  displayExpr={(item) => item && `${item.userRoleCode}-${item.description}`}
-                  onValueChanged={handleUserRoleGridBoxValueChanges}
-                  valueExpr="userRoleId"
-                  opened={isUserRoleBoxOpened}
-                  onOptionChanged={onUserRoleGridBoxOpened}
-                  contentRender={userRoleGridBoxRender}
-                  className="mr-2 border w-full h-[40px] px-2"
-                  dataSource={userRoleStore}
+                {viewMode ? (
+                  <div className="mr-2 border w-full h-[40px] px-2 flex items-center">
+                    {editUser.userRoleCode}
+                  </div>
+                ) : (
+                  <DropDownBox
+                    id="UserRoleSelection"
+                    value={userRole?.userRoleId}
+                    placeholder="User Role"
+                    openOnFieldClick={true}
+                    displayExpr={(item) => item && `${item.userRoleCode}-${item.description}`}
+                    onValueChanged={handleUserRoleGridBoxValueChanges}
+                    valueExpr="userRoleId"
+                    opened={isUserRoleBoxOpened}
+                    onOptionChanged={onUserRoleGridBoxOpened}
+                    contentRender={userRoleGridBoxRender}
+                    className="mr-2 border w-full h-[40px] px-2"
+                    dataSource={userRoleStore}
+                  />
+                )}
 
-                />
               </div>
             </div>
-            <div className="mt-6 flex justify-end space-x-2">
-              <button className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700"
-                onClick={() => {
-                  setEditUser(null)
-                  setUserRole(null)
-                }}>Cancel</button>
-              <button className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
-                onClick={() => {
-                  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            {!viewMode && (
+              <div className="mt-6 flex justify-end space-x-2">
+                <button className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700"
+                  onClick={() => {
+                    setEditUser(null)
+                    setUserRole(null)
+                  }}>Cancel</button>
+                <button className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
+                  onClick={() => {
+                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-                  if (!editUser.userEmailAddress.trim()) {
-                    setErrorModal({ title: "Validation Error", message: "Email is required." });
-                    return;
-                  }
+                    if (!editUser.userEmailAddress.trim()) {
+                      setErrorModal({ title: "Validation Error", message: "Email is required." });
+                      return;
+                    }
 
-                  if (!emailPattern.test(editUser.userEmailAddress)) {
-                    setErrorModal({ title: "Validation Error", message: "Invalid email format." });
-                    return;
-                  }
-                  handleSave();
-                  setUserRole(null);
-                }}
-              >
-                Save
-              </button>
-            </div>
+                    if (!emailPattern.test(editUser.userEmailAddress)) {
+                      setErrorModal({ title: "Validation Error", message: "Invalid email format." });
+                      return;
+                    }
+                    handleSave();
+                    setUserRole(null);
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            )}
+
           </div>
         </div>
       )}
