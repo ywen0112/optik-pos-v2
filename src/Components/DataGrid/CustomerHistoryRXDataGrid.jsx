@@ -6,96 +6,106 @@ import "react-datepicker/dist/react-datepicker.css";
 import StandardDataGridComponent from "../BaseDataGrid";
 
 const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick }) => {
-    const historyRXDataGridRef = useRef(null);
-    const [fromDate, setFromDate] = useState(new Date());
-    const [toDate, setToDate] = useState(new Date());
-    const [loading, setLoading] = useState(false);
+  const historyRXDataGridRef = useRef(null);
+  const [fromDate, setFromDate] = useState(new Date());
+  const [toDate, setToDate] = useState(new Date());
+  const [loading, setLoading] = useState(false);
+  
+  const formatDateLocalFrom = (date) => {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}T00:00:00`;
+  };
 
-    const handleDateChange = () => {
-        if (historyRXDataGridRef.current) {
-            historyRXDataGridRef.current.instance.refresh();
-        }
-    };
+  const formatDateLocalTo = (date) => {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}T23:59:59`;
+  };
 
-    return (
-        <StandardDataGridComponent
-            ref={historyRXDataGridRef}
-            height={"100%"}
-            dataSource={{
-                ...rxHistoryStore,
-                load: (loadOptions) => {
-                    const skip = loadOptions.skip ?? 0;
-                    const take = loadOptions.take ?? 10;
-                    const keyword = loadOptions.filter?.[2]?.[2] || "";
+  const handleDateChange = () => {
+    if (historyRXDataGridRef.current) {
+      historyRXDataGridRef.current.instance.refresh();
+    }
+  };
 
-                    return rxHistoryStore.load({
-                        skip,
-                        take,
-                        filter: [
-                            ["fromDate", "=", fromDate ? fromDate.toISOString() : null],
-                            ["toDate", "=", toDate ? toDate.toISOString() : null],
-                            ["keyword", "contains", keyword]
-                        ]
-                    });
-                }
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-4 p-2">
+        <div>
+          <label className="mr-1">From</label>
+          <DatePicker
+            selected={fromDate}
+            onChange={(date) => {
+              setFromDate(date);
+              handleDateChange();
             }}
-            className={className}
-            searchPanel={true}
-            pager={true}
-            pageSizeSelector={true}
-            columnChooser={true}
-            showBorders={true}
-            allowColumnResizing={false}
-            allowColumnReordering={false}
-            allowEditing={true}
-            onLoading={loading}
-            remoteOperations={{ paging: true, filtering: true, sorting: true }}
-            onRowClick={onRowClick}
-        >
-            {/* Toolbar Injection */}
-            <Toolbar>
-                {/* Left Side */}
-                <Item location="before">
-                    <div className="flex space-x-2  items-center">
-                        <label>From</label>
-                        <DatePicker
-                            selected={fromDate}
-                            onChange={(date) => {
-                                setFromDate(date);
-                                handleDateChange();
-                            }}
-                            className="border px-1 rounded h-[40px]"
-                            dateFormat="yyyy-MM-dd"
-                        />
-                    </div>
-                </Item>
+            className="border px-1 rounded h-[40px] w-full cursor-pointer"
+            dateFormat="yyyy-MM-dd"
+          />
+        </div>
 
-                <Item location="before">
-                    <div className="flex space-x-2 items-center">
-                        <label>To</label>
-                        <DatePicker
-                            selected={toDate}
-                            onChange={(date) => {
-                                setToDate(date);
-                                handleDateChange();
-                            }}
-                            className="border px-1 rounded h-[40px]"
-                            dateFormat="yyyy-MM-dd"
-                        />
-                    </div>
-                </Item>
+        <div>
+          <label className="mr-1">To</label>
+          <DatePicker
+            selected={toDate}
+            onChange={(date) => {
+              setToDate(date);
+              handleDateChange();
+            }}
+            className="border px-1 rounded h-[40px] w-full cursor-pointer"
+            dateFormat="yyyy-MM-dd"
+          />
+        </div>
+      </div>
 
-                <Item name="searchPanel" location="after" />
-            </Toolbar>
+      <StandardDataGridComponent
+        ref={historyRXDataGridRef}
+        height={"100%"}
+        dataSource={{
+          ...rxHistoryStore,
+          load: (loadOptions) => {
+            const skip = loadOptions.skip ?? 0;
+            const take = loadOptions.take ?? 10;
+            const keyword = loadOptions.filter?.[2]?.[2] || "";
 
-            {/* Columns */}
-            <Column dataField="docNo" caption="Doc No" allowEditing={false} width={"20%"} />
-            <Column dataField="docDate" caption="Doc Date" width={"20%"} />
-            <Column dataField="type" caption="Type" width={"20%"} />
-            <Column dataField="itemCode" caption="ItemCode" width={"20%"} />
-            <Column dataField="uom" caption="UOM" width={"20%"} />
-        </StandardDataGridComponent>
-    );
+            return rxHistoryStore.load({
+              skip,
+              take,
+              filter: [
+                ["fromDate", "=", formatDateLocalFrom(fromDate)],
+                ["toDate", "=", formatDateLocalTo(toDate)],
+                ["keyword", "contains", keyword],
+              ],
+            });
+          },
+        }}
+        className={className}
+        searchPanel={true}
+        pager={true}
+        pageSizeSelector={true}
+        showBorders={true}
+        allowColumnResizing={false}
+        allowColumnReordering={false}
+        allowEditing={true}
+        onLoading={loading}
+        remoteOperations={{ paging: true, filtering: true, sorting: true }}
+        onRowClick={onRowClick}
+        focusStateEnabled={false}
+        columnChooser={false}
+      >
+        <Column dataField="docNo" caption="Doc No" allowEditing={false} width={"20%"} />
+        <Column dataField="docDate" caption="Doc Date" width={"20%"} />
+        <Column dataField="type" caption="Type" width={"20%"} />
+        <Column dataField="itemCode" caption="Item Code" width={"20%"} />
+        <Column dataField="uom" caption="UOM" width={"20%"} />
+      </StandardDataGridComponent>
+    </div>
+  );
 };
 
 export default CustomerHistoryRXDataGrid;
