@@ -10,6 +10,12 @@ import { GetDebtorRXHistorys } from "../../../api/maintenanceapi";
 
 const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
   const userId = sessionStorage.getItem("userId");
+  const [fromDate, setFromDate] = useState(() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - 1);
+    return date;
+  });
+  const [toDate, setToDate] = useState(new Date())
   const [activeTab, setActiveTab] = useState("Prescribed");
   const [selectedRX, setSelectedRX] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -20,6 +26,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
   const lensFields = ["SPH", "CYL", "AXIS", "BC", "DIA", "ADD"];
 
   const handleRowClick = (e) => {
+    console.log(e.data)
     setSelectedRX(e.data);
   };
 
@@ -36,48 +43,31 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
   };
 
   const rxHistoryStore = new CustomStore({
-              key: "docNo",
-              load: async (loadOptions) => {
-                  const skip = loadOptions.skip ?? 0;
-                  const take = loadOptions.take ?? 10;
-                  const keyword = loadOptions.filter?.[2][2] || "";
-                  const getLocalISOString = () => {
-                      const now = new Date();
-                      const timezoneOffset = now.getTimezoneOffset() * 60000; // offset in milliseconds
-                      const localISOTime = new Date(now.getTime() - timezoneOffset).toISOString().slice(0, -1); // remove Z
-                      return localISOTime;
-                  };
-                  let fromDate = getLocalISOString;
-                  let toDate = getLocalISOString;
-                  if (Array.isArray(loadOptions.filter)) {
-                      if (loadOptions.filter[0]?.[0] === "fromDate") {
-                          fromDate = loadOptions.filter[0]?.[2] || getLocalISOString;
-                      }
-                      if (loadOptions.filter[1]?.[0] === "toDate") {
-                          toDate = loadOptions.filter[1]?.[2] || getLocalISOString;
-                      }
-                  }
-  
-                  try {
-                      const response = await GetDebtorRXHistorys({
-                          companyId: customerId,
-                          offset: skip,
-                          limit: take,
-                          keyword,
-                          fromDate,
-                          toDate
-                      });
-                      return {
-                          data: response?.data || [],
-                          totalCount: response?.totalRecords || 0
-                      };
-                  } catch (error) {
-                      onError({ title: "Fetch Error", message: error.message });
-                      return { data: [], totalCount: 0 };
-                  }
-              }
-          });
-  
+    key: "docNo",
+    load: async (loadOptions) => {
+      const skip = loadOptions.skip ?? 0;
+      const take = loadOptions.take ?? 10;
+
+      try {
+        const response = await GetDebtorRXHistorys({
+          companyId,
+          offset: skip,
+          limit: take,
+          keyword: customerId,
+          fromDate,
+          toDate
+        });
+        return {
+          data: response?.data || [],
+          totalCount: response?.totalRecords || 0
+        };
+      } catch (error) {
+        onError({ title: "Fetch Error", message: error.message });
+        return { data: [], totalCount: 0 };
+      }
+    }
+  });
+
 
   // useEffect(() => {
   //   if (rxHistoryStore) {
@@ -114,28 +104,28 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
     setIsModalOpened({ isOpen: false, type: "", data: null })
   }
 
-  const confirmAction = async () =>{
+  const confirmAction = async () => {
     setSaving(true)
     setConfirmModal({ isOpen: false, action: null });
-    try{
-      if(confirmModal.action === "add"){
+    try {
+      if (confirmModal.action === "add") {
         console.log(confirmModal.type)
-        if(confirmModal.type === "Specs"){
+        if (confirmModal.type === "Specs") {
           const res = await SaveSpectacles(confirmModal.data)
-          if(res.success){
+          if (res.success) {
             setNotifyModal({ isOpen: true, message: "Spectacles Eye Power Records saved successfully!" });
-          }else throw new Error(res.errorMessage || "Failed to save Spectacles Eye Power Records");
-        }else if(confirmModal.type === "Lens"){
+          } else throw new Error(res.errorMessage || "Failed to save Spectacles Eye Power Records");
+        } else if (confirmModal.type === "Lens") {
           const res = await SaveContactLensProfile(confirmModal.data)
-          if(res.success){
+          if (res.success) {
             setNotifyModal({ isOpen: true, message: "Contact Lens Eye Power Records saved successfully!" });
-          }else throw new Error(res.errorMessage || "Failed to save Contact Lens Eye Power Records");
+          } else throw new Error(res.errorMessage || "Failed to save Contact Lens Eye Power Records");
         }
       }
-    }catch(error){
-      onError({title: "Add Error", message: error.message});
-    }finally{
-      setIsModalOpened({isOpen: false, type: "", data: null});
+    } catch (error) {
+      onError({ title: "Add Error", message: error.message });
+    } finally {
+      setIsModalOpened({ isOpen: false, type: "", data: null });
       setSaving(false);
     }
   }
@@ -178,20 +168,24 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
           </button>
         </div>
 
-        <div className="flex">
+        <div className="grid grid-cols-[40%_60%]">
           {/* Left Side - DataGrid */}
-          <div className="w-[45%] border-r overflow-y-auto">
+          <div className="h-full border-r overflow-y-auto">
             <CustomerHistoryRXDataGrid
               rxHistoryStore={rxHistoryStore}
               className="p-2"
               onRowClick={handleRowClick}
+              fromDate={fromDate}
+              toDate={toDate}
+              setFromDate={setFromDate}
+              setToDate={setToDate}
             />
           </div>
 
           {/* Right Side - Details */}
-          <div className="w-[55%] overflow-y-auto p-4">
+          <div className="h-full overflow-y-auto p-4">
             {/* Prescribed/Actual Toggle */}
-            <div className="flex space-x-4 mb-6">
+            {selectedRX && (<div className="flex space-x-4 mb-6">
               {["Prescribed", "Actual"].map((tab) => (
                 <button
                   key={tab}
@@ -201,10 +195,10 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                   {tab}
                 </button>
               ))}
-            </div>
+            </div>)}
 
             {/* Spectacles Section */}
-            <div className="mb-8">
+            {selectedRX?.type === "Spectacles" && (<div className="mb-8">
               <div className="text-center">
                 <h5 className="font-semibold mb-4">Spectacles</h5>
               </div>
@@ -239,16 +233,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                   <label key={`spec-header-${field}`}>{field}</label>
                 ))}
 
-                <label>Right</label>
-                {specFields.map((field) => (
-                  <input
-                    key={`spec-right-${field}`}
-                    type="text"
-                    readOnly
-                    className="border px-2 h-[40px]"
-                    value={renderSpecValue("r_D", field)}
-                  />
-                ))}
+
 
                 <label>Left</label>
                 {specFields.map((field) => (
@@ -260,11 +245,23 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                     value={renderSpecValue("l_D", field)}
                   />
                 ))}
+
+                <label>Right</label>
+                {specFields.map((field) => (
+                  <input
+                    key={`spec-right-${field}`}
+                    type="text"
+                    readOnly
+                    className="border px-2 h-[40px]"
+                    value={renderSpecValue("r_D", field)}
+                  />
+                ))}
               </div>
             </div>
+            )}
 
             {/* Contact Lens Section */}
-            <div className="pt-4 border-t">
+            {!selectedRX?.type === "Spectacles" && (<div className="pt-4 border-t">
               <div className="text-center">
                 <h5 className="font-semibold mb-4">Contact Lens</h5>
               </div>
@@ -274,6 +271,21 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                 <div></div>
                 {lensFields.map((field) => (
                   <label key={`lens-header-${field}`}>{field}</label>
+                ))}
+                <div></div>
+
+
+
+
+                <label>Left</label>
+                {lensFields.map((field) => (
+                  <input
+                    key={`lens-left-${field}`}
+                    type="text"
+                    readOnly
+                    className="border px-2 h-[40px]"
+                    value={renderLensValue("l_D", field)}
+                  />
                 ))}
                 <div></div>
 
@@ -287,20 +299,8 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                     value={renderLensValue("r_D", field)}
                   />
                 ))}
-                <div></div>
-
-                <label>Left</label>
-                {lensFields.map((field) => (
-                  <input
-                    key={`lens-left-${field}`}
-                    type="text"
-                    readOnly
-                    className="border px-2 h-[40px]"
-                    value={renderLensValue("l_D", field)}
-                  />
-                ))}
               </div>
-            </div>
+            </div>)}
           </div>
         </div>
       </div>

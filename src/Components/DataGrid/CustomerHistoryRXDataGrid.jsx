@@ -5,10 +5,8 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import StandardDataGridComponent from "../BaseDataGrid";
 
-const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick }) => {
+const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick, fromDate, toDate, setFromDate, setToDate }) => {
   const historyRXDataGridRef = useRef(null);
-  const [fromDate, setFromDate] = useState(new Date());
-  const [toDate, setToDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
   
   const formatDateLocalFrom = (date) => {
@@ -68,7 +66,6 @@ const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick }) =>
         height={"100%"}
         dataSource={rxHistoryStore}
         className={className}
-        searchPanel={true}
         pager={true}
         pageSizeSelector={true}
         showBorders={true}
@@ -82,7 +79,7 @@ const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick }) =>
         columnChooser={false}
       >
         <Column dataField="docNo" caption="Doc No" allowEditing={false} width={"20%"} />
-        <Column dataField="docDate" caption="Doc Date" width={"20%"} />
+        <Column dataField="docDate" caption="Doc Date" dataType="date" width={"20%"} />
         <Column dataField="type" caption="Type" width={"20%"} />
         <Column dataField="itemCode" caption="Item Code" width={"20%"} />
         <Column dataField="uom" caption="UOM" width={"20%"} />
