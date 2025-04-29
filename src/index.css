@@ -39,25 +39,6 @@ td[aria-label="Column Action"] {
   text-align: center !important;
 }
 
-.dx-toolbar-after{
-  width: 100%;
-  position: absolute;
-}
-
-.dx-item-content.dx-toolbar-item-content{
-  width: 100%;
-}
-
-.dx-widget.dx-button.dx-button-mode-contained.dx-button-normal.dx-button-has-text.dx-button-has-icon.dx-datagrid-toolbar-button.dx-datagrid-column-chooser-button{
-  display: flex;
-  justify-self: end;
-}
-
-.dx-list-item-content.dx-texteditor, .dx-list-item-content>.dx-texteditor, .dx-toolbar-item-content.dx-texteditor, .dx-toolbar-item-content>.dx-texteditor {
-  display: flex;
-  justify-self: end;
-}
-
 
 #SalesOrderItemTable{
   font-family: 'Roboto', sans-serif;

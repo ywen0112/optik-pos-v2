@@ -8,54 +8,6 @@ const getCashSale               = `${ApiBaseUrl}CashSales/Get`;
 const saveCashSale              = `${ApiBaseUrl}CashSales/Save`;
 const voidCashSale              = `${ApiBaseUrl}CashSales/Void`;
 
-//CashSalesPayment
-const getCashSalesPayments      = `${ApiBaseUrl}CashSalesPayment/GetRecords`;
-const newCashSalePayment        = `${ApiBaseUrl}CashSalesPayment/New`;
-const newCashSalePaymentDetail  = `${ApiBaseUrl}CashSalesPayment/NewDetail`;
-const getCashSalesPayment       = `${ApiBaseUrl}CashSalesPayment/Get`;
-const saveCashSalesPayment      = `${ApiBaseUrl}CashSalesPayment/Save`;
-const voidCashSalesPayment      = `${ApiBaseUrl}CashSalesPayment/Void`;
-
-//PurchaseInvoice
-const getPurchaseInvoiceRecords       = `${ApiBaseUrl}PurchaseInvoice/GetRecords`;
-const newPurchaseInvoice             = `${ApiBaseUrl}PurchaseInvoice/New`;
-const newPurchaseInvoiceDetail        = `${ApiBaseUrl}PurchaseInvoice/NewDetail`;
-const getPurchaseInvoice               = `${ApiBaseUrl}PurchaseInvoice/Get`;
-const savePurchaseInvoice             = `${ApiBaseUrl}PurchaseInvoice/Save`;
-const voidPurchaseInvoice            = `${ApiBaseUrl}PurchaseInvoice/Void`;
-
-//PurchaseInvoicePayment
-const getPurchaseInvoicePayments      = `${ApiBaseUrl}PurchaseInvoicePayment/GetRecords`;
-const newPurchaseInvoicePayment        = `${ApiBaseUrl}PurchaseInvoicePayment/New`;
-const newPurchaseInvoicePaymentDetail  = `${ApiBaseUrl}PurchaseInvoicePayment/NewDetail`;
-const getPurchaseInvoicePayment       = `${ApiBaseUrl}PurchaseInvoicePayment/Get`;
-const savePurchaseInvoicePayment      = `${ApiBaseUrl}PurchaseInvoicePayment/Save`;
-const voidPurchaseInvoicePayment      = `${ApiBaseUrl}PurchaseInvoicePayment/Void`;
-
-//SalesOrder
-const getSalesOrderRecords       = `${ApiBaseUrl}SalesOrder/GetRecords`;
-const newSalesOrder            = `${ApiBaseUrl}SalesOrder/New`;
-const newSalesOrderDetail        = `${ApiBaseUrl}SalesOrder/NewDetail`;
-const getSalesOrder             = `${ApiBaseUrl}SalesOrder/Get`;
-const saveSalesOrder            = `${ApiBaseUrl}SalesOrder/Save`;
-const voidSalesOrder           = `${ApiBaseUrl}SalesOrder/Void`;
-
-//SalesOrderPayment
-const getSalesOrderPayments     = `${ApiBaseUrl}SalesOrderPayment/GetRecords`;
-const newSalesOrderPayment       = `${ApiBaseUrl}SalesOrderPayment/New`;
-const newSalesOrderPaymentDetail  = `${ApiBaseUrl}SalesOrderPayment/NewDetail`;
-const getSalesOrderPayment      = `${ApiBaseUrl}SalesOrderPayment/Get`;
-const saveSalesOrderPayment      = `${ApiBaseUrl}SalesOrderPayment/Save`;
-const voidSalesOrderPayment      = `${ApiBaseUrl}SalesOrderPayment/Void`;
-
-//StockAdjustment
-const getStockAdjustmentRecords       = `${ApiBaseUrl}StockAdjustment/GetRecords`;
-const newStockAdjustment            = `${ApiBaseUrl}StockAdjustment/New`;
-const newStockAdjustmentDetail        = `${ApiBaseUrl}StockAdjustment/NewDetail`;
-const getStockAdjustment            = `${ApiBaseUrl}StockAdjustment/Get`;
-const saveStockAdjustment            = `${ApiBaseUrl}StockAdjustment/Save`;
-const voidStockAdjustment         = `${ApiBaseUrl}StockAdjustment/Void`;
-
 export const GetCashSalesRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
@@ -123,6 +75,14 @@ export const VoidCashSale = ({companyId, userId, id}) =>{
     return postRequest(voidCashSale, body)
 };
 
+//CashSalesPayment
+const getCashSalesPayments      = `${ApiBaseUrl}CashSalesPayment/GetRecords`;
+const newCashSalePayment        = `${ApiBaseUrl}CashSalesPayment/New`;
+const newCashSalePaymentDetail  = `${ApiBaseUrl}CashSalesPayment/NewDetail`;
+const getCashSalesPayment       = `${ApiBaseUrl}CashSalesPayment/Get`;
+const saveCashSalesPayment      = `${ApiBaseUrl}CashSalesPayment/Save`;
+const voidCashSalesPayment      = `${ApiBaseUrl}CashSalesPayment/Void`;
+
 export const GetCashSalesPaymentRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
@@ -184,6 +144,14 @@ export const VoidCashSalePayment = ({companyId, userId, id}) =>{
 
     return postRequest(voidCashSalesPayment, body)
 };
+
+//PurchaseInvoice
+const getPurchaseInvoiceRecords       = `${ApiBaseUrl}PurchaseInvoice/GetRecords`;
+const newPurchaseInvoice             = `${ApiBaseUrl}PurchaseInvoice/New`;
+const newPurchaseInvoiceDetail        = `${ApiBaseUrl}PurchaseInvoice/NewDetail`;
+const getPurchaseInvoice               = `${ApiBaseUrl}PurchaseInvoice/Get`;
+const savePurchaseInvoice             = `${ApiBaseUrl}PurchaseInvoice/Save`;
+const voidPurchaseInvoice            = `${ApiBaseUrl}PurchaseInvoice/Void`;
 
 export const GetPurchaseInvoiceRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
@@ -252,6 +220,14 @@ export const VoidPurchaseInvoice = ({companyId, userId, id}) =>{
     return postRequest(voidPurchaseInvoice, body)
 };
 
+//PurchaseInvoicePayment
+const getPurchaseInvoicePayments      = `${ApiBaseUrl}PurchaseInvoicePayment/GetRecords`;
+const newPurchaseInvoicePayment        = `${ApiBaseUrl}PurchaseInvoicePayment/New`;
+const newPurchaseInvoicePaymentDetail  = `${ApiBaseUrl}PurchaseInvoicePayment/NewDetail`;
+const getPurchaseInvoicePayment       = `${ApiBaseUrl}PurchaseInvoicePayment/Get`;
+const savePurchaseInvoicePayment      = `${ApiBaseUrl}PurchaseInvoicePayment/Save`;
+const voidPurchaseInvoicePayment      = `${ApiBaseUrl}PurchaseInvoicePayment/Void`;
+
 export const GetPurchaseInvoicePaymentRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
@@ -313,6 +289,14 @@ export const VoidPurchaseInvoicePayment = ({companyId, userId, id}) =>{
 
     return postRequest(voidPurchaseInvoicePayment, body)
 };
+
+//SalesOrder
+const getSalesOrderRecords       = `${ApiBaseUrl}SalesOrder/GetRecords`;
+const newSalesOrder            = `${ApiBaseUrl}SalesOrder/New`;
+const newSalesOrderDetail        = `${ApiBaseUrl}SalesOrder/NewDetail`;
+const getSalesOrder             = `${ApiBaseUrl}SalesOrder/Get`;
+const saveSalesOrder            = `${ApiBaseUrl}SalesOrder/Save`;
+const voidSalesOrder           = `${ApiBaseUrl}SalesOrder/Void`;
 
 export const GetSalesOrderRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
@@ -385,6 +369,14 @@ export const VoidSalesOrder = ({companyId, userId, id}) =>{
     return postRequest(voidSalesOrder, body)
 };
 
+//SalesOrderPayment
+const getSalesOrderPayments     = `${ApiBaseUrl}SalesOrderPayment/GetRecords`;
+const newSalesOrderPayment       = `${ApiBaseUrl}SalesOrderPayment/New`;
+const newSalesOrderPaymentDetail  = `${ApiBaseUrl}SalesOrderPayment/NewDetail`;
+const getSalesOrderPayment      = `${ApiBaseUrl}SalesOrderPayment/Get`;
+const saveSalesOrderPayment      = `${ApiBaseUrl}SalesOrderPayment/Save`;
+const voidSalesOrderPayment      = `${ApiBaseUrl}SalesOrderPayment/Void`;
+
 export const GetSalesOrderPaymentRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
@@ -447,6 +439,14 @@ export const VoidSalesOrderPayment = ({companyId, userId, id}) =>{
     return postRequest(voidSalesOrderPayment, body)
 };
 
+//StockAdjustment
+const getStockAdjustmentRecords       = `${ApiBaseUrl}StockAdjustment/GetRecords`;
+const newStockAdjustment            = `${ApiBaseUrl}StockAdjustment/New`;
+const newStockAdjustmentDetail        = `${ApiBaseUrl}StockAdjustment/NewDetail`;
+const getStockAdjustment            = `${ApiBaseUrl}StockAdjustment/Get`;
+const saveStockAdjustment            = `${ApiBaseUrl}StockAdjustment/Save`;
+const voidStockAdjustment         = `${ApiBaseUrl}StockAdjustment/Void`;
+
 export const GetStockAdjustmentRecords = ({companyId, keyword, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
@@ -507,4 +507,77 @@ export const VoidStockAdjustment = ({companyId, userId, id}) =>{
     });
 
     return postRequest(voidStockAdjustment, body)
+};
+
+//GoodsTransit
+const getGoodsTransitRecords        =`${ApiBaseUrl}GoodsTransit/GetRecords`;
+const newGoodsTransit               =`${ApiBaseUrl}GoodsTransit/New`;
+const newGoodsTransitDetail         =`${ApiBaseUrl}GoodsTransit/NewDetail`;
+const getGoodTransit                =`${ApiBaseUrl}GoodsTransit/Get`;
+const saveGoodTransit               =`${ApiBaseUrl}GoodsTransit/Save`;
+const voidGoodTransit               =`${ApiBaseUrl}GoodsTransit/Void`;
+
+export const GetGoodsTransitRecords = ({companyId, fromDate, toDate, keyword, offset, limit}) =>{
+    const body = JSON.stringify({
+        companyId,
+        fromDate,
+        toDate,
+        keyword,
+        offset,
+        limit,
+    });
+
+    return postRequest(getGoodsTransitRecords, body);
+};
+
+export const NewGoodsTransit = ({companyId, userId, id}) =>{
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        id,
+    });
+
+    return postRequest(newGoodsTransit, body);
+};
+
+export const NewGoodsTransitDetail = ({}) =>{
+    const body = JSON.stringify({});
+    return postRequest(newGoodsTransitDetail, body);
+};
+
+export const GetGoodsTransit =  ({companyId, userId, id}) =>{
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        id,
+    });
+
+    return postRequest(getGoodTransit, body);
+};
+
+export const SaveGoodsTransit = ({actionData, goodsTransitId, docDate, description, remark, fromLocation, toLocation, total, isVoid, details}) =>{
+    const body = JSON.stringify({
+        actionData,
+        goodsTransitId,
+        docDate,
+        description,
+        remark,
+        fromLocation,
+        toLocation,
+        total,
+        isVoid,
+        details,
+    });
+
+    return postRequest(saveGoodTransit, body);
+};
+
+export const VoidGoodsTransit =  ({companyId, userId, id}) =>{
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        id,
+    });
+
+    return postRequest(voidGoodTransit, body);
 };

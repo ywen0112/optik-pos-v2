@@ -14,16 +14,16 @@ const ItemGridColumns = [
     { dataField: "balQty", caption: "Bal Qty", width: "10%" }
 ];
 
-const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect, onNew, onDelete, loading, onCellClick, onEdit }) => {
+const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSelect, onNew, onDelete, loading, onEdit }) => {
     const companyId = sessionStorage.getItem("companyId");
-    const productOpeningDataGridRef = useRef(null);
-    const [selectedItem, setSelectedItem] = useState(null);
+    const goodsTransitItemDataGridRef = useRef(null);
+
     const [currentRow, setCurrentRow] = useState(null);
+    const [selectedItem, setSelectedItem] = useState(null);
     const [dropDownBoxOpen, setDropDownBoxOpen] = useState(false);
 
     const itemStore = new CustomStore({
         key: "itemId",
-
         load: async (loadOptions) => {
             const filter = loadOptions.filter;
             let keyword = filter?.[2][2] || "";
@@ -47,15 +47,15 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                 userId,
                 id: key
             });
+            console.log(res.data)
             return res.data;
         },
     });
 
-    const itemOpeningStore = new CustomStore({
-        key: "itemOpeningBalanceId",
+    const goodsTransitItemStore = new CustomStore({
+        key: "goodsTransitDetailId",
         load: async () => {
             setSelectedItem(null)
-
             return {
                 data: dataRecords ?? [],
                 totalCount: totalRecords,
@@ -83,17 +83,15 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                 totalCount: totalRecords,
             }
         }
+    });
 
-    })
-
-    const handleItemOpeningItemLookupValueChanged = useCallback((e) => {
+    const handleItemLookupValueChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
         if (selected && currentRow) {
             setSelectedItem(selected);
             onSelect(selected, currentRow);
         }
         setDropDownBoxOpen(false);
-
     }, [currentRow]);
 
     const handleItemLookupChanged = (e) => {
@@ -116,7 +114,7 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                 hoverStateEnabled={true}
                 showBorders={true}
                 selectedRowKeys={selectedItem?.itemId}
-                onSelectionChanged={handleItemOpeningItemLookupValueChanged}
+                onSelectionChanged={handleItemLookupValueChanged}
                 height={"300px"}
                 remoteOperations={{
                     paging: true,
@@ -136,22 +134,22 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                 />
             </DataGrid>
         )
-    }, [selectedItem, handleItemOpeningItemLookupValueChanged])
+    }, [selectedItem, handleItemLookupValueChanged])
 
     const handleOnCellClick = useCallback((e) => {
-        const grid = productOpeningDataGridRef.current?.instance;
+        const grid = goodsTransitItemDataGridRef.current?.instance;
         if (e.rowType === "data" && grid) {
             setCurrentRow(e.data);
-            grid.editCell(e.rowIndex, e.column.dataField);
+            grid.editCell(e.rowIndex, e.column.dataField); // Start editing cell directly
         }
     },[])
 
     return (
         <StandardDataGridComponent
-            ref={productOpeningDataGridRef}
-            height={"100%"}
-            keyExpr="itemOpeningBalanceId"
-            dataSource={itemOpeningStore}
+            ref={goodsTransitItemDataGridRef}
+            height={440}
+            keyExpr="goodsTransitDetailId"
+            dataSource={goodsTransitItemStore}
             className={className}
             searchPanel={true}
             pager={true}
@@ -166,21 +164,20 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                 e.cancel = true
                 setSelectedItem(null)
                 await onNew();
-                const grid = productOpeningDataGridRef.current?.instance;
+                const grid = goodsTransitItemDataGridRef.current?.instance;
                 if (grid) {
                     grid.cancelEditData();
                     setTimeout(() => {
                         const visibleRows = grid.getVisibleRows();
                         const lastRowIndex = visibleRows.length - 1;
-            
+
                         if (lastRowIndex >= 0) {
                             grid.editCell(lastRowIndex, "itemCode");
                         }
-                    }, 100); 
+                    }, 100);
                 }
             }}
             onLoading={loading}
-
         >
             <Editing
                 mode="cell"
@@ -217,11 +214,11 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                 }
             />
             <Column dataField="description" caption="Description" allowEditing={false} />
-            <Column dataField="uom" caption="UOM" allowEditing={false}  width={"80px"}/>
-            <Column 
-                dataField="qty" 
-                caption="QTY" 
-                width={"80px"} 
+            <Column dataField="uom" caption="UOM" allowEditing={false} width={"80px"} />
+            <Column
+                dataField="qty"
+                caption="QTY"
+                width={"80px"}
                 editCellRender={({ data, setValue }) => {
                     return (
                         <NumberBox
@@ -254,6 +251,7 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                     );
                 }}
             />
+            <Column dataField="subTotal" caption="Amount" dataType="number" width={"80px"} />
             <Column
                 caption="Action"
                 width={"150px"}
@@ -264,7 +262,7 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                                 onClick={(e) => {
                                     e.stopPropagation(); 
                                     const rowIndex = cellData.rowIndex;
-                                    productOpeningDataGridRef.current.instance.deleteRow(rowIndex);
+                                    goodsTransitItemDataGridRef.current.instance.deleteRow(rowIndex);
                                 }}>
                                 <TrashIcon size={20} />
                             </div>
@@ -274,7 +272,7 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                 }}
             />
         </StandardDataGridComponent>
-    )
+    );
 }
 
-export default ProductOpeningDataGrid;
+export default GoodsTransitItemDataGrid;

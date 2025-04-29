@@ -15,7 +15,6 @@ const ItemOpening = () => {
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: "", targetUser: null });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
-  const [currentRowData, setCurrentRowData] = useState(null);
 
   useEffect(() => {
     fetchItemOpeningRecords();
@@ -58,7 +57,6 @@ const ItemOpening = () => {
       const res = await NewItemOpening({});
       if (res.success) {
         const newRecords = res.data;
-        setCurrentRowData(newRecords)
         setRecords(prev => [...prev, newRecords]);
         return newRecords;
       } else throw new Error(res.errorMessage || "Failed to add new Product Opening");
@@ -83,10 +81,6 @@ const ItemOpening = () => {
 
   const handleRemoveRow = async (key) => {
     setRecords(prev => prev.filter(record => record.itemOpeningBalanceId !== key));
-  }
-
-  const updateRowData = async (e) => {
-    setCurrentRowData(e.data)
   }
 
   const confirmAction = async () => {
@@ -128,12 +122,10 @@ const ItemOpening = () => {
           className={"p-2"}
           dataRecords={records}
           totalRecords={total}
-          currentRow={currentRowData || {}}
           onNew={handleAddNewRow}
           onEdit={handleEditRow}
           onDelete={handleRemoveRow}
           onSelect={onLookUpSelected}
-          onCellClick={updateRowData}
         />
 
       </div>
