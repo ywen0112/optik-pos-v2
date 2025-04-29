@@ -19,6 +19,8 @@ import ConfirmationModal from "../../modals/ConfirmationModal";
 import { Copy } from "lucide-react";
 import ErrorModal from "../../modals/ErrorModal";
 import CustomerDataGrid from "../../Components/DataGrid/CustomerDataGrid";
+import SalesOrderPaymentModal from "../../modals/Transactions/SalesOrderPaymentModal";
+import { NewSalesOrder } from "../../api/transactionapi";
 
 const initialData = [
     { id: 1, itemCode: 'A100', description: 'Widget', uom: 'pcs', qty: 10, unitPrice: 5.0 },
@@ -39,6 +41,9 @@ const PractionerGridBoxDisplayExpr = (item) => item && `${item.Name}(${item.Code
 const CustomerGridColumns = ["Code", "Name"]
 
 const SalesOrder = () => {
+    const companyId = sessionStorage.getItem("companyId");
+    const userId = sessionStorage.getItem("userId");
+  
     const [date, setDate] = useState(new Date());
     const [nextVisit, setNextVisit] = useState('');
     const [selectedInterval, setSelectedInterval] = useState(null);
@@ -58,6 +63,26 @@ const SalesOrder = () => {
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
 
     const [isNormalItem, setIsNormalItem] = useState(true);
+
+    const [salesOrderData, setSalesOrderData] = useState(null);
+    const [salesOrderId, setSalesOrderId] = useState(null);
+
+    useEffect(() => {
+        createNewSalesOrder();
+      }, []);
+
+    const createNewSalesOrder = async () => {
+        try {
+          const response = await NewSalesOrder({ companyId, userId, id: "" }); // id is empty
+          setSalesOrderData(response.data); 
+          setSalesOrderId(response.data.salesOrderId)
+        } catch (error) {
+            setErrorModal({ 
+                title: "Fetch Error", 
+                message: error.message
+            });
+        }
+      };
 
     const intervals = [
         { label: '1 mth', months: 1 },
@@ -439,6 +464,8 @@ const SalesOrder = () => {
 
       useEffect(() => {console.log(isNormalItem)},[isNormalItem])
 
+      const [salesOrderPayment, setSalesOrderPayment] = useState (false);
+
     return (
         <>
             <div className="grid grid-cols-2 gap-6">
@@ -591,7 +618,7 @@ const SalesOrder = () => {
                     </div>
                     <div className="flex flex-col row-span-2 self-start gap-1 mt-2">
                         <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
-                        <div className="flex flex-col space-y-1 w-full z-30">
+                        <div className="flex flex-col space-y-1 w-full">
                             <DatePicker
                                 selected={nextVisit}
                                 id="nextVisit"
@@ -862,7 +889,7 @@ const SalesOrder = () => {
                                             const parsed = parseFloat(rounding);
                                             setRounding(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
                                         }}
-                                        className=" border rounded px-1 py-2 bg-white w-full min-h-5 text-right "
+                                        className=" border rounded px-5 py-2 bg-white w-full min-h-5 text-right "
                                     />
 
                                 ) : (
@@ -891,12 +918,13 @@ const SalesOrder = () => {
             
                 </div>
             
-            <div className="w-ful flex flex-row justify-end">
+            <div className="w-full flex flex-row justify-end">
 
                 <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                     Collection
                 </button>
-                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
+                onClick={()=> setSalesOrderPayment(true)}>
                     Payment
                 </button>
                 <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
@@ -908,6 +936,15 @@ const SalesOrder = () => {
                 
                 <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             </div>
+
+            <SalesOrderPaymentModal
+                isOpen={salesOrderPayment}
+                onClose={() => setSalesOrderPayment(false)}
+                total={total}
+                companyId={companyId}
+                userId={userId}
+                salesOrderId={salesOrderId}
+            />
             </div>
         </>
     )
