@@ -16,6 +16,9 @@ import { SaveDebtor, NewDebtor, GetDebtor, GetItem } from "../../api/maintenance
 import { GetSpecificUser } from "../../api/userapi";
 import CashSalesItemDataGrid from "../../Components/DataGrid/Transactions/CashSalesItemDataGrid";
 import AddExpressCustomerModal from "../../modals/Transactions/AddCustomerModal";
+import { NewCashSales } from "../../api/transactionapi";
+import ErrorModal from "../../modals/ErrorModal";
+import CashSalesPaymentModal from "../../modals/Transactions/CashSalesPaymentModal";
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
 const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
@@ -26,9 +29,6 @@ const CustomerGridColumns = [
 const SalesPersonGridColumns = [
     { dataField: "userName", caption: "Name", width: "100%" }
 ];
-
-
-
 
 const CashSales = () => {
     const companyId = sessionStorage.getItem("companyId");
@@ -43,8 +43,25 @@ const CashSales = () => {
     const [rounding, setRounding] = useState("0.00")
     const [showCustomerModal, setShowCustomerModal] = useState(false);
     const [SalesItemTableData, setSalesItemTableData] = useState([]);
+    const [cashSalesId, setCashSalesId] = useState(null);
+    const [cashSalesPayment, setCashSalesPayment] = useState (false);
+    const [errorModal, setErrorModal] = useState({ title: "", message: "" });
 
+    useEffect(() => {
+        createNewCashSales();
+    }, []);
 
+    const createNewCashSales = async () => {
+        try {
+            const response = await NewCashSales({ companyId, userId, id: "" }); // id is empty
+            setCashSalesId(response.data.salesOrderId)
+        } catch (error) {
+            setErrorModal({ 
+                title: "Fetch Error", 
+                message: error.message
+            });
+        }
+    };
 
     const userStore = new CustomStore({
         key: "userId",
@@ -264,6 +281,7 @@ const CashSales = () => {
 
     return (
         <>
+        <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <div className="items-center gap-1">
@@ -479,7 +497,8 @@ const CashSales = () => {
                 </div>
 
                 <div className="w-ful flex flex-row justify-end">
-                    <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
+                    onClick={()=> setCashSalesPayment(true)}>
                         Payment
                     </button>
                     <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
@@ -488,11 +507,17 @@ const CashSales = () => {
                     <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]" onClick={() => console.log(CustomerGridBoxValue)}>
                         Save
                     </button>
-
-
-
-
                 </div>
+
+                <CashSalesPaymentModal
+                    isOpen={cashSalesPayment}
+                    onClose={() => setCashSalesPayment(false)}
+                    total={total}
+                    companyId={companyId}
+                    userId={userId}
+                    salesOrderId={cashSalesId}
+                    onError={setErrorModal}
+                />
             </div>
         </>
     )
