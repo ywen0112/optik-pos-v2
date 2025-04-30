@@ -17,7 +17,8 @@ import DatePicker from "react-datepicker";
 import SalesOrderItemTable from "../../Components/DataGrid/SalesOrderItemDataGrid";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import { Copy } from "lucide-react";
-
+import { NewPurchaseInvoice } from "../../api/transactionapi";
+import ErrorModal from "../../modals/ErrorModal";
 
 const initialData = [
   { id: 1, itemCode: 'A100', description: 'Widget', uom: 'pcs', qty: 10, unitPrice: 5.0 },
@@ -54,7 +55,26 @@ const PurchaseInvoice = () => {
 
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [newCustomerName, setNewCustomerName] = useState("");
+  const [errorModal, setErrorModal] = useState({ title: "", message: "" });
+  const [purchaseInvoiceId, setPurchaseInvoiceId] = useState(null);
+  const companyId = sessionStorage.getItem("companyId");
+  const userId = sessionStorage.getItem("userId");
 
+  useEffect(() => {
+        createNewSalesOrder();
+      }, []);
+
+    const createNewSalesOrder = async () => {
+        try {
+          const response = await NewPurchaseInvoice({ companyId, userId, id: "" }); // id is empty
+          setPurchaseInvoiceId(response.data.salesOrderId)
+        } catch (error) {
+            setErrorModal({ 
+                title: "Fetch Error", 
+                message: error.message
+            });
+        }
+  };
 
   const intervals = [
     { label: '1 mth', months: 1 },
@@ -389,6 +409,7 @@ const PurchaseInvoice = () => {
 
   return (
     <>
+      <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
           <div className="items-center gap-1">

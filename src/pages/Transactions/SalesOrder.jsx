@@ -64,17 +64,15 @@ const SalesOrder = () => {
 
     const [isNormalItem, setIsNormalItem] = useState(true);
 
-    const [salesOrderData, setSalesOrderData] = useState(null);
     const [salesOrderId, setSalesOrderId] = useState(null);
 
     useEffect(() => {
         createNewSalesOrder();
-      }, []);
+    }, []);
 
     const createNewSalesOrder = async () => {
         try {
           const response = await NewSalesOrder({ companyId, userId, id: "" }); // id is empty
-          setSalesOrderData(response.data); 
           setSalesOrderId(response.data.salesOrderId)
         } catch (error) {
             setErrorModal({ 
@@ -82,7 +80,7 @@ const SalesOrder = () => {
                 message: error.message
             });
         }
-      };
+    };
 
     const intervals = [
         { label: '1 mth', months: 1 },
@@ -468,6 +466,7 @@ const SalesOrder = () => {
 
     return (
         <>
+        <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <div className="items-center gap-1">
@@ -933,8 +932,6 @@ const SalesOrder = () => {
                 <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                     Save
                 </button>
-                
-                <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             </div>
 
             <SalesOrderPaymentModal
@@ -944,6 +941,7 @@ const SalesOrder = () => {
                 companyId={companyId}
                 userId={userId}
                 salesOrderId={salesOrderId}
+                onError={setErrorModal}
             />
             </div>
         </>

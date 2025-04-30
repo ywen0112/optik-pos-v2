@@ -1,13 +1,10 @@
-  import { Plus, X } from 'lucide-react';
   import { useEffect, useState } from "react";
   import { GetPaymentMethodRecords } from '../../api/maintenanceapi';
   import{ NewSalesOrderPayment, NewSalesOrderPaymentDetail, SaveSalesOrderPayment } from '../../api/transactionapi';
-  import ErrorModal from '../ErrorModal';
   import NotificationModal from '../NotificationModal';
 
-  const SalesOrderPaymentModal = ({ isOpen, onClose, total, companyId, userId, salesOrderId }) => {
+  const SalesOrderPaymentModal = ({ isOpen, onClose, total, companyId, userId, salesOrderId, onError }) => {
     const [paymentMethods, setPaymentMethods] = useState([]);
-    const [errorModal, setErrorModal] = useState({ title: '', message: '' });
     const [selectedPayments, setSelectedPayments] = useState([]);
     const [hasMore, setHasMore] = useState(true);
     const [offset, setOffset] = useState(0);
@@ -41,7 +38,7 @@
         }
       } catch (error) {
         setPaymentMethods([]);
-        setErrorModal({ title: 'Fetch Error', message: error.message });
+        onError({ title: 'Fetch Error', message: error.message });
       }
     };
   
@@ -50,7 +47,7 @@
         const response = await NewSalesOrderPayment({ companyId, userId, id: salesOrderId });
         setSalesOrderPaymentData(response.data);
       } catch (error) {
-        setErrorModal({ title: 'New Error', message: error.message });
+        onError({ title: 'New Error', message: error.message });
       }
     };
   
@@ -80,7 +77,7 @@
           throw new Error(response?.errorMessage);
         }
       } catch (error) {
-        setErrorModal({ title: 'New Payment Detail Error', message: error.message });
+        onError({ title: 'New Payment Detail Error', message: error.message });
       }
     };
   
@@ -111,14 +108,14 @@
           details: selectedPayments.map(item => ({
             salesOrderPaymentDetailId: item.salesOrderPaymentDetailId,
             paymentMethodId: item.paymentMethodId,
-            reference: JSON.stringify({ refNo: item.refno, ccNo: item.ccno, approvalCode: item.approvalcode, remark: item.remark }),
+            reference: JSON.stringify({ refNo: item.refsqwno, ccNo: item.ccno, approvalCode: item.approvalcode, remark: item.remark }),
             amount: parseFloat(item.amount) || 0,
           }))
         };
         await SaveSalesOrderPayment(payload);
         setNotifyModal({ isOpen: true, message: 'Payment made successfully!' });
       } catch (error) {
-        setErrorModal({ title: 'Save Error', message: error.message });
+        onError({ title: 'Save Error', message: error.message });
       }
     };
   
@@ -256,7 +253,6 @@
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-          <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
           <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message}  onClose={handleNotifyModalClose} />
         <div className="bg-white p-6 rounded-lg shadow-lg w-full h-full overflow-y-auto text-secondary">
           <div className="flex flex-row justify-between">
