@@ -14,14 +14,15 @@
     const [activePaymentMethod, setActivePaymentMethod] = useState(null);
     const [salesOrderPaymentData, setSalesOrderPaymentData] = useState(null);
     const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: '' });
-    const [paymentDetails, setPaymentDetails] = useState({ refNo: '', ccNo: '', approvalCode: '', remark: '', amount: '' });
+    const [paymentDetails, setPaymentDetails] = useState({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
+    const [focusedField, setFocusedField] = useState(null);
   
     useEffect(() => {
       if (isOpen) {
         fetchPaymentMethods();
         setSelectedPayments([]);
         createNewSalesOrderPayment();
-        setPaymentDetails({refNo: '', ccNo: '', approvalCode: '', remark: '', amount: ''});
+        setPaymentDetails({refno: '', ccno: '', approvalcode: '', remark: '', amount: ''});
         setActivePaymentMethod(null);
       }
     }, [isOpen]);
@@ -36,7 +37,7 @@
           setHasMore(newData.length === params.limit);
           setOffset(prev => (isLoadMore ? prev + params.limit : params.limit));
         } else {
-          throw new Error(response?.message || 'Failed to fetch payment methods');
+          throw new Error(response?.message);
         }
       } catch (error) {
         setPaymentMethods([]);
@@ -69,9 +70,9 @@
             amount: '0.00',
             salesOrderPaymentDetailId: response.data.salesOrderPaymentDetailId,
             reference: '',
-            refNo: '',
-            ccNo: '',
-            approvalCode: '',
+            refno: '',
+            ccno: '',
+            approvalcode: '',
             remark: ''
           }]);
           setActivePaymentMethod(method);
@@ -110,7 +111,7 @@
           details: selectedPayments.map(item => ({
             salesOrderPaymentDetailId: item.salesOrderPaymentDetailId,
             paymentMethodId: item.paymentMethodId,
-            reference: JSON.stringify({ refNo: item.refNo, ccNo: item.ccNo, approvalCode: item.approvalCode, remark: item.remark }),
+            reference: JSON.stringify({ refNo: item.refno, ccNo: item.ccno, approvalCode: item.approvalcode, remark: item.remark }),
             amount: parseFloat(item.amount) || 0,
           }))
         };
@@ -132,20 +133,28 @@
         const updated = [...selectedPayments];
         updated[selectedIndex] = { ...updated[selectedIndex], ...paymentDetails };
         setSelectedPayments(updated);
-        setPaymentDetails({ refNo: '', ccNo: '', approvalCode: '', remark: '', amount: '' });
+        setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
         setActivePaymentMethod(null);
       }
     };
 
     const handleAmountChange = (e) => {
       let value = e.target.value;
+    
+      if (value === '' || value === '.') {
+        setPaymentDetails(prev => ({ ...prev, amount: value }));
+        return;
+      }
+    
       if (value.includes('.')) {
         const [integerPart, decimalPart] = value.split('.');
         if (decimalPart.length > 2) {
           value = `${integerPart}.${decimalPart.slice(0, 2)}`;
         }
       }
+    
       if (!/^\d*(\.\d{0,2})?$/.test(value)) return;
+    
       setPaymentDetails(prev => ({ ...prev, amount: value }));
     };
   
@@ -154,12 +163,11 @@
         <div className="flex items-center gap-1">
           <span className="w-32 font-medium">Amount</span>
           <input
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
             placeholder='0.00'
             value={paymentDetails.amount}
             onChange={handleAmountChange}
+            onFocus={() => setFocusedField('amount')}
             className="border p-1 h-[40px] flex-1 text-right"
           />
         </div>
@@ -170,16 +178,24 @@
         </div>
       </div>
     );
+
+    const fieldKeyMap = {
+      'Ref No': 'refno',
+      'CC No': 'ccno',
+      'Approval Code': 'approvalcode',
+      'Remark': 'remark',
+    };
   
     const renderCreditCardFields = () => (
-      <div className="space-y-4">
-        {['Ref No', 'CC No', 'Approval Code', 'Remark'].map((field, idx) => (
+      <div className="space-y-2">
+        {Object.entries(fieldKeyMap).map(([label, key], idx) => (
           <div key={idx} className="flex items-center gap-1">
-            <span className="w-32">{field}</span>
+            <span className="w-32">{label}</span>
             <input
               type="text"
-              value={paymentDetails[field.toLowerCase().replace(' ', '')]}
-              onChange={(e) => setPaymentDetails(prev => ({ ...prev, [field.toLowerCase().replace(' ', '')]: e.target.value }))}
+              value={paymentDetails[label.toLowerCase().replace(' ', '')]}
+              onFocus={() => setFocusedField(key)}
+              onChange={(e) => setPaymentDetails(prev => ({ ...prev, [label.toLowerCase().replace(' ', '')]: e.target.value }))}
 
               className="border p-1 h-[40px] flex-1 text-right"
             />
@@ -188,12 +204,11 @@
         <div className="flex items-center gap-1">
           <span className="w-32">Amount</span>
           <input
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
             placeholder='0.00'
             value={paymentDetails.amount}
             onChange={handleAmountChange}
+            onFocus={() => setFocusedField('amount')}
             className="border p-1 h-[40px] flex-1 text-right"
           />
         </div>
@@ -213,6 +228,29 @@
       return renderCreditCardFields();
     };
   
+    const handleNumberPadInput = (input) => {
+      if (!focusedField) return;
+    
+      setPaymentDetails(prev => {
+        let current = prev[focusedField] ?? '';
+    
+        if (input === 'backspace') {
+          return { ...prev, [focusedField]: current.slice(0, -1) };
+        }
+    
+        if (input === '.' && current.includes('.')) return prev;
+        if (input === '.' && focusedField !== 'amount') return prev; 
+    
+        // Restrict to 2 decimal places for 'amount'
+        if (focusedField === 'amount') {
+          const [intPart, decPart] = current.split('.');
+          if (decPart?.length >= 2 && input !== 'backspace') return prev;
+        }
+    
+        const updated = current + input.toString();
+        return { ...prev, [focusedField]: updated };
+      });
+    };
 
     if (!isOpen) return null;
 
@@ -244,13 +282,16 @@
                           selectedPayments.map((item, index) => (
                             <div
                               key={item.paymentMethodId}
-                              className="flex items-center gap-1 border p-2 rounded cursor-pointer hover:bg-gray-100"
+                              className={`group flex items-center gap-1 border p-2 rounded cursor-pointer 
+                                ${activePaymentMethod?.paymentMethodId === item.paymentMethodId 
+                                  ? 'border-primary' 
+                                  : 'hover:bg-gray-100'}`}
                               onClick={() => {
                                 setActivePaymentMethod(item);
                                 setPaymentDetails({
-                                  refNo: item.refNo || '',
-                                  ccNo: item.ccNo || '',
-                                  approvalCode: item.approvalCode || '',
+                                  refno: item.refno || '',
+                                  ccno: item.ccno || '',
+                                  approvalcode: item.approvalcode || '',
                                   remark: item.remark || '',
                                   amount: item.amount || ''
                                 });
@@ -259,16 +300,16 @@
                             <label className="flex-1">{item.paymentMethodCode}</label>
                             <input
                               type="text"
-                              value={item.amount}
+                              value={parseFloat(item.amount || 0).toFixed(2)}
                               readOnly
-                              className="p-1 w-24 text-right hover:bg-gray-100"
+                              className="p-1 w-24 text-right group-hover:bg-gray-100"
                           />
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 removePaymentMethod(index);
                               }}
-                              className="text-red-500 hover:text-red-700"
+                              className="text-red-500 hover:text-red-700 group-hover:bg-gray-100"
                             >
                               <X size={18} />
                             </button>
@@ -336,20 +377,21 @@
 
               {/* Right Section */}
               <div className="flex-1 p-4 flex flex-col">
-                <div className="h-[50%] border p-4">
+                <div className="h-[50%] border p-2">
                   {renderActivePaymentMethodFields()}
                 </div>
               
                 <div className="flex-1 border mt-4 p-4 flex flex-col justify-center items-center">
                   <div className="grid grid-cols-3 gap-4 w-full max-w-[300px]">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, "backspace", 0, "."].map((value, index) => (
-                      <button
-                          key={index}
-                          className="h-16 text-xl font-semibold border rounded flex items-center justify-center hover:bg-gray-100"
-                      >
-                          {value === "backspace" ? "⌫" : value}
-                      </button>
-                    ))}
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'backspace', 0, '.'].map((value, index) => (
+                    <button
+                      key={index}
+                      className="h-16 text-xl font-semibold border rounded flex items-center justify-center hover:bg-gray-100"
+                      onClick={() => handleNumberPadInput(value)}
+                    >
+                      {value === 'backspace' ? '⌫' : value}
+                    </button>
+                  ))}
                   </div>
                 </div>
               </div>
