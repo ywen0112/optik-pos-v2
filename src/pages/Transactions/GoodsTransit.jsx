@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import DatePicker from "react-datepicker";
-
+import CustomStore from 'devextreme/data/custom_store';
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
 import { NewGoodsTransit, NewGoodsTransitDetail, SaveGoodsTransit } from "../../api/transactionapi";
-import GoodsTransitItemDataGrid from "../../Components/DataGrid/Transactions/GoodsTransitItemDataGrid";
+import TransactionItemDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGrid";
 
 
 const GoodsTransit = () => {
@@ -13,6 +13,7 @@ const GoodsTransit = () => {
   const userId = sessionStorage.getItem("userId");
   const [masterData, setMasterData] = useState(null);
   const [goodsTransitItems, setGoodsTransitItems] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [currentTotalCost, setCurrentTotalCost] = useState(0);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: "", targetData: null });
@@ -99,7 +100,6 @@ const GoodsTransit = () => {
   }
 
   const confirmAction = async () => {
-    setConfirmModal({ isOpen: false, action: "", data: null });
     try {
       const res = await SaveGoodsTransit({ ...confirmModal.data });
       if (res.success) {
@@ -109,9 +109,10 @@ const GoodsTransit = () => {
       setErrorModal({ title: "Error", message: error.message });
       await newGoodsTransitRecords()
     }
-    if(action === "addPrint"){
+    if(confirmModal.action === "addPrint"){
       console.log("print acknowledgement");
     }
+    setConfirmModal({ isOpen: false, action: "", data: null });
     await newGoodsTransitRecords()
     setGoodsTransitItems([]);
     setCurrentTotalCost(0);
@@ -126,13 +127,7 @@ const GoodsTransit = () => {
       });
       return;
     }
-    const actionData = {
-      companyId: companyId,
-      userId: userId,
-      id: userId,
-    }
     const formData = {
-      actionData: actionData,
       ...masterData,
       isVoid: false,
       details: goodsTransitItems.map((item) => ({
@@ -163,13 +158,7 @@ const GoodsTransit = () => {
       });
       return;
     }
-    const actionData = {
-      companyId: companyId,
-      userId: userId,
-      id: userId,
-    }
     const formData = {
-      actionData: actionData,
       ...masterData,
       isVoid: false,
       details: goodsTransitItems.map((item) => ({
@@ -191,6 +180,41 @@ const GoodsTransit = () => {
       data: formData,
     });
   }
+
+  const gridRef = useRef(null);
+
+  const goodsTransitItemStore = new CustomStore({
+          key: "goodsTransitDetailId",
+          load: async () => {
+              setSelectedItem(null)
+              return {
+                  data: goodsTransitItems ?? [],
+                  totalCount: goodsTransitItems?.length,
+              };
+          },
+          insert: async () => {
+              setSelectedItem(null)
+              return {
+                data: goodsTransitItems ?? [],
+                totalCount: goodsTransitItems?.length,
+              }
+          },
+          remove: async (key) => {
+              await handleRemoveRow(key)
+              return {
+                data: goodsTransitItems ?? [],
+                totalCount: goodsTransitItems?.length,
+              }
+          },
+          update: async (key, data) => {
+              await handleEditRow(key, data)
+              setSelectedItem(null)
+              return {
+                data: goodsTransitItems ?? [],
+                totalCount: goodsTransitItems?.length,
+              }
+          }
+      });
 
   return (
     <>
@@ -294,14 +318,14 @@ const GoodsTransit = () => {
       </div>
 
       <div className="mt-3 bg-white shadow rounded">
-        <GoodsTransitItemDataGrid
+        <TransactionItemDataGrid
           className={"p-2"}
-          dataRecords={goodsTransitItems}
-          totalRecords={goodsTransitItems?.length}
+          customStore={goodsTransitItemStore}
+          gridRef={gridRef}
           onNew={handleAddNewRow}
-          onEdit={handleEditRow}
-          onDelete={handleRemoveRow}
           onSelect={onLookUpSelected}
+          selectedItem={selectedItem}
+          setSelectedItem={setSelectedItem}
         />
       </div>
 

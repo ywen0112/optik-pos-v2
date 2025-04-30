@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { TrashIcon } from "lucide-react";
 import CustomStore from 'devextreme/data/custom_store';
 import DataGrid, { Selection, Column, Paging, Editing, Scrolling, SearchPanel } from 'devextreme-react/data-grid';
@@ -14,12 +14,10 @@ const ItemGridColumns = [
     { dataField: "balQty", caption: "Bal Qty", width: "10%" }
 ];
 
-const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSelect, onNew, onDelete, loading, onEdit }) => {
+const TransactionItemDataGrid = ({ className, customStore, gridRef, onSelect, onNew, loading, selectedItem, setSelectedItem }) => {
     const companyId = sessionStorage.getItem("companyId");
-    const goodsTransitItemDataGridRef = useRef(null);
 
     const [currentRow, setCurrentRow] = useState(null);
-    const [selectedItem, setSelectedItem] = useState(null);
     const [dropDownBoxOpen, setDropDownBoxOpen] = useState(false);
 
     const itemStore = new CustomStore({
@@ -50,39 +48,6 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
             console.log(res.data)
             return res.data;
         },
-    });
-
-    const goodsTransitItemStore = new CustomStore({
-        key: "goodsTransitDetailId",
-        load: async () => {
-            setSelectedItem(null)
-            return {
-                data: dataRecords ?? [],
-                totalCount: totalRecords,
-            };
-        },
-        insert: async () => {
-            setSelectedItem(null)
-            return {
-                data: dataRecords ?? [],
-                totalCount: totalRecords,
-            }
-        },
-        remove: async (key) => {
-            await onDelete(key)
-            return {
-                data: dataRecords ?? [],
-                totalCount: totalRecords,
-            }
-        },
-        update: async (key, data) => {
-            await onEdit(key, data)
-            setSelectedItem(null)
-            return {
-                data: dataRecords ?? [],
-                totalCount: totalRecords,
-            }
-        }
     });
 
     const handleItemLookupValueChanged = useCallback((e) => {
@@ -137,7 +102,7 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
     }, [selectedItem, handleItemLookupValueChanged])
 
     const handleOnCellClick = useCallback((e) => {
-        const grid = goodsTransitItemDataGridRef.current?.instance;
+        const grid = gridRef.current?.instance;
         if (e.rowType === "data" && grid) {
             setCurrentRow(e.data);
             grid.editCell(e.rowIndex, e.column.dataField); // Start editing cell directly
@@ -146,10 +111,10 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
 
     return (
         <StandardDataGridComponent
-            ref={goodsTransitItemDataGridRef}
+            ref={gridRef}
             height={440}
-            keyExpr="goodsTransitDetailId"
-            dataSource={goodsTransitItemStore}
+            keyExpr={customStore.key}
+            dataSource={customStore}
             className={className}
             searchPanel={true}
             pager={true}
@@ -164,7 +129,7 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
                 e.cancel = true
                 setSelectedItem(null)
                 await onNew();
-                const grid = goodsTransitItemDataGridRef.current?.instance;
+                const grid = gridRef.current?.instance;
                 if (grid) {
                     grid.cancelEditData();
                     setTimeout(() => {
@@ -262,7 +227,7 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
                                 onClick={(e) => {
                                     e.stopPropagation(); 
                                     const rowIndex = cellData.rowIndex;
-                                    goodsTransitItemDataGridRef.current.instance.deleteRow(rowIndex);
+                                    gridRef.current.instance.deleteRow(rowIndex);
                                 }}>
                                 <TrashIcon size={20} />
                             </div>
@@ -275,4 +240,4 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
     );
 }
 
-export default GoodsTransitItemDataGrid;
+export default TransactionItemDataGrid;
