@@ -65,6 +65,7 @@ const SalesOrder = () => {
     const [isNormalItem, setIsNormalItem] = useState(true);
 
     const [salesOrderId, setSalesOrderId] = useState(null);
+    const [salesOrderPayment, setSalesOrderPayment] = useState (false);
 
     useEffect(() => {
         createNewSalesOrder();
@@ -461,8 +462,6 @@ const SalesOrder = () => {
       }
 
       useEffect(() => {console.log(isNormalItem)},[isNormalItem])
-
-      const [salesOrderPayment, setSalesOrderPayment] = useState (false);
 
     return (
         <>

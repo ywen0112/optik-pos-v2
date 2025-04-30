@@ -19,6 +19,7 @@ import ConfirmationModal from "../../modals/ConfirmationModal";
 import { Copy } from "lucide-react";
 import { NewPurchaseInvoice } from "../../api/transactionapi";
 import ErrorModal from "../../modals/ErrorModal";
+import PurchaseInvoicePaymentModal from "../../modals/Transactions/PurcaseInvoicePaymentModal";
 
 const initialData = [
   { id: 1, itemCode: 'A100', description: 'Widget', uom: 'pcs', qty: 10, unitPrice: 5.0 },
@@ -59,15 +60,16 @@ const PurchaseInvoice = () => {
   const [purchaseInvoiceId, setPurchaseInvoiceId] = useState(null);
   const companyId = sessionStorage.getItem("companyId");
   const userId = sessionStorage.getItem("userId");
+  const [purchaseInvoicePayment, setPurchaseInvoicePayment] = useState (false);
 
   useEffect(() => {
-        createNewSalesOrder();
+        createNewPruchaseInvoice();
       }, []);
 
-    const createNewSalesOrder = async () => {
+    const createNewPruchaseInvoice = async () => {
         try {
           const response = await NewPurchaseInvoice({ companyId, userId, id: "" }); // id is empty
-          setPurchaseInvoiceId(response.data.salesOrderId)
+          setPurchaseInvoiceId(response.data.purchaseInvoiceId)
         } catch (error) {
             setErrorModal({ 
                 title: "Fetch Error", 
@@ -899,17 +901,27 @@ const PurchaseInvoice = () => {
         </div>
 
         <div className="w-ful flex flex-row justify-end">
+          <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
+            onClick={()=> setPurchaseInvoicePayment(true)}>
+              Payment
+          </button>
           <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
             Save & Print
           </button>
           <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
             Save
           </button>
-
-
-
-
         </div>
+
+        <PurchaseInvoicePaymentModal
+          isOpen={purchaseInvoicePayment}
+          onClose={() => setPurchaseInvoicePayment(false)}
+          total={total}
+          companyId={companyId}
+          userId={userId}
+          purchaseInvoiceId={purchaseInvoiceId}
+          onError={setErrorModal}
+        />
       </div>
     </>
   )

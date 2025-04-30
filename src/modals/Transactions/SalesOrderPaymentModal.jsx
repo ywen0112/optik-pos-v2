@@ -2,6 +2,7 @@
   import { GetPaymentMethodRecords } from '../../api/maintenanceapi';
   import{ NewSalesOrderPayment, NewSalesOrderPaymentDetail, SaveSalesOrderPayment } from '../../api/transactionapi';
   import NotificationModal from '../NotificationModal';
+  import { X, Plus } from "lucide-react"
 
   const SalesOrderPaymentModal = ({ isOpen, onClose, total, companyId, userId, salesOrderId, onError }) => {
     const [paymentMethods, setPaymentMethods] = useState([]);
