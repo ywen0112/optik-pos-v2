@@ -4,19 +4,18 @@ import DataGrid, {
     Selection,
     Scrolling,
     SearchPanel
-  } from 'devextreme-react/data-grid';
+} from 'devextreme-react/data-grid';
 import CustomStore from 'devextreme/data/custom_store';
 import DropDownBox from 'devextreme-react/drop-down-box';
 import DatePicker from "react-datepicker";
-import { getInfoLookUp } from "../../api/infolookupapi";
-import { SaveDebtor, NewDebtor, GetDebtor } from "../../api/maintenanceapi";
-import { GetSpecificUser } from "../../api/userapi";
-import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGridWithDisc";
-import AddExpressCustomerModal from "../../modals/Transactions/AddCustomerModal";
-
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
+import { getInfoLookUp } from "../../api/infolookupapi";
+import { GetSpecificUser } from "../../api/userapi";
+import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGridWithDisc";
+import { SaveDebtor, NewDebtor, GetDebtor } from "../../api/maintenanceapi";
+import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
 
 import CashSalesPaymentModal from "../../modals/Transactions/CashSalesPaymentModal";
 import { NewCashSales, NewCashSalesDetail, SaveCashSale } from "../../api/transactionapi";
@@ -44,7 +43,7 @@ const CashSales = () => {
     const [CustomerGridBoxValue, setCustomerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
     const [isSalesPersonGridBoxOpened, setIsSalePersonGridBoxOpened] = useState(false);
     const [SalesPersonGridBoxValue, setSalesPersonGridBoxValue] = useState({ id: "", Name: "" });
-    const [newCustomer, setNewCustomer] = useState({ id: "", Code: "", Name: "" });
+    const [newCustomer, setNewCustomer] = useState(null);
     const [showCustomerModal, setShowCustomerModal] = useState(false);
 
     const [cashSalesPayment, setCashSalesPayment] = useState(false);
@@ -122,7 +121,7 @@ const CashSales = () => {
             };
         },
         byKey: async (key) => {
-            if (!key) return null; 
+            if (!key) return null;
             const res = await GetDebtor({
                 companyId,
                 userId,
@@ -242,7 +241,7 @@ const CashSales = () => {
             userId: userId,
             id: userId,
         });
-        setNewCustomer({ id: newCusRes.data.debtorId, Code: newCusRes.data.debtorCode, Name: newCusRes.data.companyName })
+        setNewCustomer(newCusRes.data)
     };
 
     const handleNewCustomerModel = async () => {
@@ -250,31 +249,10 @@ const CashSales = () => {
         setShowCustomerModal(true)
     }
 
-    const handleSaveNewCustomer = async () => {
-        if (!newCustomer.Name.trim()) return;
-        const newCustomerRecord = {
-            id: newCustomer.id,
-            Code: newCustomer.Code,
-            Name: newCustomer.Name,
-        };
-        const actionData = {
-            companyId: companyId,
-            userId: userId,
-            id: userId,
-        };
-        const res = await SaveDebtor({
-            actionData: actionData,
-            debtorId: newCustomer.id,
-            debtorCode: newCustomer.Code,
-            companyName: newCustomer.Name,
-            isActive: true,
-        });
-        if (res.success) {
-            setCustomerGridBoxValue({ id: newCustomerRecord.id, Code: newCustomerRecord.Code, Name: newCustomerRecord.Name });
-        }
-        setNewCustomer({ id: "", Name: "", Code: "" })
-        setShowCustomerModal(false);
-    };
+    const handleCloseUpdateModal = async () => {
+        setNewCustomer(null);
+        setShowCustomerModal(false)
+    }
 
     const onLookUpSelected = (newValue, rowData) => {
         let data = newValue;
@@ -348,12 +326,18 @@ const CashSales = () => {
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
             await createNewCashSales()
+            setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
+            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
+            setCashSalesItem([]);
+            setCurrentSalesTotal(0);
         }
         if (confirmModal.action === "addPrint") {
             console.log("print acknowledgement");
         }
         setConfirmModal({ isOpen: false, action: "", data: null });
         await createNewCashSales()
+        setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
+        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
         setCashSalesItem([]);
         setCurrentSalesTotal(0);
         return;
@@ -409,7 +393,7 @@ const CashSales = () => {
                 description: item.description ?? "",
                 desc2: item.desc2 ?? "",
                 qty: item.qty ?? 0,
-                unitPrice: item.unitPrice ?? 0,
+                unitPrice: item.price ?? 0,
                 discount: item.discount ? "percent" : "rate" ?? "rate",
                 discountAmount: item.discountAmount ?? 0,
                 subTotal: item.subTotal ?? 0,
@@ -425,38 +409,75 @@ const CashSales = () => {
         })
     }
 
+    const confirmAddCustomerAction = async ({ action, data }) => {
+        setConfirmModal({ isOpen: false, action: null });
+        try {
+            const saveRes = await SaveDebtor({
+                actionData: data.actionData,
+                debtorId: data.debtorId,
+                debtorCode: data.debtorCode,
+                companyName: data.companyName,
+                isActive: data.isActive,
+                identityNo: data.identityNo,
+                dob: data.dob || null,
+                address: data.address,
+                remark: data.remark,
+                phone1: data.phone1,
+                phone2: data.phone2,
+                emailAddress: data.emailAddress,
+                medicalIsDiabetes: data.medicalIsDiabetes,
+                medicalIsHypertension: data.medicalIsHypertension,
+                medicalOthers: data.medicalOthers,
+                ocularIsSquint: data.ocularIsSquint,
+                ocularIsLazyEye: data.ocularIsLazyEye,
+                ocularHasSurgery: data.ocularHasSurgery,
+                ocularOthers: data.ocularOthers,
+            });
+            if (saveRes.success) {
+                setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
+                setNewCustomer(null);
+            } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
+
+        } catch (error) {
+            setErrorModal({ title: `Save Error`, message: error.message });
+        } finally {
+            showCustomerModal(false);
+        }
+    };
+
+
     const cashSalesItemStore = new CustomStore({
-              key: "cashSalesDetailId",
-              load: async () => {
-                  setSelectedItem(null)
-                  return {
-                      data: cashSalesItem ?? [],
-                      totalCount: cashSalesItem?.length,
-                  };
-              },
-              insert: async () => {
-                  setSelectedItem(null)
-                  return {
-                    data: cashSalesItem ?? [],
-                    totalCount: cashSalesItem?.length,
-                  }
-              },
-              remove: async (key) => {
-                  await handleRemoveRow(key)
-                  return {
-                    data: cashSalesItem ?? [],
-                    totalCount: cashSalesItem?.length,
-                  }
-              },
-              update: async (key, data) => {
-                  await handleEditRow(key, data)
-                  setSelectedItem(null)
-                  return {
-                    data: cashSalesItem ?? [],
-                    totalCount: cashSalesItem?.length,
-                  }
-              }
-          });
+        key: "cashSalesDetailId",
+        load: async () => {
+            setSelectedItem(null)
+            return {
+                data: cashSalesItem ?? [],
+                totalCount: cashSalesItem?.length,
+            };
+        },
+        insert: async () => {
+            setSelectedItem(null)
+            return {
+                data: cashSalesItem ?? [],
+                totalCount: cashSalesItem?.length,
+            }
+        },
+        remove: async (key) => {
+            await handleRemoveRow(key)
+            return {
+                data: cashSalesItem ?? [],
+                totalCount: cashSalesItem?.length,
+            }
+        },
+        update: async (key, data) => {
+            await handleEditRow(key, data)
+            setSelectedItem(null)
+            return {
+                data: cashSalesItem ?? [],
+                totalCount: cashSalesItem?.length,
+            }
+        }
+    });
 
     return (
         <>
@@ -512,47 +533,17 @@ const CashSales = () => {
                     </div>
 
                     {showCustomerModal && (
-                        // <AddExpressCustomerModal/>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-                            <div className="bg-white p-6 rounded shadow-md w-96 space-y-4">
-                                <h2 className="text-lg font-semibold text-gray-800">Add Customer</h2>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-700">Code</label>
-                                        <input
-                                            type="text"
-                                            value={newCustomer.Code}
-                                            readOnly
-                                            className="text-sm w-full border rounded px-2 py-1 bg-gray-100 text-gray-600"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-700">Name</label>
-                                        <input
-                                            type="text"
-                                            value={newCustomer.Name}
-                                            onChange={(e) => setNewCustomer(prev => ({ ...prev, Name: e.target.value }))}
-                                            className="w-full border rounded px-2 py-1 text-sm bg-white text-secondary"
-                                            placeholder="Enter name"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end gap-2 mt-4">
-                                    <button
-                                        onClick={handleSaveNewCustomer}
-                                        className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
-                                    >
-                                        Save
-                                    </button>
-                                    <button
-                                        onClick={() => setShowCustomerModal(false)}
-                                        className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <AddCustomerModal
+                            selectedCustomer={newCustomer}
+                            isEdit={false}
+                            isView={false}
+                            isOpen={showCustomerModal}
+                            onConfirm={confirmAddCustomerAction}
+                            onError={setErrorModal}
+                            onClose={handleCloseUpdateModal}
+                            companyId={companyId}
+                            userId={userId}
+                        />
                     )}
 
 
@@ -715,6 +706,7 @@ const CashSales = () => {
             </div>
         </>
     )
+
 }
 
 export default CashSales;

@@ -111,41 +111,7 @@ const SalesOrder = () => {
         }
     }, [date]);
 
-    // const CustomerDataGridOnSelectionChanged = useCallback((e) => {
-    //     const selected = e.selectedRowsData?.[0];
-    //     if (selected) {
-    //         setCustomerGridBoxValue(selected);
-    //         setIsCustomerGridBoxOpened(false);
-    //     }
-    // }, []);
-
-    // const CustomerDataGridRender = useCallback(
-    //     () => (
-    //         <DataGrid
-    //             dataSource={customerData}
-    //             columns={CustomerGridColumns}
-    //             hoverStateEnabled={true}
-    //             showBorders={false}
-    //             selectedRowKeys={CustomerGridBoxValue.id}
-    //             onSelectionChanged={CustomerDataGridOnSelectionChanged}
-    //             height="100%"
-    //         >
-    //             <Selection mode="single" />
-    //             <Scrolling mode="virtual" />
-    //             <Paging
-    //                 enabled={true}
-    //                 pageSize={10}
-    //             />
-    //             <SearchPanel
-    //                 visible={true}
-    //                 onTextChange={(e) => { console.log(e) }}
-    //                 width="100%"
-    //                 highlightSearchText={true}
-    //             />
-    //         </DataGrid>
-    //     ),
-    //     [CustomerGridBoxValue, CustomerDataGridOnSelectionChanged],
-    // );
+    
 
     const handleCustomerGridBoxValueChanged = (e) => {
         if (!e.value) {
