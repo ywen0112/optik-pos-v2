@@ -60,8 +60,9 @@ const SalesOrder = () => {
     const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
 
     const [isNormalItem, setIsNormalItem] = useState(true);
-    const [currentActiveItem, setCurrentActiveItem] = useState(null);
-    const [eyePowerFormData, setEyePowerFormData] = useState([]);
+    const [currentActiveRow, setCurrentActiveRow] = useState(null);
+    const [eyePowerSpectaclesFormData, setEyePowerSpectaclesFormData] = useState([]);
+    const [eyePowerContactLensFormData, setEyePowerContactLensFormData] = useState([]);
 
     const [salesOrderPayment, setSalesOrderPayment] = useState(false);
 
@@ -417,6 +418,7 @@ const SalesOrder = () => {
     };
 
     const onLookUpSelected = async (newValue, rowData) => {
+
         let data = newValue;
         if (!data.salesOrderDetailId) {
             data = { ...rowData, ...newValue }
@@ -425,31 +427,50 @@ const SalesOrder = () => {
             setIsNormalItem(false)
             let res;
             if (data.isSpectacles) {
-                res = await NewSpectacles({ companyId, userId, id: userId });
-            } else if (data.isContactLens) {
-                res = await NewContactLens({ companyId, userId, id: userId });
-            }
-            const updatedRes = {
-                ...res.data,
-                debtorId: masterData.debtorId,
-                cashSalesId: masterData.salesOrderId,
-                cashSalesDetailId: rowData.salesOrderDetailId,
-                docDate: masterData.docDate,
-            }
-            setEyePowerFormData(prev => {
-                const exists = prev.find(record => record.cashSalesDetailId === data.salesOrderDetailId);
-                if (exists) {
-                    return prev.map(record =>
-                        record.cashSalesDetailId === rowData.cashSalesDetailId ? { ...record, ...updatedRes } : record
-                    );
-                } else {
-                    return [...prev, updatedRes];
+                res = await NewSpectacles({ companyId, userId, id: CustomerGridBoxValue.id });
+                const updatedRes = {
+                    ...res.data,
+                    debtorId: CustomerGridBoxValue.id,
+                    cashSalesId: masterData.salesOrderId,
+                    cashSalesDetailId: rowData.salesOrderDetailId,
+                    docDate: masterData.docDate,
                 }
-            })
+                setEyePowerSpectaclesFormData(prev => {
+                    const exists = prev.find(record => record.cashSalesDetailId === data.salesOrderDetailId);
+                    if (exists) {
+                        return prev.map(record =>
+                            record.cashSalesDetailId === rowData.cashSalesDetailId ? { ...updatedRes, ...record } : record
+                        );
+                    } else {
+                        return [...prev, updatedRes];
+                    }
+                })
+            } else if (data.isContactLens) {
+                res = await NewContactLens({ companyId, userId, id: CustomerGridBoxValue.id });
+                const updatedRes = {
+                    ...res.data,
+                    debtorId: CustomerGridBoxValue.id,
+                    cashSalesId: masterData.salesOrderId,
+                    cashSalesDetailId: rowData.salesOrderDetailId,
+                    docDate: masterData.docDate,
+                }
+                setEyePowerContactLensFormData(prev => {
+                    const exists = prev.find(record => record.cashSalesDetailId === data.salesOrderDetailId);
+                    if (exists) {
+                        return prev.map(record =>
+                            record.cashSalesDetailId === rowData.cashSalesDetailId ? { ...updatedRes, ...record } : record
+                        );
+                    } else {
+                        return [...prev, updatedRes];
+                    }
+                })
+            }
+
         }
         setSalesItem(prev => {
             const exists = prev.find(record => record.salesOrderDetailId === data.salesOrderDetailId);
             if (exists) {
+                setCurrentActiveRow({ ...exists, ...data })
                 return prev.map(record =>
                     record.salesOrderDetailId === data.salesOrderDetailId ? { ...record, ...data } : record
                 );
@@ -460,6 +481,10 @@ const SalesOrder = () => {
     };
 
     const handleAddNewRow = async () => {
+        if (CustomerGridBoxValue?.id === "") {
+            setErrorModal({ title: "Failed to Add Item", message: "Please Select a Customer to proceed" });
+            return;
+        }
         try {
             const res = await NewSalesOrderDetail({});
             if (res.success) {
@@ -731,9 +756,27 @@ const SalesOrder = () => {
         Reading: "R"
     }
 
+    const handleCopyRxdata = () => {
+        const sourceTab = activeRxTab;
+        const targetTab = activeRxTab === "Prescribed RX" ? "Actual RX" : "Prescribed RX";
+
+        if (sourceTab === "Prescribed RX") {
+            setActualRX({ ...prescribedRX });
+            setActualReadingData({ ...prescribedReadingData });
+            setActualDistanceData({ ...prescribedDistanceData });
+        } else {
+            setPrescribedRX({ ...actualRX });
+            setPrescribedReadingData({ ...actualReadingData });
+            setPrescribedDistanceData({ ...actualDistanceData });
+        }
+
+        setShowCopyModal(false);
+        setActiveRxTab(targetTab);
+    };
+
     useEffect(() => {
         let mergedData = {}
-        if(currentActiveItem.isSpectacles){
+        if (currentActiveRow?.isSpectacles) {
             mergedData = {
                 prescribedRXSpectacles: {
                     ...prescribedRX,
@@ -746,7 +789,17 @@ const SalesOrder = () => {
                     ...actualDistanceData,
                 }
             }
-        }else if(currentActiveItem.isContactLens){
+            setEyePowerSpectaclesFormData(prev => {
+                const exists = prev.find(record => record.cashSalesDetailId === currentActiveRow.salesOrderDetailId);
+                if (exists) {
+                    return prev.map(record =>
+                        record.cashSalesDetailId === currentActiveRow.cashSalesDetailId ? { ...record, ...mergedData } : record
+                    );
+                } else {
+                    return [...prev, mergedData];
+                }
+            })
+        } else if (currentActiveRow?.isContactLens) {
             mergedData = {
                 prescribedRXContactLens: {
                     ...prescribedRX,
@@ -759,18 +812,18 @@ const SalesOrder = () => {
                     ...actualDistanceData,
                 }
             }
+            setEyePowerContactLensFormData(prev => {
+                const exists = prev.find(record => record.cashSalesDetailId === currentActiveRow.salesOrderDetailId);
+                if (exists) {
+                    return prev.map(record =>
+                        record.cashSalesDetailId === currentActiveRow.salesOrderDetailId ? { ...record, ...mergedData } : record
+                    );
+                } else {
+                    return [...prev, mergedData];
+                }
+            })
         }
-        
-        // setEyePowerFormData(prev => {
-        //     const exists = prev.find(record => record.cashSalesDetailId === data.salesOrderDetailId);
-        //     if (exists) {
-        //         return prev.map(record =>
-        //             record.cashSalesDetailId === rowData.cashSalesDetailId ? { ...record, ...updatedRes } : record
-        //         );
-        //     } else {
-        //         return [...prev, updatedRes];
-        //     }
-        // })
+
     }, [
         actualRX,
         prescribedRX,
@@ -779,6 +832,9 @@ const SalesOrder = () => {
         actualReadingData,
         actualDistanceData,
     ]);
+
+    
+
 
     const getRxData = () => {
         if (activeRxTab === "Prescribed RX" && activeRxMode === "Reading") return prescribedReadingData;
@@ -802,27 +858,12 @@ const SalesOrder = () => {
         }));
     };
 
-    const handleCopyRxdata = () => {
-        const sourceTab = activeRxTab;
-        const targetTab = activeRxTab === "Prescribed RX" ? "Actual RX" : "Prescribed RX";
 
-        if (sourceTab === "Prescribed RX") {
-            setActualRX({ ...prescribedRX });
-            setActualReadingData({ ...prescribedReadingData });
-            setActualDistanceData({ ...prescribedDistanceData });
-        } else {
-            setPrescribedRX({ ...actualRX });
-            setPrescribedReadingData({ ...actualReadingData });
-            setPrescribedDistanceData({ ...actualDistanceData });
-        }
-
-        setShowCopyModal(false);
-        setActiveRxTab(targetTab);
-    };
 
     const handleRemoveRow = async (key) => {
         setSalesItem(prev => prev.filter(record => record.salesOrderDetailId !== key));
-        setEyePowerFormData(prev => prev.filter(record => record.cashSalesDetailId !== key));
+        setEyePowerSpectaclesFormData(prev => prev.filter(record => record.cashSalesDetailId !== key));
+        setEyePowerContactLensFormData(prev => prev.filter(record => record.cashSalesDetailId !== key));
         setActualRX({
             dominantEye: "",
             opticalHeight: 0,
@@ -1104,7 +1145,7 @@ const SalesOrder = () => {
                     selectedItem={selectedItem}
                     setSelectedItem={setSelectedItem}
                     setItemGroup={setIsNormalItem}
-                    setActiveItem = {setCurrentActiveItem}
+                    setActiveItem={setCurrentActiveRow}
                 />
             </div>
 

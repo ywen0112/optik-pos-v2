@@ -54,8 +54,6 @@ const TransactionItemWithDiscountDataGrid = ({ className, customStore, gridRef, 
         if (selected && currentRow) {
             setSelectedItem(selected);
             onSelect(selected, currentRow);
-            console.log(currentRow)
-            if(setActiveItem){setActiveItem(selected)};
         }
         setDropDownBoxOpen(false);
     }, [currentRow]);
