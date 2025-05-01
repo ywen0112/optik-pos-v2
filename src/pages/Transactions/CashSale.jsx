@@ -87,7 +87,7 @@ const CashSales = () => {
             const res = await getInfoLookUp(params);
             return {
                 data: res.data,
-                totalCount: loadOptions.skip + res.data.count,
+                totalCount: res.totalRecords,
             };
         },
         byKey: async (key) => {
