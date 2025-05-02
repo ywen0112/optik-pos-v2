@@ -72,7 +72,7 @@ const AddExpressCustomerModal = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
             <div className="bg-white w-1/2 h-1/2 p-6 text-secondary">
                 <div className="sticky top-0 bg-white z-10">
                     <div className="flex flex-row justify-between">

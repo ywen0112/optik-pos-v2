@@ -35,7 +35,7 @@
           setHasMore(newData.length === params.limit);
           setOffset(prev => (isLoadMore ? prev + params.limit : params.limit));
         } else {
-          throw new Error(response?.message);
+          throw new Error(response?.message || "Failed to fetch Payment Methods.");
         }
       } catch (error) {
         setPaymentMethods([]);
@@ -50,7 +50,7 @@
         setPaymentDetails({refno: '', ccno: '', approvalcode: '', remark: '', amount: ''});
         setRawAmountDigits('');
       } catch (error) {
-        onError({ title: 'New Error', message: error.message });
+        onError({ title: 'New Error', message: error.message || "Failed to add new Sales Order Payment."});
       }
     };
   
@@ -80,10 +80,10 @@
           setRawAmountDigits('');
           setFocusedField('amount');
         } else {
-          throw new Error(response?.errorMessage);
+          throw new Error(response?.errorMessage || "Failed to add new Sales Order Payment Details.");
         }
       } catch (error) {
-        onError({ title: 'New Payment Detail Error', message: error.message });
+        onError({ title: 'New Payment Detail Error', message: error.message});
       }
     };
   
@@ -134,7 +134,7 @@
         setRawAmountDigits('');
         setNotifyModal({ isOpen: true, message: 'Payment made successfully!' });
       } catch (error) {
-        onError({ title: 'Save Error', message: error.message });
+        onError({ title: 'Save Error', message: error.message || "Failed to save Sales Order Payment."});
       }
     };
   

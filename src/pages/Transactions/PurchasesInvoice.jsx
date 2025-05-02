@@ -425,6 +425,7 @@ const PurchaseInvoice = () => {
         emailAddress: data.emailAddress,
       });
       if (saveRes.success) {
+        setShowSupplierModal(false);
         setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
         setNewSupplier(null);
       } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
@@ -650,7 +651,7 @@ const PurchaseInvoice = () => {
                       const parsed = parseFloat(tax);
                       setRounding(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
                     }}
-                    className=" border rounded px-1 py-2 bg-white w-full min-h-5 text-right "
+                    className=" border rounded px-5 py-2 bg-white w-full min-h-5 text-right "
                   />
 
                 ) : (

@@ -406,6 +406,7 @@ const SalesOrder = () => {
                 ocularOthers: data.ocularOthers,
             });
             if (saveRes.success) {
+                setShowCustomerModal(false);
                 setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
                 setNewCustomer(null);
             } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
@@ -413,7 +414,7 @@ const SalesOrder = () => {
         } catch (error) {
             setErrorModal({ title: `Save Error`, message: error.message });
         } finally {
-            showCustomerModal(false);
+            setShowCustomerModal(false);
         }
     };
 
@@ -552,11 +553,11 @@ const SalesOrder = () => {
                 if(eyePowerSpectaclesFormData.length > 0){
                     eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({...eyePower}));
                 }
-                setNotifyModal({ isOpen: true, message: "Cash Sales added successfully!" });
-            } else throw new Error(res.errorMessage || "Failed to Add Cash Sales");
+                setNotifyModal({ isOpen: true, message: "Sales Order added successfully!" });
+            } else throw new Error(res.errorMessage || "Failed to Add Sales Order");
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
-            await createNewCashSales()
+            await createNewSalesOrder()
             setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
             setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
             setPractionerGridBoxValue({ id: "", Code: "", Name: "" })
@@ -569,7 +570,7 @@ const SalesOrder = () => {
             console.log("print acknowledgement");
         }
         setConfirmModal({ isOpen: false, action: "", data: null });
-        await createNewCashSales()
+        await createNewSalesOrder()
         setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
         setPractionerGridBoxValue({ id: "", Code: "", Name: "" })
@@ -1077,7 +1078,7 @@ const SalesOrder = () => {
     return (
         <>
             <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
-            <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Goods Transit?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
+            <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Sales Order?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
             <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
             <ConfirmationModal
                 isOpen={showCopyModal}

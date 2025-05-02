@@ -321,6 +321,7 @@ const CashSales = () => {
         try {
             const res = await SaveCashSale({ ...confirmModal.data });
             if (res.success) {
+
                 setNotifyModal({ isOpen: true, message: "Cash Sales added successfully!" });
             } else throw new Error(res.errorMessage || "Failed to Add Cash Sales");
         } catch (error) {
@@ -434,6 +435,7 @@ const CashSales = () => {
                 ocularOthers: data.ocularOthers,
             });
             if (saveRes.success) {
+                setShowCustomerModal(false);
                 setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
                 setNewCustomer(null);
             } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
@@ -441,7 +443,7 @@ const CashSales = () => {
         } catch (error) {
             setErrorModal({ title: `Save Error`, message: error.message });
         } finally {
-            showCustomerModal(false);
+            setShowCustomerModal(false);
         }
     };
 
@@ -651,7 +653,7 @@ const CashSales = () => {
                                             const parsed = parseFloat(rounding);
                                             setRounding(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
                                         }}
-                                        className=" border rounded px-1 py-2 bg-white w-full min-h-5 text-right "
+                                        className=" border rounded px-5 py-2 bg-white w-full min-h-5 text-right "
                                     />
 
                                 ) : (
