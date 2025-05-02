@@ -1,51 +1,50 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import DataGrid, {
-    Column,
-    ColumnChooser,
     Paging,
-    Editing,
-    ColumnFixing,
-    Button,
     Selection,
-    FilterRow,
     Scrolling,
     SearchPanel
 } from 'devextreme-react/data-grid';
+import CustomStore from 'devextreme/data/custom_store';
 import DropDownBox from 'devextreme-react/drop-down-box';
-import Switch from 'react-switch';
 import DatePicker from "react-datepicker";
-import SalesOrderItemTable from "../../Components/DataGrid/SalesOrderItemDataGrid";
-import ConfirmationModal from "../../modals/ConfirmationModal";
 import { Copy } from "lucide-react";
 import ErrorModal from "../../modals/ErrorModal";
-import CustomerDataGrid from "../../Components/DataGrid/CustomerDataGrid";
+import ConfirmationModal from "../../modals/ConfirmationModal";
+import NotificationModal from "../../modals/NotificationModal";
 import SalesOrderPaymentModal from "../../modals/Transactions/SalesOrderPaymentModal";
-import { NewSalesOrder } from "../../api/transactionapi";
+import { NewSalesOrder, NewSalesOrderDetail, SaveSalesOrder } from "../../api/transactionapi";
+import { getInfoLookUp } from "../../api/infolookupapi";
+import { GetSpecificUser } from "../../api/userapi";
+import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGridWithDisc";
+import { SaveDebtor, NewDebtor, GetDebtor } from "../../api/maintenanceapi";
+import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
+import { NewSpectacles, NewContactLens, SaveContactLensProfile, SaveSpectacles } from "../../api/eyepowerapi";
 
-const initialData = [
-    { id: 1, itemCode: 'A100', description: 'Widget', uom: 'pcs', qty: 10, unitPrice: 5.0 },
-    { id: 2, itemCode: 'B200', description: 'Gadget', uom: 'pcs', qty: 5, unitPrice: 12.5 },
-    { id: 3, itemCode: 'C100', description: 'WidgetBox', uom: 'pcs', qty: 10, unitPrice: 15.0 },
-    { id: 4, itemCode: 'D200', description: 'GadgetBox', uom: 'pcs', qty: 5, unitPrice: 22.5 },
+
+const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
+const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
+const PractitionerGridBoxDisplatExpr = (item) => item && `${item.userName}`;
+const CustomerGridColumns = [
+    { dataField: "debtorCode", caption: "Code", width: "30%" },
+    { dataField: "companyName", caption: "Name", width: "50%" }
 ];
-
-const customerData = [
-    { id: 1, Code: '300-001', Name: 'abc' },
-    { id: 2, Code: '300-002', Name: 'abcd' },
-    { id: 3, Code: '300-003', Name: 'abcde' },
-]
-
-const CustomerGridBoxDisplayExpr = (item) => item && `${item.Code}`;
-const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.Name}(${item.Code})`;
-const PractionerGridBoxDisplayExpr = (item) => item && `${item.Name}(${item.Code})`;
-const CustomerGridColumns = ["Code", "Name"]
+const SalesPersonGridColumns = [
+    { dataField: "userName", caption: "Name", width: "100%" }
+];
+const PractitionerGridColumns = [
+    { dataField: "userName", caption: "Name", width: "100%" }
+];
 
 const SalesOrder = () => {
     const companyId = sessionStorage.getItem("companyId");
     const userId = sessionStorage.getItem("userId");
-  
-    const [date, setDate] = useState(new Date());
-    const [nextVisit, setNextVisit] = useState('');
+    const [masterData, setMasterData] = useState(null);
+    const [salesItem, setSalesItem] = useState([]);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [rounding, setRounding] = useState("0.00")
+    const [currentTotal, setCurrentTotal] = useState(0)
+
     const [selectedInterval, setSelectedInterval] = useState(null);
     const [CustomerGridBoxValue, setCustomerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
     const [isCustomerGridBoxOpened, setIsCustomerGridBoxOpened] = useState(false);
@@ -53,31 +52,127 @@ const SalesOrder = () => {
     const [SalesPersonGridBoxValue, setSalesPersonGridBoxValue] = useState({ id: "", Code: "", Name: "" });
     const [isPractionerGridBoxOpened, setIsPractionerGridBoxOpened] = useState(false);
     const [PractionerGridBoxValue, setPractionerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
-    const [SalesItemTableData, setSalesItemTableData] = useState([]);
-    const [currentSalesTotal, setCurrentSalesTotal] = useState(0);
-
-    const [rounding, setRounding] = useState("0.00")
 
     const [showCustomerModal, setShowCustomerModal] = useState(false);
-    const [newCustomerName, setNewCustomerName] = useState("");
+    const [newCustomer, setNewCustomer] = useState(null);
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: "", targetData: null });
+    const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
 
     const [isNormalItem, setIsNormalItem] = useState(true);
+    const [currentActiveRow, setCurrentActiveRow] = useState(null);
+    const [eyePowerSpectaclesFormData, setEyePowerSpectaclesFormData] = useState([]);
+    const [eyePowerContactLensFormData, setEyePowerContactLensFormData] = useState([]);
 
-    const [salesOrderId, setSalesOrderId] = useState(null);
-    const [salesOrderPayment, setSalesOrderPayment] = useState (false);
+    const [salesOrderPayment, setSalesOrderPayment] = useState(false);
+
+    const gridRef = useRef(null);
+
+    const total = currentTotal + parseFloat(rounding)
 
     useEffect(() => {
         createNewSalesOrder();
     }, []);
 
+    const customerStore = new CustomStore({
+        key: "debtorId",
+
+        load: async (loadOptions) => {
+            const filter = loadOptions.filter;
+            let keyword = filter?.[2][2] || "";
+
+            const params = {
+                keyword: keyword || "",
+                offset: loadOptions.skip,
+                limit: loadOptions.take,
+                type: "debtor",
+                companyId,
+            };
+            const res = await getInfoLookUp(params);
+            return {
+                data: res.data,
+                totalCount: res.totalRecords,
+            };
+        },
+        byKey: async (key) => {
+            if (!key) return null;
+            const res = await GetDebtor({
+                companyId,
+                userId,
+                id: key
+            });
+            return res.data;
+        },
+    });
+
+
+    const userStore = new CustomStore({
+        key: "userId",
+
+        load: async (loadOptions) => {
+            const filter = loadOptions.filter;
+            let keyword = filter?.[2] || "";
+
+            const params = {
+                keyword: keyword || "",
+                offset: loadOptions.skip,
+                limit: loadOptions.take,
+                type: "user",
+                companyId,
+            };
+            const res = await getInfoLookUp(params);
+            return {
+                data: res.data,
+                totalCount: res.totalRecords,
+            };
+        },
+        byKey: async (key) => {
+            const res = await GetSpecificUser({
+                companyId,
+                userId,
+                id: key
+            });
+            return res.data;
+        },
+    });
+
+    const practitionerStore = new CustomStore({
+        key: "userId",
+
+        load: async (loadOptions) => {
+            const filter = loadOptions.filter;
+            let keyword = filter?.[2] || "";
+
+            const params = {
+                keyword: keyword || "",
+                offset: loadOptions.skip,
+                limit: loadOptions.take,
+                type: "user",
+                companyId,
+            };
+            const res = await getInfoLookUp(params);
+            return {
+                data: res.data,
+                totalCount: res.totalRecords,
+            };
+        },
+        byKey: async (key) => {
+            const res = await GetSpecificUser({
+                companyId,
+                userId,
+                id: key
+            });
+            return res.data;
+        },
+    });
+
     const createNewSalesOrder = async () => {
         try {
-          const response = await NewSalesOrder({ companyId, userId, id: "" }); // id is empty
-          setSalesOrderId(response.data.salesOrderId)
+            const response = await NewSalesOrder({ companyId, userId, id: userId });
+            setMasterData(response.data)
         } catch (error) {
-            setErrorModal({ 
-                title: "Fetch Error", 
+            setErrorModal({
+                title: "Fetch Error",
                 message: error.message
             });
         }
@@ -102,50 +197,15 @@ const SalesOrder = () => {
 
     const pickInterval = (months) => {
         setSelectedInterval(months);
-        setNextVisit(calcDate(date, months));
+        setMasterData(prev => ({ ...prev, nextVisitDate: calcDate(masterData?.docDate, months) }));
     };
 
     useEffect(() => {
         if (selectedInterval !== null) {
-            setNextVisit(calcDate(date, selectedInterval));
+            setMasterData(prev => ({ ...prev, nextVisitDate: calcDate(date, selectedInterval) }));
         }
-    }, [date]);
+    }, [masterData?.docDate]);
 
-    // const CustomerDataGridOnSelectionChanged = useCallback((e) => {
-    //     const selected = e.selectedRowsData?.[0];
-    //     if (selected) {
-    //         setCustomerGridBoxValue(selected);
-    //         setIsCustomerGridBoxOpened(false);
-    //     }
-    // }, []);
-
-    // const CustomerDataGridRender = useCallback(
-    //     () => (
-    //         <DataGrid
-    //             dataSource={customerData}
-    //             columns={CustomerGridColumns}
-    //             hoverStateEnabled={true}
-    //             showBorders={false}
-    //             selectedRowKeys={CustomerGridBoxValue.id}
-    //             onSelectionChanged={CustomerDataGridOnSelectionChanged}
-    //             height="100%"
-    //         >
-    //             <Selection mode="single" />
-    //             <Scrolling mode="virtual" />
-    //             <Paging
-    //                 enabled={true}
-    //                 pageSize={10}
-    //             />
-    //             <SearchPanel
-    //                 visible={true}
-    //                 onTextChange={(e) => { console.log(e) }}
-    //                 width="100%"
-    //                 highlightSearchText={true}
-    //             />
-    //         </DataGrid>
-    //     ),
-    //     [CustomerGridBoxValue, CustomerDataGridOnSelectionChanged],
-    // );
 
     const handleCustomerGridBoxValueChanged = (e) => {
         if (!e.value) {
@@ -153,16 +213,56 @@ const SalesOrder = () => {
         }
     };
 
+    const CustomerDataGridOnSelectionChanged = useCallback((e) => {
+        const selected = e.selectedRowsData?.[0];
+        if (selected) {
+            setCustomerGridBoxValue({ id: selected.debtorId, Code: selected.debtorCode, Name: selected.companyName });
+            setIsCustomerGridBoxOpened(false);
+        }
+    }, []);
+
     const onCustomerGridBoxOpened = useCallback((e) => {
         if (e.name === 'opened') {
             setIsCustomerGridBoxOpened(e.value);
         }
     }, []);
 
+    const CustomerDataGridRender = useCallback(
+        () => (
+            <DataGrid
+                dataSource={customerStore}
+                columns={CustomerGridColumns}
+                hoverStateEnabled={true}
+                showBorders={true}
+                selectedRowKeys={CustomerGridBoxValue?.debtorId}
+                onSelectionChanged={CustomerDataGridOnSelectionChanged}
+                height="300px"
+                remoteOperations={{
+                    paging: true,
+                    filtering: true,
+                }}
+            >
+                <Selection mode="single" />
+                <Paging
+                    enabled={true}
+                    pageSize={10}
+                />
+                <Scrolling mode="infinite" />
+
+                <SearchPanel
+                    visible={true}
+                    width="100%"
+                    highlightSearchText={true}
+                />
+            </DataGrid>
+        ),
+        [CustomerGridBoxValue, CustomerDataGridOnSelectionChanged],
+    );
+
     const SalesPersonDataGridOnSelectionChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
         if (selected) {
-            setSalesPersonGridBoxValue(selected);
+            setSalesPersonGridBoxValue({ id: selected.userId, Name: selected.userName });
             setIsSalePersonGridBoxOpened(false);
         }
     }, []);
@@ -170,23 +270,26 @@ const SalesOrder = () => {
     const SalesPersonDataGridRender = useCallback(
         () => (
             <DataGrid
-                dataSource={customerData}
-                columns={CustomerGridColumns}
+                dataSource={userStore}
+                columns={SalesPersonGridColumns}
                 hoverStateEnabled={true}
                 showBorders={false}
                 selectedRowKeys={SalesPersonGridBoxValue.id}
                 onSelectionChanged={SalesPersonDataGridOnSelectionChanged}
                 height="100%"
+                remoteOperations={{
+                    paging: true,
+                    filtering: true,
+                }}
             >
                 <Selection mode="single" />
-                <Scrolling mode="virtual" />
                 <Paging
                     enabled={true}
                     pageSize={10}
                 />
+                <Scrolling mode="infinite" />
                 <SearchPanel
                     visible={true}
-                    onTextChange={(e) => { console.log(e) }}
                     width="100%"
                     highlightSearchText={true}
                 />
@@ -210,7 +313,7 @@ const SalesOrder = () => {
     const PractionerDataGridOnSelectionChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
         if (selected) {
-            setPractionerGridBoxValue(selected);
+            setPractionerGridBoxValue({ id: selected.userId, Name: selected.userName });
             setIsPractionerGridBoxOpened(false);
         }
     }, []);
@@ -218,23 +321,27 @@ const SalesOrder = () => {
     const PractionerDataGridRender = useCallback(
         () => (
             <DataGrid
-                dataSource={customerData}
-                columns={CustomerGridColumns}
+                dataSource={practitionerStore}
+                columns={PractitionerGridColumns}
                 hoverStateEnabled={true}
                 showBorders={false}
                 selectedRowKeys={PractionerGridBoxValue.id}
                 onSelectionChanged={PractionerDataGridOnSelectionChanged}
                 height="100%"
+                remoteOperations={{
+                    paging: true,
+                    filtering: true,
+                }}
             >
                 <Selection mode="single" />
-                <Scrolling mode="virtual" />
                 <Paging
                     enabled={true}
                     pageSize={10}
                 />
+                <Scrolling mode="infinite" />
+
                 <SearchPanel
                     visible={true}
-                    onTextChange={(e) => { console.log(e) }}
                     width="100%"
                     highlightSearchText={true}
                 />
@@ -255,217 +362,744 @@ const SalesOrder = () => {
         }
     }, []);
 
-    const handleSalesItemChange = (updatedData) => {
-        const totalAmount = updatedData.reduce((sum, item) => {
-            if (item.amount) {
-                return sum + item.amount
+    const getNextCustomerCode = async () => {
+        const newCusRes = await NewDebtor({
+            companyId: companyId,
+            userId: userId,
+            id: userId,
+        });
+        setNewCustomer(newCusRes.data)
+    };
+
+    const handleNewCustomerModel = async () => {
+        await getNextCustomerCode()
+        setShowCustomerModal(true)
+    }
+
+    const handleCloseUpdateModal = async () => {
+        setNewCustomer(null);
+        setShowCustomerModal(false)
+    }
+
+    const confirmAddCustomerAction = async ({ action, data }) => {
+        setConfirmModal({ isOpen: false, action: null });
+        try {
+            const saveRes = await SaveDebtor({
+                actionData: data.actionData,
+                debtorId: data.debtorId,
+                debtorCode: data.debtorCode,
+                companyName: data.companyName,
+                isActive: data.isActive,
+                identityNo: data.identityNo,
+                dob: data.dob || null,
+                address: data.address,
+                remark: data.remark,
+                phone1: data.phone1,
+                phone2: data.phone2,
+                emailAddress: data.emailAddress,
+                medicalIsDiabetes: data.medicalIsDiabetes,
+                medicalIsHypertension: data.medicalIsHypertension,
+                medicalOthers: data.medicalOthers,
+                ocularIsSquint: data.ocularIsSquint,
+                ocularIsLazyEye: data.ocularIsLazyEye,
+                ocularHasSurgery: data.ocularHasSurgery,
+                ocularOthers: data.ocularOthers,
+            });
+            if (saveRes.success) {
+                setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
+                setNewCustomer(null);
+            } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
+
+        } catch (error) {
+            setErrorModal({ title: `Save Error`, message: error.message });
+        } finally {
+            showCustomerModal(false);
+        }
+    };
+
+    const onLookUpSelected = async (newValue, rowData) => {
+
+        let data = newValue;
+        if (!data.salesOrderDetailId) {
+            data = { ...rowData, ...newValue }
+        }
+        if (!data.isNormalItem) {
+            setIsNormalItem(false)
+            let res;
+            if (data.isSpectacles) {
+                res = await NewSpectacles({ companyId, userId, id: CustomerGridBoxValue.id });
+                const updatedRes = {
+                    ...res.data,
+                    debtorId: CustomerGridBoxValue.id,
+                    cashSalesId: masterData.salesOrderId,
+                    cashSalesDetailId: rowData.salesOrderDetailId,
+                    docDate: masterData.docDate,
+                }
+                setEyePowerSpectaclesFormData(prev => {
+                    const exists = prev.find(record => record.cashSalesDetailId === data.salesOrderDetailId);
+                    if (exists) {
+                        return prev.map(record =>
+                            record.cashSalesDetailId === rowData.cashSalesDetailId ? { ...updatedRes, ...record } : record
+                        );
+                    } else {
+                        return [...prev, updatedRes];
+                    }
+                })
+            } else if (data.isContactLens) {
+                res = await NewContactLens({ companyId, userId, id: CustomerGridBoxValue.id });
+                const updatedRes = {
+                    ...res.data,
+                    debtorId: CustomerGridBoxValue.id,
+                    cashSalesId: masterData.salesOrderId,
+                    cashSalesDetailId: rowData.salesOrderDetailId,
+                    docDate: masterData.docDate,
+                }
+                setEyePowerContactLensFormData(prev => {
+                    const exists = prev.find(record => record.cashSalesDetailId === data.salesOrderDetailId);
+                    if (exists) {
+                        return prev.map(record =>
+                            record.cashSalesDetailId === rowData.cashSalesDetailId ? { ...updatedRes, ...record } : record
+                        );
+                    } else {
+                        return [...prev, updatedRes];
+                    }
+                })
             }
-            return sum;
+
+        }
+        setSalesItem(prev => {
+            const exists = prev.find(record => record.salesOrderDetailId === data.salesOrderDetailId);
+
+            const updatedData = { ...data };
+
+            const qty = Number(updatedData.qty) || 0;
+            const unitPrice = Number(updatedData.price) || 0;
+            const isDiscByPercent = updatedData.discount;
+            const discAmt = Number(updatedData.discountAmount) || 0;
+            const totalAmount = qty * unitPrice;
+
+            updatedData.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
+
+            if (exists) {
+                setCurrentActiveRow({ ...exists, ...updatedData });
+
+                return prev.map(record =>
+                    record.salesOrderDetailId === data.salesOrderDetailId
+                        ? { ...record, ...updatedData }
+                        : record
+                );
+            } else {
+                return [...prev, updatedData];
+            }
+        });
+
+    };
+
+    const handleAddNewRow = async () => {
+        if (CustomerGridBoxValue?.id === "") {
+            setErrorModal({ title: "Failed to Add Item", message: "Please Select a Customer to proceed" });
+            return;
+        }
+        try {
+            const res = await NewSalesOrderDetail({});
+            if (res.success) {
+                const newRecords = res.data;
+                setIsNormalItem(true);
+                setSalesItem(prev => [...prev, newRecords]);
+            } else throw new Error(res.errorMessage || "Failed to add new Sales Order Details");
+        } catch (error) {
+            setErrorModal({ title: "Failed to Add", message: error.message });
+        }
+    }
+
+    const handleEditRow = async (key, changedData) => {
+        setSalesItem(prev => {
+            return prev.map(record => {
+                if (record.salesOrderDetailId === key) {
+                    const updatedRecord = { ...record, ...changedData };
+
+                    if ('qty' in changedData || 'unitCost' in changedData || 'discount' in changedData || 'discountAmount' in changedData) {
+                        const qty = Number(updatedRecord.qty) || 0;
+                        const unitPrice = Number(updatedRecord.price) || 0;
+                        const isDiscByPercent = updatedRecord.discount;
+                        const discAmt = Number(updatedRecord.discountAmount || 0)
+                        const totalAmount = qty * unitPrice;
+                        updatedRecord.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
+                    }
+
+                    return updatedRecord;
+                }
+                return record;
+            });
+        });
+    };
+
+    useEffect(() => {
+        const total = salesItem?.reduce((sum, item) => {
+            return sum + (Number(item.subTotal) || 0);
         }, 0);
-        setCurrentSalesTotal(totalAmount);
-    };
 
-    const getNextCustomerCode = () => {
-        const maxCode = customerData.reduce((max, c) => {
-            const num = parseInt(c.Code.split("-")[1]);
-            return num > max ? num : max;
-        }, 0);
-        const nextNum = String(maxCode + 1).padStart(3, "0");
-        return `300-${nextNum}`;
-    };
+        setCurrentTotal(total);
+    }, [handleEditRow, salesItem])
 
-    const handleSaveNewCustomer = () => {
-        if (!newCustomerName.trim()) return;
+    const confirmAction = async () => {
+        try {
+            const res = await SaveSalesOrder({ ...confirmModal.data });
+            if (res.success) {
+                if(eyePowerContactLensFormData.length > 0){
+                    eyePowerContactLensFormData.forEach(async eyePower => await SaveContactLensProfile({...eyePower}));
+                }
+                if(eyePowerSpectaclesFormData.length > 0){
+                    eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({...eyePower}));
+                }
+                setNotifyModal({ isOpen: true, message: "Cash Sales added successfully!" });
+            } else throw new Error(res.errorMessage || "Failed to Add Cash Sales");
+        } catch (error) {
+            setErrorModal({ title: "Error", message: error.message });
+            await createNewCashSales()
+            setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
+            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
+            setPractionerGridBoxValue({ id: "", Code: "", Name: "" })
+            setSalesItem([]);
+            setEyePowerContactLensFormData([]);
+            setEyePowerSpectaclesFormData([]);
+            setCurrentTotal(0);
+        }
+        if (confirmModal.action === "addPrint") {
+            console.log("print acknowledgement");
+        }
+        setConfirmModal({ isOpen: false, action: "", data: null });
+        await createNewCashSales()
+        setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
+        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
+        setPractionerGridBoxValue({ id: "", Code: "", Name: "" })
+        setEyePowerContactLensFormData([]);
+        setEyePowerSpectaclesFormData([]);
+        setSalesItem([]);
+        setCurrentTotal(0);
+        return;
+    }
 
-        const newCode = getNextCustomerCode();
-        const newCustomer = {
-            id: customerData.length + 1,
-            Code: newCode,
-            Name: newCustomerName,
-        };
+    const handleSavePrint = () => {
+        if (salesItem.length <= 0) {
+            return;
+        }
+        const formData = {
+            ...masterData,
+            isVoid: false,
+            debtorId: CustomerGridBoxValue?.id,
+            debtorName: CustomerGridBoxValue?.Name,
+            salesPersonUserID: SalesPersonGridBoxValue.id,
+            practitionerUserID: PractionerGridBoxValue.id,
+            details: salesItem.map((item) => ({
+                salesOrderDetailId: item.salesOrderDetailId ?? "",
+                itemId: item.itemId ?? "",
+                itemUOMId: item.itemUOMId ?? "",
+                description: item.description ?? "",
+                desc2: item.desc2 ?? "",
+                qty: item.qty ?? 0,
+                unitPrice: item.unitPrice ?? 0,
+                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discountAmount: item.discountAmount ?? 0,
+                subTotal: item.subTotal ?? 0,
+                classification: item.classification ?? ""
+            })),
+            roundingAdjustment: rounding ?? 0,
+            total: total,
+        }
+        setConfirmModal({
+            isOpen: true,
+            action: "addPrint",
+            data: formData,
+        })
+    }
 
-        customerData.push(newCustomer); // If this is static, useState needed for reactivity
-        setCustomerGridBoxValue(newCustomer);
-        setShowCustomerModal(false);
-        setNewCustomerName("");
-    };
+    const handleSave = () => {
+        if (salesItem.length <= 0) {
+            return;
+        }
+        const formData = {
+            ...masterData,
+            isVoid: false,
+            debtorId: CustomerGridBoxValue?.id,
+            debtorName: CustomerGridBoxValue?.Name,
+            salesPersonUserID: SalesPersonGridBoxValue.id,
+            practitionerUserID: PractionerGridBoxValue.id,
+            details: salesItem.map((item) => ({
+                salesOrderDetailId: item.salesOrderDetailId ?? "",
+                itemId: item.itemId ?? "",
+                itemUOMId: item.itemUOMId ?? "",
+                description: item.description ?? "",
+                desc2: item.desc2 ?? "",
+                qty: item.qty ?? 0,
+                unitPrice: item.unitPrice ?? 0,
+                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discountAmount: item.discountAmount ?? 0,
+                subTotal: item.subTotal ?? 0,
+                classification: item.classification ?? ""
+            })),
+            roundingAdjustment: rounding ?? 0,
+            total: total,
+        }
+        setConfirmModal({
+            isOpen: true,
+            action: "add",
+            data: formData,
+        })
+    }
+
+    const salesItemStore = new CustomStore({
+        key: "salesOrderDetailId",
+        load: async () => {
+            setSelectedItem(null)
+            return {
+                data: salesItem ?? [],
+                totalCount: salesItem?.length,
+            };
+        },
+        insert: async () => {
+            setSelectedItem(null)
+            return {
+                data: salesItem ?? [],
+                totalCount: salesItem?.length,
+            }
+        },
+        remove: async (key) => {
+            await handleRemoveRow(key)
+            return {
+                data: salesItem ?? [],
+                totalCount: salesItem?.length,
+            }
+        },
+        update: async (key, data) => {
+            await handleEditRow(key, data)
+            setSelectedItem(null)
+            return {
+                data: salesItem ?? [],
+                totalCount: salesItem?.length,
+            }
+        }
+    });
+
+    useEffect(() => { }, [setIsNormalItem])
 
     //Eye Power
-    const [activeRxTab, setActiveRxTab] = useState("Prescribed RX");
-    const [eyePowerData, setEyePowerData] = useState({
-        "Prescribed RX": { opticalHeight: "", segmentHeight: "", dominantLeft: false, dominantRight: false },
-        "Actual RX": { opticalHeight: "", segmentHeight: "", dominantLeft: false, dominantRight: false }
+    const [actualRX, setActualRX] = useState({
+        dominantEye: "",
+        opticalHeight: 0,
+        segmentHeight: 0,
     });
+
+    const [prescribedRX, setPrescribedRX] = useState({
+        dominantEye: "",
+        opticalHeight: 0,
+        segmentHeight: 0,
+    })
+
+    const [prescribedReadingData, setPrescribedReadingData] = useState({
+        l_R_ADD: null,
+        l_R_AXIS: null,
+        l_R_CYL: null,
+        l_R_PD: null,
+        l_R_PRISM: null,
+        l_R_Remark: "",
+        l_R_SPH: null,
+        l_R_VA: null,
+        r_R_ADD: null,
+        r_R_AXIS: null,
+        r_R_CYL: null,
+        r_R_PRISM: null,
+        r_R_Remark: "",
+        r_R_SPH: null,
+        r_R_VA: null,
+    });
+
+    const [prescribedDistanceData, setPrescribedDistanceData] = useState({
+        l_D_ADD: null,
+        l_D_AXIS: null,
+        l_D_CYL: null,
+        l_D_PD: null,
+        l_D_PRISM: null,
+        l_D_Remark: "",
+        l_D_SPH: null,
+        l_D_VA: null,
+        r_D_ADD: null,
+        r_D_AXIS: null,
+        r_D_CYL: null,
+        r_D_PRISM: null,
+        r_D_Remark: "",
+        r_D_SPH: null,
+        r_D_VA: null,
+    });
+
+    const [actualReadingData, setActualReadingData] = useState({
+        l_R_ADD: null,
+        l_R_AXIS: null,
+        l_R_CYL: null,
+        l_R_PD: null,
+        l_R_PRISM: null,
+        l_R_Remark: "",
+        l_R_SPH: null,
+        l_R_VA: null,
+        r_R_ADD: null,
+        r_R_AXIS: null,
+        r_R_CYL: null,
+        r_R_PRISM: null,
+        r_R_Remark: "",
+        r_R_SPH: null,
+        r_R_VA: null,
+    });
+
+    const [actualDistanceData, setActualDistanceData] = useState({
+        l_D_ADD: null,
+        l_D_AXIS: null,
+        l_D_CYL: null,
+        l_D_PD: null,
+        l_D_PRISM: null,
+        l_D_Remark: "",
+        l_D_SPH: null,
+        l_D_VA: null,
+        r_D_ADD: null,
+        r_D_AXIS: null,
+        r_D_CYL: null,
+        r_D_PRISM: null,
+        r_D_Remark: "",
+        r_D_SPH: null,
+        r_D_VA: null,
+    });
+
+    const [activeRxTab, setActiveRxTab] = useState("Prescribed RX");
+    const [activeRxMode, setActiveRxMode] = useState("Distance");
+
     const [showCopyModal, setShowCopyModal] = useState(false);
 
-    const handleEyePowerChange = (tab, field, value) => {
-        setEyePowerData(prev => ({
-            ...prev,
-            [tab]: {
-                ...prev[tab],
-                dominantLeft: field === "dominantLeft" ? value : false,
-                dominantRight: field === "dominantRight" ? value : false
-            }
-        }));
-    };
+    const rxParams = ["SPH", "CYL", "AXIS", "VA", "PRISM", "BC", "DIA", "ADD", "PD"];
+    const dataFieldMapping = {
+        Distance: "D",
+        Reading: "R"
+    }
 
-    const handleCopyRxData = () => {
+    const handleCopyRxdata = () => {
         const sourceTab = activeRxTab;
         const targetTab = activeRxTab === "Prescribed RX" ? "Actual RX" : "Prescribed RX";
 
-        setEyePowerData((prev) => ({
-            ...prev,
-            [targetTab]: { ...prev[sourceTab] }
-        }));
-
-        const copiedRx = JSON.parse(JSON.stringify(rxValues[sourceTab]));
-        setRxValues((prev) => ({
-            ...prev,
-            [targetTab]: copiedRx
-        }));
+        if (sourceTab === "Prescribed RX") {
+            setActualRX({ ...prescribedRX });
+            setActualReadingData({ ...prescribedReadingData });
+            setActualDistanceData({ ...prescribedDistanceData });
+        } else {
+            setPrescribedRX({ ...actualRX });
+            setPrescribedReadingData({ ...actualReadingData });
+            setPrescribedDistanceData({ ...actualDistanceData });
+        }
 
         setShowCopyModal(false);
         setActiveRxTab(targetTab);
     };
 
-    //Eye Power RX
-    const [activeRxMode, setActiveRxMode] = useState("Distance");
-    const rxParams = ["SPH", "CYL", "AXIS", "VA", "PRISM", "BC", "DIA", "ADD", "PD"];
-    const [rxValues, setRxValues] = useState({
-        "Prescribed RX": {
-            Distance: { Left: {}, Right: {} },
-            Reading: { Left: {}, Right: {} }
-        },
-        "Actual RX": {
-            Distance: { Left: {}, Right: {} },
-            Reading: { Left: {}, Right: {} }
-        }
-    });
+    useEffect(() => {
+        if (!currentActiveRow) return;
 
-    const handleRxChange = (rxTab, mode, eye, field, value) => {
-        if (field === "REMARK") {
-            setRxValues((prev) => ({
-                ...prev,
-                [rxTab]: {
-                    ...prev[rxTab],
-                    [mode]: {
-                        ...prev[rxTab][mode],
-                        [eye]: {
-                            ...prev[rxTab][mode][eye],
-                            [field]: value,
-                        },
-                    },
-                },
-            }));
-            return;
+        let currentItemEyePower;
+        let prescribedRX = {};
+        let actualRX = {};
+
+        if (currentActiveRow?.isSpectacles) {
+            currentItemEyePower = eyePowerSpectaclesFormData.find(
+                item => item.cashSalesDetailId === currentActiveRow.salesOrderDetailId
+            );
+            prescribedRX = currentItemEyePower?.prescribedRXSpectacles ?? {};
+            actualRX = currentItemEyePower?.actualRXSpectacles ?? {};
+        } else if (currentActiveRow?.isContactLens) {
+            currentItemEyePower = eyePowerContactLensFormData.find(
+                item => item.cashSalesDetailId === currentActiveRow.salesOrderDetailId
+            );
+            prescribedRX = currentItemEyePower?.prescribedRXContactLens ?? {};
+            actualRX = currentItemEyePower?.actualRXContactLens ?? {};
         }
 
-        if (value === "") {
-            setRxValues((prev) => ({
-                ...prev,
-                [rxTab]: {
-                    ...prev[rxTab],
-                    [mode]: {
-                        ...prev[rxTab][mode],
-                        [eye]: {
-                            ...prev[rxTab][mode][eye],
-                            [field]: "",
-                        },
-                    },
+        setPrescribedRX({
+            dominantEye: prescribedRX?.dominantEye ?? "",
+            opticalHeight: Number(prescribedRX?.opticalHeight ?? 0),
+            segmentHeight: Number(prescribedRX?.segmentHeight ?? 0),
+        });
+
+        setActualRX({
+            dominantEye: actualRX?.dominantEye ?? "",
+            opticalHeight: Number(actualRX?.opticalHeight ?? 0),
+            segmentHeight: Number(actualRX?.segmentHeight ?? 0),
+        });
+
+        setPrescribedDistanceData({
+            l_D_ADD: prescribedRX?.l_D_ADD ?? null,
+            l_D_AXIS: prescribedRX?.l_D_AXIS ?? null,
+            l_D_CYL: prescribedRX?.l_D_CYL ?? null,
+            l_D_PD: prescribedRX?.l_D_PD ?? null,
+            l_D_PRISM: prescribedRX?.l_D_PRISM ?? null,
+            l_D_Remark: prescribedRX?.l_D_Remark ?? "",
+            l_D_SPH: prescribedRX?.l_D_SPH ?? null,
+            l_D_VA: prescribedRX?.l_D_VA ?? null,
+            r_D_ADD: prescribedRX?.r_D_ADD ?? null,
+            r_D_AXIS: prescribedRX?.r_D_AXIS ?? null,
+            r_D_CYL: prescribedRX?.r_D_CYL ?? null,
+            r_D_PRISM: prescribedRX?.r_D_PRISM ?? null,
+            r_D_Remark: prescribedRX?.r_D_Remark ?? "",
+            r_D_SPH: prescribedRX?.r_D_SPH ?? null,
+            r_D_VA: prescribedRX?.r_D_VA ?? null,
+        });
+
+        setActualDistanceData({
+            l_D_ADD: actualRX?.l_D_ADD ?? null,
+            l_D_AXIS: actualRX?.l_D_AXIS ?? null,
+            l_D_CYL: actualRX?.l_D_CYL ?? null,
+            l_D_PD: actualRX?.l_D_PD ?? null,
+            l_D_PRISM: actualRX?.l_D_PRISM ?? null,
+            l_D_Remark: actualRX?.l_D_Remark ?? "",
+            l_D_SPH: actualRX?.l_D_SPH ?? null,
+            l_D_VA: actualRX?.l_D_VA ?? null,
+            r_D_ADD: actualRX?.r_D_ADD ?? null,
+            r_D_AXIS: actualRX?.r_D_AXIS ?? null,
+            r_D_CYL: actualRX?.r_D_CYL ?? null,
+            r_D_PRISM: actualRX?.r_D_PRISM ?? null,
+            r_D_Remark: actualRX?.r_D_Remark ?? "",
+            r_D_SPH: actualRX?.r_D_SPH ?? null,
+            r_D_VA: actualRX?.r_D_VA ?? null,
+        });
+
+        setPrescribedReadingData({
+            l_R_ADD: prescribedRX?.l_R_ADD ?? null,
+            l_R_AXIS: prescribedRX?.l_R_AXIS ?? null,
+            l_R_CYL: prescribedRX?.l_R_CYL ?? null,
+            l_R_PD: prescribedRX?.l_R_PD ?? null,
+            l_R_PRISM: prescribedRX?.l_R_PRISM ?? null,
+            l_R_Remark: prescribedRX?.l_R_Remark ?? "",
+            l_R_SPH: prescribedRX?.l_R_SPH ?? null,
+            l_R_VA: prescribedRX?.l_R_VA ?? null,
+            r_R_ADD: prescribedRX?.r_R_ADD ?? null,
+            r_R_AXIS: prescribedRX?.r_R_AXIS ?? null,
+            r_R_CYL: prescribedRX?.r_R_CYL ?? null,
+            r_R_PRISM: prescribedRX?.r_R_PRISM ?? null,
+            r_R_Remark: prescribedRX?.r_R_Remark ?? "",
+            r_R_SPH: prescribedRX?.r_R_SPH ?? null,
+            r_R_VA: prescribedRX?.r_R_VA ?? null,
+        });
+
+        setActualReadingData({
+            l_R_ADD: actualRX?.l_R_ADD ?? null,
+            l_R_AXIS: actualRX?.l_R_AXIS ?? null,
+            l_R_CYL: actualRX?.l_R_CYL ?? null,
+            l_R_PD: actualRX?.l_R_PD ?? null,
+            l_R_PRISM: actualRX?.l_R_PRISM ?? null,
+            l_R_Remark: actualRX?.l_R_Remark ?? "",
+            l_R_SPH: actualRX?.l_R_SPH ?? null,
+            l_R_VA: actualRX?.l_R_VA ?? null,
+            r_R_ADD: actualRX?.r_R_ADD ?? null,
+            r_R_AXIS: actualRX?.r_R_AXIS ?? null,
+            r_R_CYL: actualRX?.r_R_CYL ?? null,
+            r_R_PRISM: actualRX?.r_R_PRISM ?? null,
+            r_R_Remark: actualRX?.r_R_Remark ?? "",
+            r_R_SPH: actualRX?.r_R_SPH ?? null,
+            r_R_VA: actualRX?.r_R_VA ?? null,
+        });
+
+    }, [currentActiveRow]);
+
+
+    useEffect(() => {
+        let mergedData = {}
+        if (currentActiveRow?.isSpectacles) {
+            mergedData = {
+                prescribedRXSpectacles: {
+                    ...prescribedRX,
+                    ...prescribedReadingData,
+                    ...prescribedDistanceData,
                 },
-            }));
-            return;
+                actualRXSpectacles: {
+                    ...actualRX,
+                    ...actualReadingData,
+                    ...actualDistanceData,
+                }
+            }
+            setEyePowerSpectaclesFormData(prev => {
+                const exists = prev.find(record => record.cashSalesDetailId === currentActiveRow.salesOrderDetailId);
+                if (exists) {
+                    return prev.map(record =>
+                        record.cashSalesDetailId === currentActiveRow.cashSalesDetailId ? { ...record, ...mergedData } : record
+                    );
+                } else {
+                    return [...prev, mergedData];
+                }
+            })
+        } else if (currentActiveRow?.isContactLens) {
+            mergedData = {
+                prescribedRXContactLens: {
+                    ...prescribedRX,
+                    ...prescribedReadingData,
+                    ...prescribedDistanceData,
+                },
+                actualRXContactLens: {
+                    ...actualRX,
+                    ...actualReadingData,
+                    ...actualDistanceData,
+                }
+            }
+            setEyePowerContactLensFormData(prev => {
+                const exists = prev.find(record => record.cashSalesDetailId === currentActiveRow.salesOrderDetailId);
+                if (exists) {
+                    return prev.map(record =>
+                        record.cashSalesDetailId === currentActiveRow.salesOrderDetailId ? { ...record, ...mergedData } : record
+                    );
+                } else {
+                    return [...prev, mergedData];
+                }
+            })
         }
 
-        const regex = /^\d*(\.\d{0,2})?$/;
-        if (regex.test(value)) {
-            setRxValues((prev) => ({
-                ...prev,
-                [rxTab]: {
-                    ...prev[rxTab],
-                    [mode]: {
-                        ...prev[rxTab][mode],
-                        [eye]: {
-                            ...prev[rxTab][mode][eye],
-                            [field]: value,
-                        },
-                    },
-                },
-            }));
-        }
+    }, [
+        actualRX,
+        prescribedRX,
+        prescribedReadingData,
+        prescribedDistanceData,
+        actualReadingData,
+        actualDistanceData,
+    ]);
+
+
+
+
+    const getRxData = () => {
+        if (activeRxTab === "Prescribed RX" && activeRxMode === "Reading") return prescribedReadingData;
+        if (activeRxTab === "Prescribed RX" && activeRxMode === "Distance") return prescribedDistanceData;
+        if (activeRxTab === "Actual RX" && activeRxMode === "Reading") return actualReadingData;
+        if (activeRxTab === "Actual RX" && activeRxMode === "Distance") return actualDistanceData;
     };
 
-    //Summary
-    const [securityDeposit, setSecurityDeposit] = useState("");
-    const [statusReady, setStatusReady] = useState(false);
-    const [statusCollected, setStatusCollected] = useState(false);
-
-    const handleSecurityDepositChange = (value) => {
-        if (value === "") {
-            setSecurityDeposit("");
-            return;
-        }
-
-        const regex = /^\d*(\.\d{0,2})?$/;
-        if (regex.test(value)) {
-            setSecurityDeposit(value);
-        }
+    const getRxSetter = () => {
+        if (activeRxTab === "Prescribed RX" && activeRxMode === "Reading") return setPrescribedReadingData;
+        if (activeRxTab === "Prescribed RX" && activeRxMode === "Distance") return setPrescribedDistanceData;
+        if (activeRxTab === "Actual RX" && activeRxMode === "Reading") return setActualReadingData;
+        if (activeRxTab === "Actual RX" && activeRxMode === "Distance") return setActualDistanceData;
     };
-    const total = currentSalesTotal + parseFloat(rounding);
-    const balance = total - parseFloat(securityDeposit || 0);     
 
-    const itemSource = [
-        {
-          itemId: "1",
-          itemCode: "N001",
-          description: "Regular Frame",
-          uom: "pcs",
-          price: 100.00,
-          isNormalItem: true,
-          isSpectacles: false,
-          iscontctLens: false
-        },
-        {
-          itemId: "2",
-          itemCode: "S001",
-          description: "Spectacle Lens",
-          uom: "pair",
-          price: 200.00,
-          isNormalItem: false,
-          isSpectacles: true,
-          iscontctLens: false
-        },
-        {
-          itemId: "3",
-          itemCode: "C001",
-          description: "Contact Lens - Monthly",
-          uom: "box",
-          price: 150.00,
-          isNormalItem: false,
-          isSpectacles: false,
-          iscontctLens: true
-        },
-        {
-          itemId: "4",
-          itemCode: "NSC001",
-          description: "Multifunctional Lens",
-          uom: "set",
-          price: 300.00,
-          isNormalItem: false,
-          isSpectacles: true,
-          iscontctLens: false,
-        }
-      ];      
+    const handleRxChange = (eye, mode, field, value) => {
+        const setter = getRxSetter();
+        setter(prev => ({
+            ...prev,
+            [`${eye}_${mode}_${field}`]: value
+        }));
+    };
 
-      const handleCellClick = (rowData) =>{
-        setIsNormalItem(rowData.isNormalItem ?? true);
-      }
+    const handleRemoveRow = async (key) => {
+        setSalesItem(prev => prev.filter(record => record.salesOrderDetailId !== key));
+        setEyePowerSpectaclesFormData(prev => prev.filter(record => record.cashSalesDetailId !== key));
+        setEyePowerContactLensFormData(prev => prev.filter(record => record.cashSalesDetailId !== key));
+        setActualRX({
+            dominantEye: "",
+            opticalHeight: 0,
+            segmentHeight: 0,
+        });
+        setPrescribedRX({
+            dominantEye: "",
+            opticalHeight: 0,
+            segmentHeight: 0,
+        });
+        setPrescribedDistanceData({
+            l_D_ADD: null,
+            l_D_AXIS: null,
+            l_D_CYL: null,
+            l_D_PD: null,
+            l_D_PRISM: null,
+            l_D_Remark: "",
+            l_D_SPH: null,
+            l_D_VA: null,
+            r_D_ADD: null,
+            r_D_AXIS: null,
+            r_D_CYL: null,
+            r_D_PRISM: null,
+            r_D_Remark: "",
+            r_D_SPH: null,
+            r_D_VA: null,
+        });
+        setPrescribedReadingData({
+            l_R_ADD: null,
+            l_R_AXIS: null,
+            l_R_CYL: null,
+            l_R_PD: null,
+            l_R_PRISM: null,
+            l_R_Remark: "",
+            l_R_SPH: null,
+            l_R_VA: null,
+            r_R_ADD: null,
+            r_R_AXIS: null,
+            r_R_CYL: null,
+            r_R_PRISM: null,
+            r_R_Remark: "",
+            r_R_SPH: null,
+            r_R_VA: null,
+        });
+        setActualDistanceData({
+            l_D_ADD: null,
+            l_D_AXIS: null,
+            l_D_CYL: null,
+            l_D_PD: null,
+            l_D_PRISM: null,
+            l_D_Remark: "",
+            l_D_SPH: null,
+            l_D_VA: null,
+            r_D_ADD: null,
+            r_D_AXIS: null,
+            r_D_CYL: null,
+            r_D_PRISM: null,
+            r_D_Remark: "",
+            r_D_SPH: null,
+            r_D_VA: null,
+        });
+        setActualReadingData({
+            l_R_ADD: null,
+            l_R_AXIS: null,
+            l_R_CYL: null,
+            l_R_PD: null,
+            l_R_PRISM: null,
+            l_R_Remark: "",
+            l_R_SPH: null,
+            l_R_VA: null,
+            r_R_ADD: null,
+            r_R_AXIS: null,
+            r_R_CYL: null,
+            r_R_PRISM: null,
+            r_R_Remark: "",
+            r_R_SPH: null,
+            r_R_VA: null,
+        });
+    }
 
-      useEffect(() => {console.log(isNormalItem)},[isNormalItem])
 
     return (
         <>
-        <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
+            <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
+            <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Goods Transit?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
+            <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
+            <ConfirmationModal
+                isOpen={showCopyModal}
+                title="Copy RX Data"
+                message={`This will copy all RX data from "${activeRxTab}" to the other tab. Continue?`}
+                onConfirm={handleCopyRxdata}
+                onCancel={() => setShowCopyModal(false)}
+            />
+
+            {showCustomerModal && (
+                <AddCustomerModal
+                    selectedCustomer={newCustomer}
+                    isEdit={false}
+                    isView={false}
+                    isOpen={showCustomerModal}
+                    onConfirm={confirmAddCustomerAction}
+                    onError={setErrorModal}
+                    onClose={handleCloseUpdateModal}
+                    companyId={companyId}
+                    userId={userId}
+                />
+            )}
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <div className="items-center gap-1">
@@ -477,28 +1111,22 @@ const SalesOrder = () => {
                             <div className="flex justify-end gap-2">
                                 <DropDownBox
                                     id="CustomerSelection"
-                                    className="border rounded w-full "
-                                    value={CustomerGridBoxValue.id}
+                                    className="border rounded p-1 w-1/2 h-[34px]"
+                                    value={CustomerGridBoxValue?.id || null}
                                     opened={isCustomerGridBoxOpened}
                                     openOnFieldClick={true}
-                                    valueExpr='id'
+                                    valueExpr='debtorId'
                                     displayExpr={CustomerGridBoxDisplayExpr}
                                     placeholder="Select Customer"
                                     showClearButton={true}
                                     onValueChanged={handleCustomerGridBoxValueChanged}
-                                    dataSource={customerData}
+                                    dataSource={customerStore}
                                     onOptionChanged={onCustomerGridBoxOpened}
-                                    contentRender={() => (
-                                        <CustomerDataGrid
-                                          value={CustomerGridBoxValue}
-                                          dataSource={customerData}
-                                          onSelectionChanged={(selected) => {
-                                            setCustomerGridBoxValue(selected);
-                                            setIsCustomerGridBoxOpened(false);
-                                          }}
-                                        />
-                                      )}
-                                    />                                    
+                                    contentRender={CustomerDataGridRender}
+                                    dropDownOptions={{
+                                        width: 400
+                                    }}
+                                />
                                 <textarea
                                     id="CustomerName"
                                     name="CustomerName"
@@ -510,55 +1138,16 @@ const SalesOrder = () => {
                                 />
                                 <button
                                     className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
-                                    onClick={() => setShowCustomerModal(true)}
+                                    onClick={() => {
+                                        handleNewCustomerModel()
+                                    }}
                                 >
                                     ...</button>
                             </div>
                         </div>
                     </div>
 
-                    {showCustomerModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-                            <div className="bg-white p-6 rounded shadow-md w-96 space-y-4">
-                                <h2 className="text-lg font-semibold text-gray-800">Add Customer</h2>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-700">Code</label>
-                                        <input
-                                            type="text"
-                                            value={getNextCustomerCode()}
-                                            readOnly
-                                            className="text-sm w-full border rounded px-2 py-1 bg-gray-100 text-gray-600"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-700">Name</label>
-                                        <input
-                                            type="text"
-                                            value={newCustomerName}
-                                            onChange={(e) => setNewCustomerName(e.target.value)}
-                                            className="w-full border rounded px-2 py-1 text-sm bg-white text-secondary"
-                                            placeholder="Enter name"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end gap-2 mt-4">
-                                    <button
-                                        onClick={handleSaveNewCustomer}
-                                        className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
-                                    >
-                                        Save
-                                    </button>
-                                    <button
-                                        onClick={() => setShowCustomerModal(false)}
-                                        className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
 
 
                     <div className="items-start gap-1">
@@ -570,6 +1159,8 @@ const SalesOrder = () => {
                             rows={6}
                             className="border rounded p-1 w-full resize-none bg-white justify-self-end"
                             placeholder="Enter remarks…"
+                            onChange={e => setMasterData(prev => ({ ...prev, remark: e.target.value }))}
+                            value={masterData?.remark ?? ""}
                         />
                     </div>
                 </div>
@@ -582,17 +1173,19 @@ const SalesOrder = () => {
                             name="refNo"
                             className="border rounded p-1 w-full bg-white h-[34px]"
                             placeholder="Ref No"
+                            onChange={e => setMasterData(prev => ({ ...prev, refNo: e.target.value }))}
+                            value={masterData?.refNo ?? ""}
                         />
                     </div>
                     <div className="flex flex-col gap-1">
                         <label htmlFor="date" className="font-medium text-secondary">Date</label>
                         <DatePicker
-                            selected={date}
+                            selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
                             id="SalesDate"
                             name="SalesDate"
                             dateFormat="dd-MM-yyyy"
                             className="border rounded p-1 w-full bg-white h-[34px]"
-                            onChange={e => setDate(e.toISOString().slice(0, 10))}
+                            onChange={e => setMasterData(prev => ({ ...prev, docDate: e.toISOString().slice(0, 10) }))}
                         />
 
                     </div>
@@ -604,12 +1197,12 @@ const SalesOrder = () => {
                             value={SalesPersonGridBoxValue.id}
                             opened={isSalesPersonGridBoxOpened}
                             openOnFieldClick={true}
-                            valueExpr='id'
+                            valueExpr='userId'
                             displayExpr={SalesPersonGridBoxDisplayExpr}
                             placeholder="Select Sales Person"
                             showClearButton={true}
                             onValueChanged={handleSalesPersonGridBoxValueChanged}
-                            dataSource={customerData}
+                            dataSource={userStore}
                             onOptionChanged={onSalesPersonGridBoxOpened}
                             contentRender={SalesPersonDataGridRender}
                         />
@@ -618,7 +1211,7 @@ const SalesOrder = () => {
                         <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
                         <div className="flex flex-col space-y-1 w-full">
                             <DatePicker
-                                selected={nextVisit}
+                                selected={masterData?.nextVisitDate ?? new Date().toISOString().slice(0, 10)}
                                 id="nextVisit"
                                 name="nextVisit"
                                 dateFormat="dd-MM-yyyy"
@@ -626,32 +1219,32 @@ const SalesOrder = () => {
                                 className="border rounded p-1 w-full bg-white text-secondary h-[34px]"
                                 onChange={e => {
                                     setSelectedInterval(null);
-                                    setNextVisit(e);
+                                    setMasterData(prev => ({ ...prev, nextVisitDate: e.toISOString().slice(0, 10) }))
                                 }}
                             >
-                                
+
                             </DatePicker>
                         </div>
                         <div className="ml-3 space-x-1">
-                                    {intervals.map(intv => (
-                                        <button
-                                            key={intv.months}
-                                            type="button"
-                                            className={`
+                            {intervals.map(intv => (
+                                <button
+                                    key={intv.months}
+                                    type="button"
+                                    className={`
                                                 text-sm px-1 py-0.5 rounded border w-16 h-10
                                                 ${selectedInterval === intv.months
-                                                    ? 'bg-slate-700 text-white'
-                                                    : 'bg-white text-gray-700'
-                                                }
+                                            ? 'bg-slate-700 text-white'
+                                            : 'bg-white text-gray-700'
+                                        }
                                         `}
-                                            onClick={() => pickInterval(intv.months)}
-                                        >
-                                            {intv.label}
-                                        </button>
-                                    ))}
-                                </div>
+                                    onClick={() => pickInterval(intv.months)}
+                                >
+                                    {intv.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                    
+
                     <div className="flex flex-col gap-1">
                         <label htmlFor="practitioner" className="font-medium text-secondary">Practitioner</label>
                         <DropDownBox
@@ -660,14 +1253,17 @@ const SalesOrder = () => {
                             value={PractionerGridBoxValue.id}
                             opened={isPractionerGridBoxOpened}
                             openOnFieldClick={true}
-                            valueExpr='id'
-                            displayExpr={PractionerGridBoxDisplayExpr}
+                            valueExpr='userId'
+                            displayExpr={PractitionerGridBoxDisplatExpr}
                             placeholder="Select Practioner"
                             showClearButton={true}
                             onValueChanged={handlePractionerGridBoxValueChanged}
-                            dataSource={customerData}
+                            dataSource={practitionerStore}
                             onOptionChanged={onPractionerGridBoxOpened}
                             contentRender={PractionerDataGridRender}
+                            dropDownOptions={{
+                                width: 400
+                            }}
                         />
                     </div>
 
@@ -677,12 +1273,17 @@ const SalesOrder = () => {
             </div>
 
             <div className=" bg-white shadow rounded">
-            <SalesOrderItemTable
-                data={SalesItemTableData}
-                onDataChange={handleSalesItemChange}
-                itemSource={itemSource}
-                handleCellClick={handleCellClick}
-                />           
+                <TransactionItemWithDiscountDataGrid
+                    className={"p-2"}
+                    customStore={salesItemStore}
+                    gridRef={gridRef}
+                    onNew={handleAddNewRow}
+                    onSelect={onLookUpSelected}
+                    selectedItem={selectedItem}
+                    setSelectedItem={setSelectedItem}
+                    setItemGroup={setIsNormalItem}
+                    setActiveItem={setCurrentActiveRow}
+                />
             </div>
 
             <div className={isNormalItem ? "mt-3 p-2 bg-white shadow rounded w-full opacity-30" : "mt-3 p-2 bg-white shadow rounded w-full"}>
@@ -711,53 +1312,53 @@ const SalesOrder = () => {
                                 title={`Copy ${tab} to ${tab === "Prescribed RX" ? "Actual RX" : "Prescribed RX"}`}
                                 className="text-secondary bg-gray-100 absolute top-1/3 right-2 -translate-y-1/2 text-sm px-2 py-1 border rounded hover:text-primary"
                             >
-                                <Copy size={20}/>
+                                <Copy size={20} />
                             </button>
                         </div>
                     ))}
                 </div>
 
-                <ConfirmationModal
-                    isOpen={showCopyModal}
-                    title="Copy RX Data"
-                    message={`This will copy all RX data from "${activeRxTab}" to the other tab. Continue?`}
-                    onConfirm={handleCopyRxData}
-                    onCancel={() => setShowCopyModal(false)}
-                />
+
 
                 <div className="grid grid-cols-[7%,15%,7%,15%,20%,auto] items-center gap-3 w-full">
-                    <label className={activeRxTab === "Prescribed RX" ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary" }>Optical Height</label>
+                    <label className={activeRxTab === "Prescribed RX" ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary"}>Optical Height</label>
                     <input
                         type="text"
                         className={activeRxTab === "Prescribed RX" ? "border rounded px-2 py-1 bg-white text-secondary w-full" : "border rounded px-2 py-1 bg-white text-secondary w-full invisible"}
                         placeholder="Enter"
-                        value={eyePowerData[activeRxTab].opticalHeight}
+                        value={activeRxTab === "Prescribed RX" ? prescribedRX?.opticalHeight : actualRX?.opticalHeight}
                         onChange={(e) =>
-                            handleEyePowerChange(activeRxTab, "opticalHeight", e.target.value)
+                            activeRxTab === "Prescribed RX"
+                                ? setPrescribedRX({ ...prescribedRX, opticalHeight: e.target.value })
+                                : setActualRX({ ...actualRX, opticalHeight: e.target.value })
                         }
                     />
 
-                    <label className={activeRxTab === "Prescribed RX" ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary" }>Segment Height</label>
+                    <label className={activeRxTab === "Prescribed RX" ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary"}>Segment Height</label>
                     <input
                         type="text"
                         placeholder="Enter"
-                        className={activeRxTab === "Prescribed RX" ? "border rounded px-2 py-1 bg-white text-secondary w-full" :"border rounded px-2 py-1 bg-white text-secondary w-full invisible"}
-                        value={eyePowerData[activeRxTab].segmentHeight}
+                        className={activeRxTab === "Prescribed RX" ? "border rounded px-2 py-1 bg-white text-secondary w-full" : "border rounded px-2 py-1 bg-white text-secondary w-full invisible"}
+                        value={activeRxTab === "Prescribed RX" ? prescribedRX?.segmentHeight : actualRX?.segmentHeight}
                         onChange={(e) =>
-                            handleEyePowerChange(activeRxTab, "segmentHeight", e.target.value)
+                            activeRxTab === "Prescribed RX"
+                                ? setPrescribedRX({ ...prescribedRX, segmentHeight: e.target.value })
+                                : setActualRX({ ...actualRX, segmentHeight: e.target.value })
                         }
                     />
 
-                    <div className={activeRxTab === "Prescribed RX" ? "flex items-center space-x-2 col-span-2 ": "invisible items-center space-x-2 col-span-2"}>
+                    <div className={activeRxTab === "Prescribed RX" ? "flex items-center space-x-2 col-span-2 " : "invisible items-center space-x-2 col-span-2"}>
                         <span className="font-medium text-sm text-secondary">Dominant Eye:</span>
 
                         <label className="inline-flex items-center text-secondary ">
                             <input
                                 type="checkbox"
                                 className="mr-1 accent-white bg-white"
-                                checked={eyePowerData[activeRxTab].dominantLeft}
+                                checked={activeRxTab === "Prescribed RX" ? prescribedRX?.dominentEye === "left" : actualRX?.segmentHeight === "left"}
                                 onChange={(e) =>
-                                    handleEyePowerChange(activeRxTab, "dominantLeft", e.target.checked)
+                                    activeRxTab === "Prescribed RX"
+                                        ? setPrescribedRX({ ...prescribedRX, dominentEye: e.target.checked ? "left" : "" })
+                                        : setActualRX({ ...actualRX, dominentEye: e.target.checked ? "left" : "" })
                                 }
                             />
                             Left
@@ -767,9 +1368,11 @@ const SalesOrder = () => {
                             <input
                                 type="checkbox"
                                 className="mr-1 accent-white bg-white"
-                                checked={eyePowerData[activeRxTab].dominantRight}
+                                checked={activeRxTab === "Prescribed RX" ? prescribedRX?.dominentEye === "right" : actualRX?.segmentHeight === "right"}
                                 onChange={(e) =>
-                                    handleEyePowerChange(activeRxTab, "dominantRight", e.target.checked)
+                                    activeRxTab === "Prescribed RX"
+                                        ? setPrescribedRX({ ...prescribedRX, dominentEye: e.target.checked ? "right" : "" })
+                                        : setActualRX({ ...actualRX, dominentEye: e.target.checked ? "right" : "" })
                                 }
                             />
                             Right
@@ -778,22 +1381,22 @@ const SalesOrder = () => {
                 </div>
 
                 <div className="space-y-2">
-                    
+
 
                     <div className="overflow-x-auto flex flex-row">
                         <div className="px-2 py-4">
-                        {["Distance", "Reading"].map((mode) => (
-                            <button
-                                key={mode}
-                                onClick={() => setActiveRxMode(mode)}
-                                className={`px-1 py-1 border rounded text-sm w-full font-medium ${activeRxMode === mode
-                                    ? "bg-primary text-white"
-                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                                    }`}
-                            >
-                                {mode}
-                            </button>
-                        ))}
+                            {["Distance", "Reading"].map((mode) => (
+                                <button
+                                    key={mode}
+                                    onClick={() => setActiveRxMode(mode)}
+                                    className={`px-1 py-1 border rounded text-sm w-full font-medium ${activeRxMode === mode
+                                        ? "bg-primary text-white"
+                                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                                        }`}
+                                >
+                                    {mode}
+                                </button>
+                            ))}
                         </div>
                         <table className="min-w-[80%] border mt-2 text-sm">
                             <thead className="bg-gray-100 text-secondary">
@@ -809,27 +1412,26 @@ const SalesOrder = () => {
                                 {["Left", "Right"].map((eye) => (
                                     <tr key={eye}>
                                         <td className="border px-2 py-1 font-medium text-secondary">{eye}</td>
-                                        {rxParams.map((field) => (
-                                            <td key={field} className="border px-2 py-1 text-left text-secondary bg-white">
-                                                <input
-                                                    type="number"
-                                                    step="0.25"
-                                                    className="w-full border rounded px-1 py-0.5 text-left text-secondary bg-white"
-                                                    value={rxValues[activeRxTab][activeRxMode][eye][field] || ""}
-                                                    onChange={(e) =>
-                                                        handleRxChange(activeRxTab, activeRxMode, eye, field, e.target.value)
-                                                    }
-                                                />
-                                            </td>
-                                        ))}
+                                        {rxParams.map((field) => {
+                                            const key = `${eye === "Left" ? "l" : "r"}_${dataFieldMapping[activeRxMode]}_${field}`;
+                                            return (
+                                                <td key={field} className="border px-2 py-1 text-left text-secondary bg-white">
+                                                    <input
+                                                        type="number"
+                                                        step="0.25"
+                                                        className="w-full border rounded px-1 py-0.5 text-left text-secondary bg-white"
+                                                        value={getRxData()?.[key] || ""}
+                                                        onChange={(e) => handleRxChange(eye === "Left" ? "l" : "r", dataFieldMapping[activeRxMode], field, e.target.value)}
+                                                    />
+                                                </td>
+                                            );
+                                        })}
                                         <td className="border px-2 py-1 text-left">
                                             <input
                                                 type="text"
                                                 className="w-28 border rounded px-1 py-0.5 text-left text-secondary bg-white"
-                                                value={rxValues[activeRxTab][activeRxMode][eye]["REMARK"] || ""}
-                                                onChange={(e) =>
-                                                    handleRxChange(activeRxTab, activeRxMode, eye, "REMARK", e.target.value)
-                                                }
+                                                value={getRxData()?.[`${eye === "Left" ? "l" : "r"}_R_Remark`] || ""}
+                                                onChange={(e) => handleRxChange(eye === "Left" ? "l" : "r", "R_Remark", e.target.value)}
                                             />
                                         </td>
                                     </tr>
@@ -850,8 +1452,8 @@ const SalesOrder = () => {
                             <label>
                                 <input
                                     type="checkbox"
-                                    checked={statusReady}
-                                    onChange={(e) => setStatusReady(e.target.checked)}
+                                    checked={masterData?.isReady}
+                                    onChange={(e) => setMasterData(prev => ({ ...prev, isReady: e.target.checked }))}
                                     className="mr-1 accent-white"
                                 />
                                 Ready
@@ -859,8 +1461,8 @@ const SalesOrder = () => {
                             <label>
                                 <input
                                     type="checkbox"
-                                    checked={statusCollected}
-                                    onChange={(e) => setStatusCollected(e.target.checked)}
+                                    checked={masterData?.isCollected}
+                                    onChange={(e) => setMasterData(prev => ({ ...prev, isCollected: e.target.checked }))}
                                     className="mr-1 accent-white"
                                 />
                                 Collected
@@ -870,10 +1472,10 @@ const SalesOrder = () => {
 
                     <div className="flex flex-col space-y-1">
                         {[
-                            { label: "Subtotal", value: currentSalesTotal },
+                            { label: "Subtotal", value: currentTotal },
                             { label: "Rounding Adj", value: rounding },
                             { label: "Total", value: total },
-                            { label: "Balance", value: balance }
+                            // { label: "Balance", value: balance }
                         ].map(({ label, value }) => (
                             <div key={label} className="grid grid-cols-[auto,30%] gap-1">
                                 <label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{label}</label>
@@ -892,7 +1494,7 @@ const SalesOrder = () => {
 
                                 ) : (
                                     <div className="border rounded px-5 py-2 bg-gray-100 w-full min-h-5 text-right">
-                                        {value.toFixed(2)}
+                                        {value?.toFixed(2)}
                                     </div>
                                 )}
                             </div>
@@ -903,45 +1505,45 @@ const SalesOrder = () => {
 
 
             </div>
-            <div className="flex flex-row place-content-between">
+            <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
                 <div className="flex flex-row">
-                <input
-                    type="text"
-                    placeholder="search"
-                    className="p-2 w-44 m-[2px]"
-                />
-            <button className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
-                    Clear
-                </button>
-            
+                    <input
+                        type="text"
+                        placeholder="search"
+                        className="p-2 w-44 m-[2px]"
+                    />
+                    <button className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                        Clear
+                    </button>
+
                 </div>
-            
-            <div className="w-full flex flex-row justify-end">
 
-                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
-                    Collection
-                </button>
-                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
-                onClick={()=> setSalesOrderPayment(true)}>
-                    Payment
-                </button>
-                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
-                    Save & Print
-                </button>
-                <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
-                    Save
-                </button>
-            </div>
+                <div className="w-full flex flex-row justify-end">
 
-            <SalesOrderPaymentModal
-                isOpen={salesOrderPayment}
-                onClose={() => setSalesOrderPayment(false)}
-                total={total}
-                companyId={companyId}
-                userId={userId}
-                salesOrderId={salesOrderId}
-                onError={setErrorModal}
-            />
+                    <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                        Collection
+                    </button>
+                    <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
+                        onClick={() => setSalesOrderPayment(true)}>
+                        Payment
+                    </button>
+                    <button onClick={handleSavePrint} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                        Save & Print
+                    </button>
+                    <button onClick={handleSave} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                        Save
+                    </button>
+                </div>
+
+                <SalesOrderPaymentModal
+                    isOpen={salesOrderPayment}
+                    onClose={() => setSalesOrderPayment(false)}
+                    total={total}
+                    companyId={companyId}
+                    userId={userId}
+                    salesOrderId={masterData?.salesOrderId}
+                    onError={setErrorModal}
+                />
             </div>
         </>
     )

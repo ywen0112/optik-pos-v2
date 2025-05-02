@@ -1,4 +1,4 @@
-const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
+const CustomerGeneral = ({ debtorFormData, setDebtorFormData, isView }) => {
     return (
         <div className="w-full h-full overflow-y-auto border rounded p-4">
             <div className="grid grid-cols-4 gap-1">
@@ -6,6 +6,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
                 <label className="block">Customer Code</label>
                     <div className="flex items-center space-x-2">
                         <input
+                            readOnly={isView}
                             type="checkbox"
                             checked={debtorFormData.isActive}
                             onChange={(e) =>
@@ -18,6 +19,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
 
                     <div className="col-span-2">
                     <input
+                        readOnly={isView}
                         type="text"
                         className="mr-2 border w-full h-[40px] px-2"
                         placeholder="Customer Code"
@@ -31,6 +33,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
                     <div className="col-span-4 mt-2">
                     <label className="block mb-2">Name</label>
                     <input
+                        readOnly={isView}
                         type="text"
                         className="mr-2 border w-full h-[40px] px-2"
                         placeholder="Name"
@@ -44,6 +47,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
                     <div className="col-span-2 mt-2">
                     <label className="block mb-2">IC</label>
                     <input
+                        readOnly={isView}
                         type="text"
                         className="mr-2 border w-full h-[40px] px-2"
                         placeholder="IC"
@@ -57,6 +61,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
                     <div className="col-span-2 mt-2">
                     <label className="block mb-2">D.O.B</label>
                     <input
+                        readOnly={isView}
                         type="date"
                         className="mr-2 border w-full h-[40px] px-2"
                         value={debtorFormData.dob}
@@ -69,6 +74,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
                     <div className="col-span-2 mt-2">
                     <label className="block mb-2">Billing Address</label>
                     <textarea
+                        readOnly={isView}
                         rows={4}
                         className="mr-2 border w-full h-[80px] px-2 py-2"
                         placeholder="Billing Address"
@@ -82,6 +88,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
                     <div className="col-span-2 mt-2">
                     <label className="block mb-2">Remark</label>
                     <textarea
+                        readOnly={isView}
                         rows={4}
                         className="mr-2 border w-full h-[80px] px-2 py-2"
                         placeholder="Remark"
@@ -95,6 +102,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
                     <div className="col-span-1 mt-2">
                     <label className="block mb-2">Phone</label>
                     <input
+                        readOnly={isView}
                         type="text"
                         className="mr-2 border w-full h-[40px] px-2"
                         placeholder="Phone"
@@ -108,6 +116,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
                     <div className="col-span-1 mt-2">
                     <label className="block mb-2">Phone 2</label>
                     <input
+                        readOnly={isView}
                         type="text"
                         className="mr-2 border w-full h-[40px] px-2"
                         placeholder="Phone 2"
@@ -121,6 +130,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData }) => {
                     <div className="col-span-2 mt-2">
                     <label className="block mb-2">Email</label>
                     <input
+                        readOnly={isView}
                         type="email"
                         className="mr-2 border w-full h-[40px] px-2"
                         placeholder="Email"

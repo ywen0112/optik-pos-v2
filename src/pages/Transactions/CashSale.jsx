@@ -3,22 +3,22 @@ import DataGrid, {
     Paging,
     Selection,
     Scrolling,
-    SearchPanel,
-    Pager
+    SearchPanel
 } from 'devextreme-react/data-grid';
 import CustomStore from 'devextreme/data/custom_store';
-import DataSource from 'devextreme/data/data_source';
 import DropDownBox from 'devextreme-react/drop-down-box';
 import DatePicker from "react-datepicker";
-import SalesOrderItemTable from "../../Components/DataGrid/SalesOrderItemDataGrid";
-import { getInfoLookUp } from "../../api/infolookupapi";
-import { SaveDebtor, NewDebtor, GetDebtor, GetItem } from "../../api/maintenanceapi";
-import { GetSpecificUser } from "../../api/userapi";
-import CashSalesItemDataGrid from "../../Components/DataGrid/Transactions/CashSalesItemDataGrid";
-import AddExpressCustomerModal from "../../modals/Transactions/AddCustomerModal";
-import { NewCashSales } from "../../api/transactionapi";
 import ErrorModal from "../../modals/ErrorModal";
+import ConfirmationModal from "../../modals/ConfirmationModal";
+import NotificationModal from "../../modals/NotificationModal";
+import { getInfoLookUp } from "../../api/infolookupapi";
+import { GetSpecificUser } from "../../api/userapi";
+import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGridWithDisc";
+import { SaveDebtor, NewDebtor, GetDebtor } from "../../api/maintenanceapi";
+import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
+
 import CashSalesPaymentModal from "../../modals/Transactions/CashSalesPaymentModal";
+import { NewCashSales, NewCashSalesDetail, SaveCashSale } from "../../api/transactionapi";
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
 const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
@@ -33,19 +33,27 @@ const SalesPersonGridColumns = [
 const CashSales = () => {
     const companyId = sessionStorage.getItem("companyId");
     const userId = sessionStorage.getItem("userId");
-    const [date, setDate] = useState(new Date());
-    const [CustomerGridBoxValue, setCustomerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
-    const [newCustomer, setNewCustomer] = useState({ id: "", Code: "", Name: "" });
+    const [masterData, setMasterData] = useState(null);
+    const [cashSalesItem, setCashSalesItem] = useState([]);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [rounding, setRounding] = useState("0.00")
+    const [currentSalesTotal, setCurrentSalesTotal] = useState(0);
+
     const [isCustomerGridBoxOpened, setIsCustomerGridBoxOpened] = useState(false);
+    const [CustomerGridBoxValue, setCustomerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
     const [isSalesPersonGridBoxOpened, setIsSalePersonGridBoxOpened] = useState(false);
     const [SalesPersonGridBoxValue, setSalesPersonGridBoxValue] = useState({ id: "", Name: "" });
-    const [currentSalesTotal, setCurrentSalesTotal] = useState(0);
-    const [rounding, setRounding] = useState("0.00")
+    const [newCustomer, setNewCustomer] = useState(null);
     const [showCustomerModal, setShowCustomerModal] = useState(false);
-    const [SalesItemTableData, setSalesItemTableData] = useState([]);
-    const [cashSalesId, setCashSalesId] = useState(null);
-    const [cashSalesPayment, setCashSalesPayment] = useState (false);
+
+    const [cashSalesPayment, setCashSalesPayment] = useState(false);
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: "", targetData: null });
+    const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
+
+    const gridRef = useRef(null);
+
+    const total = currentSalesTotal + parseFloat(rounding);
 
     useEffect(() => {
         createNewCashSales();
@@ -53,13 +61,12 @@ const CashSales = () => {
 
     const createNewCashSales = async () => {
         try {
-            const response = await NewCashSales({ companyId, userId, id: "" }); // id is empty
-            setCashSalesId(response.data.salesOrderId)
+            const res = await NewCashSales({ companyId, userId, id: userId }); // id is empty
+            if (res.success) {
+                setMasterData(res.data);
+            } else throw new Error(res.errorMessage || "Failed to add new Cash Sales Records");
         } catch (error) {
-            setErrorModal({ 
-                title: "Fetch Error", 
-                message: error.message
-            });
+            setErrorModal({ title: "Failed to Add", message: error.message });
         }
     };
 
@@ -80,7 +87,7 @@ const CashSales = () => {
             const res = await getInfoLookUp(params);
             return {
                 data: res.data,
-                totalCount: loadOptions.skip + res.data.count,
+                totalCount: res.totalRecords,
             };
         },
         byKey: async (key) => {
@@ -110,10 +117,11 @@ const CashSales = () => {
             const res = await getInfoLookUp(params);
             return {
                 data: res.data,
-                totalCount: loadOptions.skip + res.data.count,
+                totalCount: res.totalRecords,
             };
         },
         byKey: async (key) => {
+            if (!key) return null;
             const res = await GetDebtor({
                 companyId,
                 userId,
@@ -138,7 +146,7 @@ const CashSales = () => {
                 columns={CustomerGridColumns}
                 hoverStateEnabled={true}
                 showBorders={true}
-                selectedRowKeys={CustomerGridBoxValue.debtorId}
+                selectedRowKeys={CustomerGridBoxValue?.debtorId}
                 onSelectionChanged={CustomerDataGridOnSelectionChanged}
                 height="300px"
                 remoteOperations={{
@@ -227,23 +235,13 @@ const CashSales = () => {
         }
     }, []);
 
-    const handleSalesItemChange = (updatedData) => {
-        const totalAmount = updatedData.reduce((sum, item) => {
-            if (item.amount) {
-                return sum + item.amount
-            }
-            return sum;
-        }, 0);
-        setCurrentSalesTotal(totalAmount);
-    };
-
     const getNextCustomerCode = async () => {
         const newCusRes = await NewDebtor({
             companyId: companyId,
             userId: userId,
             id: userId,
         });
-        setNewCustomer({ id: newCusRes.data.debtorId, Code: newCusRes.data.debtorCode, Name: newCusRes.data.companyName })
+        setNewCustomer(newCusRes.data)
     };
 
     const handleNewCustomerModel = async () => {
@@ -251,37 +249,242 @@ const CashSales = () => {
         setShowCustomerModal(true)
     }
 
-    const handleSaveNewCustomer = async () => {
-        if (!newCustomer.Name.trim()) return;
-        const newCustomerRecord = {
-            id: newCustomer.id,
-            Code: newCustomer.Code,
-            Name: newCustomer.Name,
-        };
-        const actionData = {
-            companyId: companyId,
-            userId: userId,
-            id: userId,
-        };
-        const res = await SaveDebtor({
-            actionData: actionData,
-            debtorId: newCustomer.id,
-            debtorCode: newCustomer.Code,
-            companyName: newCustomer.Name,
-            isActive: true,
-        });
-        if (res.success) {
-            setCustomerGridBoxValue({ id: newCustomerRecord.id, Code: newCustomerRecord.Code, Name: newCustomerRecord.Name });
+    const handleCloseUpdateModal = async () => {
+        setNewCustomer(null);
+        setShowCustomerModal(false)
+    }
+
+    const onLookUpSelected = (newValue, rowData) => {
+        let data = newValue;
+        if (!data.cashSalesDetailId) {
+            data = { ...rowData, ...newValue }
         }
-        setNewCustomer({ id: "", Name: "", Code: "" })
-        setShowCustomerModal(false);
+        setCashSalesItem(prev => {
+            const exists = prev.find(record => record.cashSalesDetailId === data.cashSalesDetailId);
+            if (exists) {
+                return prev.map(record =>
+                    record.cashSalesDetailId === data.cashSalesDetailId ? { ...record, ...data } : record
+                );
+            } else {
+                return [...prev, data];
+            }
+        })
     };
 
-    const total = currentSalesTotal + parseFloat(rounding);
+    const handleAddNewRow = async () => {
+        try {
+            const res = await NewCashSalesDetail({});
+            if (res.success) {
+                const newRecords = res.data;
+                setCashSalesItem(prev => [...prev, newRecords]);
+            } else throw new Error(res.errorMessage || "Failed to add new Cash Sales Details");
+        } catch (error) {
+            setErrorModal({ title: "Failed to Add", message: error.message });
+        }
+    }
+
+    const handleEditRow = async (key, changedData) => {
+        setCashSalesItem(prev => {
+            return prev.map(record => {
+                if (record.cashSalesDetailId === key) {
+                    const updatedRecord = { ...record, ...changedData };
+
+                    if ('qty' in changedData || 'unitCost' in changedData || 'discount' in changedData || 'discountAmount' in changedData) {
+                        const qty = Number(updatedRecord.qty) || 0;
+                        const unitPrice = Number(updatedRecord.price) || 0;
+                        const isDiscByPercent = updatedRecord.discount;
+                        const discAmt = Number(updatedRecord.discountAmount || 0)
+                        const totalAmount = qty * unitPrice;
+                        updatedRecord.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
+                    }
+
+                    return updatedRecord;
+                }
+                return record;
+            });
+        });
+    };
+
+    useEffect(() => {
+        const total = cashSalesItem?.reduce((sum, item) => {
+            return sum + (Number(item.subTotal) || 0);
+        }, 0);
+
+        setCurrentSalesTotal(total);
+    }, [handleEditRow])
+
+    const handleRemoveRow = async (key) => {
+        setCashSalesItem(prev => prev.filter(record => record.cashSalesDetailId !== key));
+    }
+
+    const confirmAction = async () => {
+        try {
+            const res = await SaveCashSale({ ...confirmModal.data });
+            if (res.success) {
+                setNotifyModal({ isOpen: true, message: "Cash Sales added successfully!" });
+            } else throw new Error(res.errorMessage || "Failed to Add Cash Sales");
+        } catch (error) {
+            setErrorModal({ title: "Error", message: error.message });
+            await createNewCashSales()
+            setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
+            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
+            setCashSalesItem([]);
+            setCurrentSalesTotal(0);
+        }
+        if (confirmModal.action === "addPrint") {
+            console.log("print acknowledgement");
+        }
+        setConfirmModal({ isOpen: false, action: "", data: null });
+        await createNewCashSales()
+        setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
+        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
+        setCashSalesItem([]);
+        setCurrentSalesTotal(0);
+        return;
+    }
+
+    const handleSavePrint = () => {
+        if (cashSalesItem.length <= 0) {
+            return;
+        }
+        const formData = {
+            ...masterData,
+            isVoid: false,
+            debtorId: CustomerGridBoxValue?.id,
+            debtorName: CustomerGridBoxValue?.Name,
+            salesPersonUserID: SalesPersonGridBoxValue.id,
+            details: cashSalesItem.map((item) => ({
+                cashSalesDetailId: item.cashSalesDetailId ?? "",
+                itemId: item.itemId ?? "",
+                itemUOMId: item.itemUOMId ?? "",
+                description: item.description ?? "",
+                desc2: item.desc2 ?? "",
+                qty: item.qty ?? 0,
+                unitPrice: item.unitPrice ?? 0,
+                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discountAmount: item.discountAmount ?? 0,
+                subTotal: item.subTotal ?? 0,
+                classification: item.classification ?? ""
+            })),
+            roundingAdjustment: rounding ?? 0,
+            total: total,
+        }
+        setConfirmModal({
+            isOpen: true,
+            action: "addPrint",
+            data: formData,
+        })
+    }
+
+    const handleSave = () => {
+        if (cashSalesItem.length <= 0) {
+            return;
+        }
+        const formData = {
+            ...masterData,
+            isVoid: false,
+            debtorId: CustomerGridBoxValue?.id,
+            debtorName: CustomerGridBoxValue?.Name,
+            salesPersonUserID: SalesPersonGridBoxValue.id,
+            details: cashSalesItem.map((item) => ({
+                cashSalesDetailId: item.cashSalesDetailId ?? "",
+                itemId: item.itemId ?? "",
+                itemUOMId: item.itemUOMId ?? "",
+                description: item.description ?? "",
+                desc2: item.desc2 ?? "",
+                qty: item.qty ?? 0,
+                unitPrice: item.price ?? 0,
+                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discountAmount: item.discountAmount ?? 0,
+                subTotal: item.subTotal ?? 0,
+                classification: item.classification ?? ""
+            })),
+            roundingAdjustment: rounding ?? 0,
+            total: total,
+        }
+        setConfirmModal({
+            isOpen: true,
+            action: "add",
+            data: formData,
+        })
+    }
+
+    const confirmAddCustomerAction = async ({ action, data }) => {
+        setConfirmModal({ isOpen: false, action: null });
+        try {
+            const saveRes = await SaveDebtor({
+                actionData: data.actionData,
+                debtorId: data.debtorId,
+                debtorCode: data.debtorCode,
+                companyName: data.companyName,
+                isActive: data.isActive,
+                identityNo: data.identityNo,
+                dob: data.dob || null,
+                address: data.address,
+                remark: data.remark,
+                phone1: data.phone1,
+                phone2: data.phone2,
+                emailAddress: data.emailAddress,
+                medicalIsDiabetes: data.medicalIsDiabetes,
+                medicalIsHypertension: data.medicalIsHypertension,
+                medicalOthers: data.medicalOthers,
+                ocularIsSquint: data.ocularIsSquint,
+                ocularIsLazyEye: data.ocularIsLazyEye,
+                ocularHasSurgery: data.ocularHasSurgery,
+                ocularOthers: data.ocularOthers,
+            });
+            if (saveRes.success) {
+                setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
+                setNewCustomer(null);
+            } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
+
+        } catch (error) {
+            setErrorModal({ title: `Save Error`, message: error.message });
+        } finally {
+            showCustomerModal(false);
+        }
+    };
+
+
+    const cashSalesItemStore = new CustomStore({
+        key: "cashSalesDetailId",
+        load: async () => {
+            setSelectedItem(null)
+            return {
+                data: cashSalesItem ?? [],
+                totalCount: cashSalesItem?.length,
+            };
+        },
+        insert: async () => {
+            setSelectedItem(null)
+            return {
+                data: cashSalesItem ?? [],
+                totalCount: cashSalesItem?.length,
+            }
+        },
+        remove: async (key) => {
+            await handleRemoveRow(key)
+            return {
+                data: cashSalesItem ?? [],
+                totalCount: cashSalesItem?.length,
+            }
+        },
+        update: async (key, data) => {
+            await handleEditRow(key, data)
+            setSelectedItem(null)
+            return {
+                data: cashSalesItem ?? [],
+                totalCount: cashSalesItem?.length,
+            }
+        }
+    });
 
     return (
         <>
-        <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
+            <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
+            <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Goods Transit?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
+            <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
+
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <div className="items-center gap-1">
@@ -294,7 +497,7 @@ const CashSales = () => {
                                 <DropDownBox
                                     id="CustomerSelection"
                                     className="border rounded p-1 w-1/2 h-[34px]"
-                                    value={CustomerGridBoxValue.id}
+                                    value={CustomerGridBoxValue?.id || null}
                                     opened={isCustomerGridBoxOpened}
                                     openOnFieldClick={true}
                                     valueExpr='debtorId'
@@ -330,47 +533,17 @@ const CashSales = () => {
                     </div>
 
                     {showCustomerModal && (
-                        // <AddExpressCustomerModal/>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-                            <div className="bg-white p-6 rounded shadow-md w-96 space-y-4">
-                                <h2 className="text-lg font-semibold text-gray-800">Add Customer</h2>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-700">Code</label>
-                                        <input
-                                            type="text"
-                                            value={newCustomer.Code}
-                                            readOnly
-                                            className="text-sm w-full border rounded px-2 py-1 bg-gray-100 text-gray-600"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-700">Name</label>
-                                        <input
-                                            type="text"
-                                            value={newCustomer.Name}
-                                            onChange={(e) => setNewCustomer(prev => ({ ...prev, Name: e.target.value }))}
-                                            className="w-full border rounded px-2 py-1 text-sm bg-white text-secondary"
-                                            placeholder="Enter name"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end gap-2 mt-4">
-                                    <button
-                                        onClick={handleSaveNewCustomer}
-                                        className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
-                                    >
-                                        Save
-                                    </button>
-                                    <button
-                                        onClick={() => setShowCustomerModal(false)}
-                                        className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <AddCustomerModal
+                            selectedCustomer={newCustomer}
+                            isEdit={false}
+                            isView={false}
+                            isOpen={showCustomerModal}
+                            onConfirm={confirmAddCustomerAction}
+                            onError={setErrorModal}
+                            onClose={handleCloseUpdateModal}
+                            companyId={companyId}
+                            userId={userId}
+                        />
                     )}
 
 
@@ -383,6 +556,8 @@ const CashSales = () => {
                             rows={6}
                             className="border rounded p-1 w-full resize-none bg-white justify-self-end"
                             placeholder="Enter remarks…"
+                            onChange={e => setMasterData(prev => ({ ...prev, remark: e.target.value }))}
+                            value={masterData?.remark ?? ""}
                         />
                     </div>
                 </div>
@@ -395,17 +570,19 @@ const CashSales = () => {
                             name="refNo"
                             className="border rounded p-1 w-full bg-white h-[34px]"
                             placeholder="Ref No"
+                            onChange={e => setMasterData(prev => ({ ...prev, refNo: e.target.value }))}
+                            value={masterData?.refNo ?? ""}
                         />
                     </div>
                     <div className="flex flex-col gap-1 w-1/2">
                         <label htmlFor="date" className="font-medium text-secondary">Date</label>
                         <DatePicker
-                            selected={date}
+                            selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
                             id="SalesDate"
                             name="SalesDate"
                             dateFormat="dd-MM-yyyy"
                             className="border rounded p-1 w-full bg-white h-[34px]"
-                            onChange={e => setDate(e.toISOString().slice(0, 10))}
+                            onChange={e => setMasterData(prev => ({ ...prev, docDate: e.toISOString().slice(0, 10) }))}
                         />
 
                     </div>
@@ -435,8 +612,15 @@ const CashSales = () => {
             </div>
 
             <div className="mt-3 bg-white shadow rounded">
-                {/* <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} height={330} itemSource={itemStore} /> */}
-                <CashSalesItemDataGrid height={330} dataGridDataSource={SalesItemTableData} onSelectionChange={setSalesItemTableData}/>
+                <TransactionItemWithDiscountDataGrid
+                    className={"p-2"}
+                    customStore={cashSalesItemStore}
+                    gridRef={gridRef}
+                    onNew={handleAddNewRow}
+                    onSelect={onLookUpSelected}
+                    selectedItem={selectedItem}
+                    setSelectedItem={setSelectedItem}
+                />
             </div>
 
 
@@ -483,7 +667,7 @@ const CashSales = () => {
 
 
             </div>
-            <div className="flex flex-row place-content-between">
+            <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
                 <div className="flex flex-row">
                     <input
                         type="text"
@@ -498,13 +682,13 @@ const CashSales = () => {
 
                 <div className="w-ful flex flex-row justify-end">
                     <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
-                    onClick={()=> setCashSalesPayment(true)}>
+                        onClick={() => setCashSalesPayment(true)}>
                         Payment
                     </button>
-                    <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    <button onClick={handleSavePrint} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Save & Print
                     </button>
-                    <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]" onClick={() => console.log(CustomerGridBoxValue)}>
+                    <button onClick={handleSave} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Save
                     </button>
                 </div>
@@ -515,12 +699,13 @@ const CashSales = () => {
                     total={total}
                     companyId={companyId}
                     userId={userId}
-                    salesOrderId={cashSalesId}
+                    salesOrderId={masterData?.cashSalesId}
                     onError={setErrorModal}
                 />
             </div>
         </>
     )
+
 }
 
 export default CashSales;

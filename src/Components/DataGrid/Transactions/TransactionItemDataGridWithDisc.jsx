@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { TrashIcon } from "lucide-react";
 import CustomStore from 'devextreme/data/custom_store';
 import DataGrid, { Selection, Column, Paging, Editing, Scrolling, SearchPanel } from 'devextreme-react/data-grid';
@@ -14,12 +14,10 @@ const ItemGridColumns = [
     { dataField: "balQty", caption: "Bal Qty", width: "10%" }
 ];
 
-const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSelect, onNew, onDelete, loading, onEdit }) => {
+const TransactionItemWithDiscountDataGrid = ({ className, customStore, gridRef, onSelect, onNew, loading, selectedItem, setSelectedItem, setItemGroup, setActiveItem }) => {
     const companyId = sessionStorage.getItem("companyId");
-    const goodsTransitItemDataGridRef = useRef(null);
 
     const [currentRow, setCurrentRow] = useState(null);
-    const [selectedItem, setSelectedItem] = useState(null);
     const [dropDownBoxOpen, setDropDownBoxOpen] = useState(false);
 
     const itemStore = new CustomStore({
@@ -47,42 +45,8 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
                 userId,
                 id: key
             });
-            console.log(res.data)
             return res.data;
         },
-    });
-
-    const goodsTransitItemStore = new CustomStore({
-        key: "goodsTransitDetailId",
-        load: async () => {
-            setSelectedItem(null)
-            return {
-                data: dataRecords ?? [],
-                totalCount: totalRecords,
-            };
-        },
-        insert: async () => {
-            setSelectedItem(null)
-            return {
-                data: dataRecords ?? [],
-                totalCount: totalRecords,
-            }
-        },
-        remove: async (key) => {
-            await onDelete(key)
-            return {
-                data: dataRecords ?? [],
-                totalCount: totalRecords,
-            }
-        },
-        update: async (key, data) => {
-            await onEdit(key, data)
-            setSelectedItem(null)
-            return {
-                data: dataRecords ?? [],
-                totalCount: totalRecords,
-            }
-        }
     });
 
     const handleItemLookupValueChanged = useCallback((e) => {
@@ -137,24 +101,26 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
     }, [selectedItem, handleItemLookupValueChanged])
 
     const handleOnCellClick = useCallback((e) => {
-        const grid = goodsTransitItemDataGridRef.current?.instance;
+        const grid = gridRef.current?.instance;
         if (e.rowType === "data" && grid) {
+            if(setItemGroup){setItemGroup(e.data.isNormalItem ?? true)}
+            if(setActiveItem){setActiveItem(e.data)};
             setCurrentRow(e.data);
-            grid.editCell(e.rowIndex, e.column.dataField); // Start editing cell directly
+            grid.editCell(e.rowIndex, e.column.dataField);
         }
-    },[])
+    }, [])
 
     return (
         <StandardDataGridComponent
-            ref={goodsTransitItemDataGridRef}
-            height={440}
-            keyExpr="goodsTransitDetailId"
-            dataSource={goodsTransitItemStore}
+            ref={gridRef}
+            height={300}
+            keyExpr={customStore.key}
+            dataSource={customStore}
             className={className}
             searchPanel={true}
-            pager={true}
+            pager={false}
             columnChooser={false}
-            pageSizeSelector={true}
+            pageSizeSelector={false}
             showBorders={true}
             allowColumnResizing={false}
             allowColumnReordering={false}
@@ -164,7 +130,7 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
                 e.cancel = true
                 setSelectedItem(null)
                 await onNew();
-                const grid = goodsTransitItemDataGridRef.current?.instance;
+                const grid = gridRef.current?.instance;
                 if (grid) {
                     grid.cancelEditData();
                     setTimeout(() => {
@@ -233,14 +199,14 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
                     );
                 }}
             />
-            <Column 
-                dataField="unitCost" 
-                caption="Unit Cost" 
-                width={"80px"} 
+            <Column
+                dataField="price"
+                caption="Unit Price"
+                width={"80px"}
                 editCellRender={({ data, setValue }) => {
                     return (
                         <NumberBox
-                            value={data?.unitCost}
+                            value={data?.price}
                             min={0}
                             showSpinButtons={true}
                             inputAttr={{ 'aria-label': 'Quantity' }}
@@ -251,6 +217,15 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
                     );
                 }}
             />
+            <Column
+                value={false}
+                dataField="discount"
+                caption="Discount %"
+                dataType="boolean"
+                width={"90px"}
+
+            />
+            <Column dataField="discountAmount" caption="Disc Amnt" dataType="number" value={0} width={"80px"} />
             <Column dataField="subTotal" caption="Amount" dataType="number" width={"80px"} />
             <Column
                 caption="Action"
@@ -260,9 +235,9 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
                         <div className="flex flex-row justify-center space-x-2">
                             <div className=" text-red-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
-                                    e.stopPropagation(); 
+                                    e.stopPropagation();
                                     const rowIndex = cellData.rowIndex;
-                                    goodsTransitItemDataGridRef.current.instance.deleteRow(rowIndex);
+                                    gridRef.current.instance.deleteRow(rowIndex);
                                 }}>
                                 <TrashIcon size={20} />
                             </div>
@@ -275,4 +250,4 @@ const GoodsTransitItemDataGrid = ({ className, dataRecords, totalRecords, onSele
     );
 }
 
-export default GoodsTransitItemDataGrid;
+export default TransactionItemWithDiscountDataGrid;
