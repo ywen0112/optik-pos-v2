@@ -14,13 +14,13 @@
     const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: '' });
     const [paymentDetails, setPaymentDetails] = useState({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
     const [focusedField, setFocusedField] = useState(null);
+    const [rawAmountDigits, setRawAmountDigits] = useState('');
   
     useEffect(() => {
       if (isOpen) {
         fetchPaymentMethods();
         setSelectedPayments([]);
         createNewSalesOrderPayment();
-        setPaymentDetails({refno: '', ccno: '', approvalcode: '', remark: '', amount: ''});
         setActivePaymentMethod(null);
       }
     }, [isOpen]);
@@ -47,6 +47,8 @@
       try {
         const response = await NewSalesOrderPayment({ companyId, userId, id: salesOrderId });
         setSalesOrderPaymentData(response.data);
+        setPaymentDetails({refno: '', ccno: '', approvalcode: '', remark: '', amount: ''});
+        setRawAmountDigits('');
       } catch (error) {
         onError({ title: 'New Error', message: error.message });
       }
@@ -65,7 +67,7 @@
         if (response?.success && response.data) {
           setSelectedPayments(prev => [...prev, {
             ...method,
-            amount: '0.00',
+            amount: '',
             salesOrderPaymentDetailId: response.data.salesOrderPaymentDetailId,
             reference: '',
             refno: '',
@@ -74,6 +76,9 @@
             remark: ''
           }]);
           setActivePaymentMethod(method);
+          setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
+          setRawAmountDigits('');
+          setFocusedField('amount');
         } else {
           throw new Error(response?.errorMessage);
         }
@@ -83,9 +88,20 @@
     };
   
     const removePaymentMethod = (index) => {
-      setSelectedPayments(prev => prev.filter((_, i) => i !== index));
+      setSelectedPayments(prev => {
+        const removed = prev[index];
+        const updated = prev.filter((_, i) => i !== index);
+    
+        if (activePaymentMethod?.paymentMethodId === removed.paymentMethodId) {
+          setActivePaymentMethod(null);
+          setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
+          setRawAmountDigits('');
+        }
+    
+        return updated;
+      });
     };
-  
+    
     const calculateBalance = () => {
       const totalPayments = selectedPayments.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
       return Math.abs(total - totalPayments).toFixed(2);
@@ -114,6 +130,8 @@
           }))
         };
         await SaveSalesOrderPayment(payload);
+        setFocusedField(null); 
+        setRawAmountDigits('');
         setNotifyModal({ isOpen: true, message: 'Payment made successfully!' });
       } catch (error) {
         onError({ title: 'Save Error', message: error.message });
@@ -132,30 +150,38 @@
         updated[selectedIndex] = { ...updated[selectedIndex], ...paymentDetails };
         setSelectedPayments(updated);
         setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
+        setRawAmountDigits('');
         setActivePaymentMethod(null);
       }
     };
 
+    const formatRawAmount = (digits) => {
+      const cleaned = digits.replace(/\D/g, ''); 
+      const num = cleaned.padStart(3, '0'); 
+      const intPart = num.slice(0, -2).replace(/^0+/, '') || '0';
+      const decimalPart = num.slice(-2);
+      return `${intPart}.${decimalPart}`;
+    };
+
     const handleAmountChange = (e) => {
-      let value = e.target.value;
+      const input = e.nativeEvent.data;
+      if (!input) return; 
+      if (!/^\d$/.test(input)) return;
     
-      if (value === '' || value === '.') {
-        setPaymentDetails(prev => ({ ...prev, amount: value }));
-        return;
-      }
-    
-      if (value.includes('.')) {
-        const [integerPart, decimalPart] = value.split('.');
-        if (decimalPart.length > 2) {
-          value = `${integerPart}.${decimalPart.slice(0, 2)}`;
-        }
-      }
-    
-      if (!/^\d*(\.\d{0,2})?$/.test(value)) return;
-    
-      setPaymentDetails(prev => ({ ...prev, amount: value }));
+      const updated = rawAmountDigits + input;
+      setRawAmountDigits(updated);
+      setPaymentDetails(prev => ({ ...prev, amount: formatRawAmount(updated) }));
     };
   
+    const handleAmountKeyDown = (e) => {
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        const updated = rawAmountDigits.slice(0, -1);
+        setRawAmountDigits(updated);
+        setPaymentDetails(prev => ({ ...prev, amount: formatRawAmount(updated) }));
+      }
+    };
+
     const renderCashFields = () => (
       <div className="space-y-4">
         <div className="flex items-center gap-1">
@@ -163,9 +189,11 @@
           <input
             type="text"
             placeholder='0.00'
-            value={paymentDetails.amount}
+            value={formatRawAmount(rawAmountDigits)}
             onChange={handleAmountChange}
+            onKeyDown={handleAmountKeyDown}
             onFocus={() => setFocusedField('amount')}
+            autoFocus={focusedField === 'amount'} 
             className="border p-1 h-[40px] flex-1 text-right"
           />
         </div>
@@ -207,6 +235,7 @@
             value={paymentDetails.amount}
             onChange={handleAmountChange}
             onFocus={() => setFocusedField('amount')}
+            autoFocus={focusedField === 'amount'} 
             className="border p-1 h-[40px] flex-1 text-right"
           />
         </div>
@@ -227,27 +256,20 @@
     };
   
     const handleNumberPadInput = (input) => {
-      if (!focusedField) return;
+      if (focusedField !== 'amount') return;
     
-      setPaymentDetails(prev => {
-        let current = prev[focusedField] ?? '';
+      if (input === 'backspace') {
+        const updated = rawAmountDigits.slice(0, -1);
+        setRawAmountDigits(updated);
+        setPaymentDetails(prev => ({ ...prev, amount: formatRawAmount(updated) }));
+        return;
+      }
     
-        if (input === 'backspace') {
-          return { ...prev, [focusedField]: current.slice(0, -1) };
-        }
+      if (!/^\d$/.test(input)) return;
     
-        if (input === '.' && current.includes('.')) return prev;
-        if (input === '.' && focusedField !== 'amount') return prev; 
-    
-        // Restrict to 2 decimal places for 'amount'
-        if (focusedField === 'amount') {
-          const [intPart, decPart] = current.split('.');
-          if (decPart?.length >= 2 && input !== 'backspace') return prev;
-        }
-    
-        const updated = current + input.toString();
-        return { ...prev, [focusedField]: updated };
-      });
+      const updated = rawAmountDigits + input;
+      setRawAmountDigits(updated);
+      setPaymentDetails(prev => ({ ...prev, amount: formatRawAmount(updated) }));
     };
 
     if (!isOpen) return null;
@@ -292,6 +314,8 @@
                                   remark: item.remark || '',
                                   amount: item.amount || ''
                                 });
+                                setFocusedField('amount');
+                                setRawAmountDigits(item.amount.replace('.', '') || '');
                               }}
                             >
                             <label className="flex-1">{item.paymentMethodCode}</label>
@@ -354,6 +378,7 @@
                                 if (!isSelected(method.paymentMethodId)) {
                                   addPaymentMethod(method);
                                 }
+                                setFocusedField('amount');
                               }}
                             >
                               {method.paymentMethodCode}
@@ -380,7 +405,7 @@
               
                 <div className="flex-1 border mt-4 p-4 flex flex-col justify-center items-center">
                   <div className="grid grid-cols-3 gap-4 w-full max-w-[300px]">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'backspace', 0, '.'].map((value, index) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'backspace', 0].map((value, index) => (
                     <button
                       key={index}
                       className="h-16 text-xl font-semibold border rounded flex items-center justify-center hover:bg-gray-100"
