@@ -8,22 +8,6 @@ import StandardDataGridComponent from "../BaseDataGrid";
 const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick, fromDate, toDate, setFromDate, setToDate }) => {
   const historyRXDataGridRef = useRef(null);
   const [loading, setLoading] = useState(false);
-  
-  const formatDateLocalFrom = (date) => {
-    if (!date) return null;
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${year}-${month}-${day}T00:00:00`;
-  };
-
-  const formatDateLocalTo = (date) => {
-    if (!date) return null;
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${year}-${month}-${day}T23:59:59`;
-  };
 
   const handleDateChange = () => {
     if (historyRXDataGridRef.current) {

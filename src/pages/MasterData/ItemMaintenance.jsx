@@ -90,6 +90,7 @@ const ItemMaintenance = () => {
                     itemCode: data.itemCode,
                     isActive: data.isActive,
                     description: data.description,
+                    classification: data.classification,
                     desc2: data.desc2,
                     itemGroupId: data.itemGroupId,
                     itemTypeId: data.itemTypeId,

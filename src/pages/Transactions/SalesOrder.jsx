@@ -19,7 +19,7 @@ import { GetSpecificUser } from "../../api/userapi";
 import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGridWithDisc";
 import { SaveDebtor, NewDebtor, GetDebtor } from "../../api/maintenanceapi";
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
-import { NewSpectacles, NewContactLens } from "../../api/eyepowerapi";
+import { NewSpectacles, NewContactLens, SaveContactLensProfile, SaveSpectacles } from "../../api/eyepowerapi";
 
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
@@ -271,7 +271,7 @@ const SalesOrder = () => {
         () => (
             <DataGrid
                 dataSource={userStore}
-                columns={CustomerGridColumns}
+                columns={SalesPersonGridColumns}
                 hoverStateEnabled={true}
                 showBorders={false}
                 selectedRowKeys={SalesPersonGridBoxValue.id}
@@ -469,15 +469,30 @@ const SalesOrder = () => {
         }
         setSalesItem(prev => {
             const exists = prev.find(record => record.salesOrderDetailId === data.salesOrderDetailId);
+
+            const updatedData = { ...data };
+
+            const qty = Number(updatedData.qty) || 0;
+            const unitPrice = Number(updatedData.price) || 0;
+            const isDiscByPercent = updatedData.discount;
+            const discAmt = Number(updatedData.discountAmount) || 0;
+            const totalAmount = qty * unitPrice;
+
+            updatedData.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
+
             if (exists) {
-                setCurrentActiveRow({ ...exists, ...data })
+                setCurrentActiveRow({ ...exists, ...updatedData });
+
                 return prev.map(record =>
-                    record.salesOrderDetailId === data.salesOrderDetailId ? { ...record, ...data } : record
+                    record.salesOrderDetailId === data.salesOrderDetailId
+                        ? { ...record, ...updatedData }
+                        : record
                 );
             } else {
-                return [...prev, data];
+                return [...prev, updatedData];
             }
-        })
+        });
+
     };
 
     const handleAddNewRow = async () => {
@@ -525,12 +540,18 @@ const SalesOrder = () => {
         }, 0);
 
         setCurrentTotal(total);
-    }, [handleEditRow])
+    }, [handleEditRow, salesItem])
 
     const confirmAction = async () => {
         try {
-            const res = await SaveCashSale({ ...confirmModal.data });
+            const res = await SaveSalesOrder({ ...confirmModal.data });
             if (res.success) {
+                if(eyePowerContactLensFormData.length > 0){
+                    eyePowerContactLensFormData.forEach(async eyePower => await SaveContactLensProfile({...eyePower}));
+                }
+                if(eyePowerSpectaclesFormData.length > 0){
+                    eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({...eyePower}));
+                }
                 setNotifyModal({ isOpen: true, message: "Cash Sales added successfully!" });
             } else throw new Error(res.errorMessage || "Failed to Add Cash Sales");
         } catch (error) {
@@ -540,6 +561,8 @@ const SalesOrder = () => {
             setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
             setPractionerGridBoxValue({ id: "", Code: "", Name: "" })
             setSalesItem([]);
+            setEyePowerContactLensFormData([]);
+            setEyePowerSpectaclesFormData([]);
             setCurrentTotal(0);
         }
         if (confirmModal.action === "addPrint") {
@@ -550,6 +573,8 @@ const SalesOrder = () => {
         setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
         setPractionerGridBoxValue({ id: "", Code: "", Name: "" })
+        setEyePowerContactLensFormData([]);
+        setEyePowerSpectaclesFormData([]);
         setSalesItem([]);
         setCurrentTotal(0);
         return;
@@ -657,8 +682,6 @@ const SalesOrder = () => {
     });
 
     useEffect(() => { }, [setIsNormalItem])
-
-
 
     //Eye Power
     const [actualRX, setActualRX] = useState({
@@ -775,6 +798,114 @@ const SalesOrder = () => {
     };
 
     useEffect(() => {
+        if (!currentActiveRow) return;
+
+        let currentItemEyePower;
+        let prescribedRX = {};
+        let actualRX = {};
+
+        if (currentActiveRow?.isSpectacles) {
+            currentItemEyePower = eyePowerSpectaclesFormData.find(
+                item => item.cashSalesDetailId === currentActiveRow.salesOrderDetailId
+            );
+            prescribedRX = currentItemEyePower?.prescribedRXSpectacles ?? {};
+            actualRX = currentItemEyePower?.actualRXSpectacles ?? {};
+        } else if (currentActiveRow?.isContactLens) {
+            currentItemEyePower = eyePowerContactLensFormData.find(
+                item => item.cashSalesDetailId === currentActiveRow.salesOrderDetailId
+            );
+            prescribedRX = currentItemEyePower?.prescribedRXContactLens ?? {};
+            actualRX = currentItemEyePower?.actualRXContactLens ?? {};
+        }
+
+        setPrescribedRX({
+            dominantEye: prescribedRX?.dominantEye ?? "",
+            opticalHeight: Number(prescribedRX?.opticalHeight ?? 0),
+            segmentHeight: Number(prescribedRX?.segmentHeight ?? 0),
+        });
+
+        setActualRX({
+            dominantEye: actualRX?.dominantEye ?? "",
+            opticalHeight: Number(actualRX?.opticalHeight ?? 0),
+            segmentHeight: Number(actualRX?.segmentHeight ?? 0),
+        });
+
+        setPrescribedDistanceData({
+            l_D_ADD: prescribedRX?.l_D_ADD ?? null,
+            l_D_AXIS: prescribedRX?.l_D_AXIS ?? null,
+            l_D_CYL: prescribedRX?.l_D_CYL ?? null,
+            l_D_PD: prescribedRX?.l_D_PD ?? null,
+            l_D_PRISM: prescribedRX?.l_D_PRISM ?? null,
+            l_D_Remark: prescribedRX?.l_D_Remark ?? "",
+            l_D_SPH: prescribedRX?.l_D_SPH ?? null,
+            l_D_VA: prescribedRX?.l_D_VA ?? null,
+            r_D_ADD: prescribedRX?.r_D_ADD ?? null,
+            r_D_AXIS: prescribedRX?.r_D_AXIS ?? null,
+            r_D_CYL: prescribedRX?.r_D_CYL ?? null,
+            r_D_PRISM: prescribedRX?.r_D_PRISM ?? null,
+            r_D_Remark: prescribedRX?.r_D_Remark ?? "",
+            r_D_SPH: prescribedRX?.r_D_SPH ?? null,
+            r_D_VA: prescribedRX?.r_D_VA ?? null,
+        });
+
+        setActualDistanceData({
+            l_D_ADD: actualRX?.l_D_ADD ?? null,
+            l_D_AXIS: actualRX?.l_D_AXIS ?? null,
+            l_D_CYL: actualRX?.l_D_CYL ?? null,
+            l_D_PD: actualRX?.l_D_PD ?? null,
+            l_D_PRISM: actualRX?.l_D_PRISM ?? null,
+            l_D_Remark: actualRX?.l_D_Remark ?? "",
+            l_D_SPH: actualRX?.l_D_SPH ?? null,
+            l_D_VA: actualRX?.l_D_VA ?? null,
+            r_D_ADD: actualRX?.r_D_ADD ?? null,
+            r_D_AXIS: actualRX?.r_D_AXIS ?? null,
+            r_D_CYL: actualRX?.r_D_CYL ?? null,
+            r_D_PRISM: actualRX?.r_D_PRISM ?? null,
+            r_D_Remark: actualRX?.r_D_Remark ?? "",
+            r_D_SPH: actualRX?.r_D_SPH ?? null,
+            r_D_VA: actualRX?.r_D_VA ?? null,
+        });
+
+        setPrescribedReadingData({
+            l_R_ADD: prescribedRX?.l_R_ADD ?? null,
+            l_R_AXIS: prescribedRX?.l_R_AXIS ?? null,
+            l_R_CYL: prescribedRX?.l_R_CYL ?? null,
+            l_R_PD: prescribedRX?.l_R_PD ?? null,
+            l_R_PRISM: prescribedRX?.l_R_PRISM ?? null,
+            l_R_Remark: prescribedRX?.l_R_Remark ?? "",
+            l_R_SPH: prescribedRX?.l_R_SPH ?? null,
+            l_R_VA: prescribedRX?.l_R_VA ?? null,
+            r_R_ADD: prescribedRX?.r_R_ADD ?? null,
+            r_R_AXIS: prescribedRX?.r_R_AXIS ?? null,
+            r_R_CYL: prescribedRX?.r_R_CYL ?? null,
+            r_R_PRISM: prescribedRX?.r_R_PRISM ?? null,
+            r_R_Remark: prescribedRX?.r_R_Remark ?? "",
+            r_R_SPH: prescribedRX?.r_R_SPH ?? null,
+            r_R_VA: prescribedRX?.r_R_VA ?? null,
+        });
+
+        setActualReadingData({
+            l_R_ADD: actualRX?.l_R_ADD ?? null,
+            l_R_AXIS: actualRX?.l_R_AXIS ?? null,
+            l_R_CYL: actualRX?.l_R_CYL ?? null,
+            l_R_PD: actualRX?.l_R_PD ?? null,
+            l_R_PRISM: actualRX?.l_R_PRISM ?? null,
+            l_R_Remark: actualRX?.l_R_Remark ?? "",
+            l_R_SPH: actualRX?.l_R_SPH ?? null,
+            l_R_VA: actualRX?.l_R_VA ?? null,
+            r_R_ADD: actualRX?.r_R_ADD ?? null,
+            r_R_AXIS: actualRX?.r_R_AXIS ?? null,
+            r_R_CYL: actualRX?.r_R_CYL ?? null,
+            r_R_PRISM: actualRX?.r_R_PRISM ?? null,
+            r_R_Remark: actualRX?.r_R_Remark ?? "",
+            r_R_SPH: actualRX?.r_R_SPH ?? null,
+            r_R_VA: actualRX?.r_R_VA ?? null,
+        });
+
+    }, [currentActiveRow]);
+
+
+    useEffect(() => {
         let mergedData = {}
         if (currentActiveRow?.isSpectacles) {
             mergedData = {
@@ -833,7 +964,7 @@ const SalesOrder = () => {
         actualDistanceData,
     ]);
 
-    
+
 
 
     const getRxData = () => {
@@ -857,8 +988,6 @@ const SalesOrder = () => {
             [`${eye}_${mode}_${field}`]: value
         }));
     };
-
-
 
     const handleRemoveRow = async (key) => {
         setSalesItem(prev => prev.filter(record => record.salesOrderDetailId !== key));
@@ -950,7 +1079,27 @@ const SalesOrder = () => {
             <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Goods Transit?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
             <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
+            <ConfirmationModal
+                isOpen={showCopyModal}
+                title="Copy RX Data"
+                message={`This will copy all RX data from "${activeRxTab}" to the other tab. Continue?`}
+                onConfirm={handleCopyRxdata}
+                onCancel={() => setShowCopyModal(false)}
+            />
 
+            {showCustomerModal && (
+                <AddCustomerModal
+                    selectedCustomer={newCustomer}
+                    isEdit={false}
+                    isView={false}
+                    isOpen={showCustomerModal}
+                    onConfirm={confirmAddCustomerAction}
+                    onError={setErrorModal}
+                    onClose={handleCloseUpdateModal}
+                    companyId={companyId}
+                    userId={userId}
+                />
+            )}
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <div className="items-center gap-1">
@@ -998,19 +1147,7 @@ const SalesOrder = () => {
                         </div>
                     </div>
 
-                    {showCustomerModal && (
-                        <AddCustomerModal
-                            selectedCustomer={newCustomer}
-                            isEdit={false}
-                            isView={false}
-                            isOpen={showCustomerModal}
-                            onConfirm={confirmAddCustomerAction}
-                            onError={setErrorModal}
-                            onClose={handleCloseUpdateModal}
-                            companyId={companyId}
-                            userId={userId}
-                        />
-                    )}
+
 
 
                     <div className="items-start gap-1">
@@ -1181,13 +1318,7 @@ const SalesOrder = () => {
                     ))}
                 </div>
 
-                <ConfirmationModal
-                    isOpen={showCopyModal}
-                    title="Copy RX Data"
-                    message={`This will copy all RX data from "${activeRxTab}" to the other tab. Continue?`}
-                    onConfirm={handleCopyRxdata}
-                    onCancel={() => setShowCopyModal(false)}
-                />
+
 
                 <div className="grid grid-cols-[7%,15%,7%,15%,20%,auto] items-center gap-3 w-full">
                     <label className={activeRxTab === "Prescribed RX" ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary"}>Optical Height</label>
@@ -1374,7 +1505,7 @@ const SalesOrder = () => {
 
 
             </div>
-            <div className="flex flex-row place-content-between">
+            <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
                 <div className="flex flex-row">
                     <input
                         type="text"
@@ -1396,10 +1527,10 @@ const SalesOrder = () => {
                         onClick={() => setSalesOrderPayment(true)}>
                         Payment
                     </button>
-                    <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    <button onClick={handleSavePrint} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Save & Print
                     </button>
-                    <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    <button onClick={handleSave} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Save
                     </button>
                 </div>

@@ -112,7 +112,7 @@ const TransactionItemDataGrid = ({ className, customStore, gridRef, onSelect, on
     return (
         <StandardDataGridComponent
             ref={gridRef}
-            height={440}
+            height={400}
             keyExpr={customStore.key}
             dataSource={customStore}
             className={className}

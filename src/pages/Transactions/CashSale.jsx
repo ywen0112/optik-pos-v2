@@ -612,7 +612,6 @@ const CashSales = () => {
             </div>
 
             <div className="mt-3 bg-white shadow rounded">
-                {/* <SalesOrderItemTable data={SalesItemTableData} onDataChange={handleSalesItemChange} height={330} itemSource={itemStore} /> */}
                 <TransactionItemWithDiscountDataGrid
                     className={"p-2"}
                     customStore={cashSalesItemStore}
@@ -668,7 +667,7 @@ const CashSales = () => {
 
 
             </div>
-            <div className="flex flex-row place-content-between">
+            <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
                 <div className="flex flex-row">
                     <input
                         type="text"

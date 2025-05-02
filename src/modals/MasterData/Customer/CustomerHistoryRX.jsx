@@ -26,7 +26,6 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
   const lensFields = ["SPH", "CYL", "AXIS", "BC", "DIA", "ADD"];
 
   const handleRowClick = (e) => {
-    console.log(e.data)
     setSelectedRX(e.data);
   };
 
@@ -261,7 +260,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
             )}
 
             {/* Contact Lens Section */}
-            {!selectedRX?.type === "Spectacles" && (<div className="pt-4 border-t">
+            {selectedRX?.type === "ContactLens" && (<div className="pt-4 border-t">
               <div className="text-center">
                 <h5 className="font-semibold mb-4">Contact Lens</h5>
               </div>

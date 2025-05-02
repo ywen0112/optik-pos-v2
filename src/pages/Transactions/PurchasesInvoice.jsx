@@ -473,7 +473,7 @@ const PurchaseInvoice = () => {
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
       <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Purchase Invoice?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
-
+      
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
           <div className="items-center gap-1">
@@ -624,7 +624,7 @@ const PurchaseInvoice = () => {
         />
       </div>
 
-      <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4">
+      <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4 overflow-y-auto">
         <div className="w-full grid grid-cols-2 gap-6 items-start text-sm text-secondary font-medium">
 
 
@@ -666,7 +666,7 @@ const PurchaseInvoice = () => {
 
 
       </div>
-      <div className="flex flex-row place-content-between">
+      <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
         <div className="flex flex-row">
           <input
             type="text"

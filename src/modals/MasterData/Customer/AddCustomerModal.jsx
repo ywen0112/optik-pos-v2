@@ -345,11 +345,11 @@ const AddCustomerModal = ({
 
                 <div className="overflow-y-auto flex-1 mt-4 h-full">
                     {activeTab === "General" && (
-                        <CustomerGeneral debtorFormData={debtorFormData} setDebtorFormData={setDebtorFormData} />
+                        <CustomerGeneral debtorFormData={debtorFormData} setDebtorFormData={setDebtorFormData} isView={isView}/>
                     )}
 
                     {activeTab === "Medical Info" && (
-                        <CustomerMedicalInfo medicalInfoData={medicalInfoData} setMedicalInfoData={setMedicalInfoData} />
+                        <CustomerMedicalInfo medicalInfoData={medicalInfoData} setMedicalInfoData={setMedicalInfoData} isView={isView}/>
                     )}
 
                     {activeTab === "Latest RX" && (isEdit || isView) && (

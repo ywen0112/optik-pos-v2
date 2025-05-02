@@ -1,4 +1,4 @@
-const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData }) => {
+const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData, isView }) => {
     return (
         <div className="w-full h-full overflow-y-auto border rounded p-4">
             <div className="mt-2">
@@ -6,6 +6,7 @@ const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData }) => {
                 <div className="grid grid-cols-4 gap-1 mb-2">
                     <label className="flex items-center space-x-2">
                         <input
+                            disabled={isView}
                             type="checkbox"
                             checked={medicalInfoData.medicalIsDiabetes}
                             className="h-[47px]"
@@ -17,6 +18,7 @@ const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData }) => {
                     </label>
                     <label className="flex items-center space-x-2">
                         <input
+                            disabled={isView}
                             type="checkbox"
                             className="h-[47px]"
                             checked={medicalInfoData.medicalIsHypertension}
@@ -30,6 +32,7 @@ const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData }) => {
                 <div className="col-span-1 mt-2">
                     <label className="block mb-2">Others</label>
                     <input
+                        readOnly={isView}
                         type="text"
                         className="mr-2 border w-full h-[40px] px-2"
                         placeholder="Others"
@@ -46,6 +49,7 @@ const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData }) => {
                 <div className="grid grid-cols-4 gap-1 mb-2">
                     <label className="flex items-center space-x-2">
                         <input
+                            disabled={isView}
                             type="checkbox"
                             className="h-[47px]"
                             checked={medicalInfoData.ocularIsSquint}
@@ -57,6 +61,7 @@ const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData }) => {
                     </label>
                     <label className="flex items-center space-x-2">
                         <input
+                            disabled={isView}
                             type="checkbox"
                             className="h-[47px]"
                             checked={medicalInfoData.ocularIsLazyEye}
@@ -68,6 +73,7 @@ const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData }) => {
                     </label>
                     <label className="flex items-center space-x-2">
                         <input
+                            disabled={isView}
                             type="checkbox"
                             className="h-[47px]"
                             checked={medicalInfoData.ocularHasSurgery}
@@ -81,6 +87,7 @@ const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData }) => {
                 <div className="col-span-1 mt-2">
                     <label className="block mb-2">Others</label>
                     <input
+                        readOnly={isView}
                         type="text"
                         className="mr-2 border w-full h-[40px] px-2"
                         placeholder="Others"

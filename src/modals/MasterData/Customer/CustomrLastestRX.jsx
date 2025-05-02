@@ -7,8 +7,17 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
   const specFields = ['SPH', 'CYL', 'AXIS', 'VA', 'PRISM', 'ADD', 'PD'];
   const lensFields = ['SPH', 'CYL', 'AXIS', 'BC', 'DIA', 'ADD'];
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  };
+
   return (
-    <div className="w-full h-[75vh] overflow-y-auto border rounded p-4">
+    <div className="w-full h-full overflow-y-auto border rounded p-4">
       {/* Spectacles Section */}
       <div className="border w-full mt-4 p-2">
         <div className="mb-4">
@@ -21,7 +30,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
             type="text"
             readOnly
             className="col-span-2 border px-2 h-[40px] ml-2 "
-            value={latesSpecRXData.docDate}
+            value={formatDate(latesSpecRXData.docDate)}
           />
 
           <div className="grid grid-cols-4 gap-1 mt-4">
@@ -141,7 +150,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
             type="text"
             readOnly
             className="col-span-2 border px-2 h-[40px] ml-2 "
-            value={latestLensRXData.docDate}
+            value={formatDate(latestLensRXData.docDate)}
           />
 
           {/* Tabs for Lens */}

@@ -113,7 +113,7 @@ const TransactionItemWithDiscountDataGrid = ({ className, customStore, gridRef, 
     return (
         <StandardDataGridComponent
             ref={gridRef}
-            height={440}
+            height={300}
             keyExpr={customStore.key}
             dataSource={customStore}
             className={className}

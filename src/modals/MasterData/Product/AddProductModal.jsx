@@ -14,6 +14,7 @@ import { GetItemGroup, GetItemType } from '../../../api/maintenanceapi';
 
 const productGroupGridBoxDisplayExpr = (item) => item && `${item.itemGroupCode}-${item.description}`
 const productTypeGridBoxDisplayExpr = (item) => item && `${item.itemTypeCode}-${item.description}`
+const productClassificationGridBoxDisplayExpr = (item) => item && `${item.code}-${item.description}`
 
 
 const UpdateProductModal = ({
@@ -30,6 +31,7 @@ const UpdateProductModal = ({
         setFormData(null);
         setProductGroup(null);
         setProductType(null);
+        setClassification(null)
         onClose();
     }
 
@@ -38,6 +40,7 @@ const UpdateProductModal = ({
             setFormData(selectedItem);
             setProductGroup({ itemGroupId: selectedItem.itemGroupId });
             setProductType({ itemTypeId: selectedItem.itemTypeId });
+            setClassification({code: selectedItem.classification});
         }
     }, [isOpen, selectedItem, isEdit]);
 
@@ -46,7 +49,9 @@ const UpdateProductModal = ({
     const [productType, setProductType] = useState({ itemTypeId: null, itemTypeCode: "", description: "" });
     const [isTypeBoxOpened, setIsTypeBoxOpened] = useState(false);
     const [productGroup, setProductGroup] = useState({ itemGroupId: null, itemGroupCode: "", description: "" });
+    const [classification, setClassification] = useState({code: "", description: ""})
     const [isGroupBoxOpened, setIsGroupBoxOpened] = useState(false);
+    const [isClassificationBoxOpened, setIsClassificationBoxOpened] = useState(false);
     const [productMinPrice, setProductMinPrice] = useState(null);
     const [productCost, setProductCost] = useState(null);
     const [hasCommission, setHasCommission] = useState(false);
@@ -93,7 +98,7 @@ const UpdateProductModal = ({
             const params = {
                 keyword: keyword || "",
                 offset: loadOptions.skip,
-                limit: 5,
+                limit: loadOptions.take,
                 type: "item_type",
                 companyId,
             };
@@ -112,6 +117,86 @@ const UpdateProductModal = ({
             return res.data;
         }
     })
+
+    const classificationStore = new CustomStore({
+        key: "code",
+        load: async (loadOptions) => {
+            const filter = loadOptions.filter;
+            let keyword = filter?.[2]?.[2] || "";
+            const params = {
+                keyword: keyword || "",
+                offset: loadOptions.skip,
+                limit: loadOptions.take,
+                type: "classification",
+                companyId,
+            };
+
+            const res = await getInfoLookUp(params);
+            return {
+                data: res.data,
+                totalCount: res.totalRecords,
+            };
+        },
+        byKey: async (key) => {
+            const params = {
+                keyword: key,
+                offset: 0,
+                limit: 1,
+                type: "classification",
+                companyId,
+            };
+
+            const res = await getInfoLookUp(params);
+            return res.data?.[0]; 
+        }
+    })
+
+    const classificationOnSelectionChanged = useCallback((e) => {
+        const selected = e.selectedRowsData?.[0];
+        if (selected) {
+            setClassification({code: selected.code, description: selected.description})
+            setFormData(prev => ({ ...prev, classification: selected.code }))
+            setIsClassificationBoxOpened(false);
+        }
+    }, [])
+
+    const ProductClassificationGridRender = useCallback(() => (
+        <DataGrid
+            dataSource={classificationStore}
+            showBorders={true}
+            hoverStateEnabled
+            selectedRowKeys={formData?.classification}
+            onSelectionChanged={classificationOnSelectionChanged}
+            height={"200px"}
+            remoteOperations={{
+                paging: true,
+                filtering: true,
+            }}
+        >
+            <Selection mode="single" />
+            <Scrolling mode="infinite" />
+            <Paging
+                enabled={true}
+                pageSize={10}
+            />
+            <SearchPanel visible={true} highlightSearchText />
+            <Column dataField="code" caption="Code" />
+            <Column dataField="description" caption="Desc" />
+        </DataGrid>
+    ), [formData?.classification, classificationOnSelectionChanged]);
+
+    const handleProductClassificationGridBoxValueChanges = (e) => {
+        if (!e.value) {
+            setClassification({code: "", description: ""})
+            setFormData(prev => ({ ...prev, classification: "" }))
+        }
+    }
+
+    const onProductClassificationGridBoxOpened = useCallback((e) => {
+        if (e.name === 'opened') {
+            setIsClassificationBoxOpened(e.value);
+        }
+    }, [])
 
     const productGroupDataGridOnSelectionChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
@@ -136,9 +221,17 @@ const UpdateProductModal = ({
             }}
         >
             <Selection mode="single" />
+            <Paging
+                enabled={true}
+                pageSize={10}
+            />
             <Scrolling mode="infinite" />
-            <Paging enabled pageSize={5} />
-            <SearchPanel visible={true} highlightSearchText />
+
+            <SearchPanel
+                visible={true}
+                width="100%"
+                highlightSearchText={true}
+            />
             <Column dataField="itemGroupCode" caption="Code" />
             <Column dataField="description" caption="Desc" />
         </DataGrid>
@@ -180,9 +273,17 @@ const UpdateProductModal = ({
             }}
         >
             <Selection mode="single" />
+            <Paging
+                enabled={true}
+                pageSize={10}
+            />
             <Scrolling mode="infinite" />
-            <Paging enabled pageSize={5} />
-            <SearchPanel visible={true} highlightSearchText />
+
+            <SearchPanel
+                visible={true}
+                width="100%"
+                highlightSearchText={true}
+            />
             <Column dataField="itemTypeCode" caption="Code" />
             <Column dataField="description" caption="Desc" />
         </DataGrid>
@@ -247,7 +348,7 @@ const UpdateProductModal = ({
 
                             <DropDownBox
                                 id="ProductTypeSelection"
-                                value={productType?.itemTypeId}
+                                value={productType?.itemTypeId || null}
                                 placeholder='Product Type'
                                 openOnFieldClick={true}
                                 opened={isTypeBoxOpened}
@@ -267,7 +368,7 @@ const UpdateProductModal = ({
 
                             <DropDownBox
                                 id="ProductGroupSelection"
-                                value={productGroup?.itemGroupId}
+                                value={productGroup?.itemGroupId || null}
                                 placeholder='Product Group'
                                 openOnFieldClick={true}
                                 opened={isGroupBoxOpened}
@@ -383,6 +484,28 @@ const UpdateProductModal = ({
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
+
+                        <div className="flex flex-col col-span-2 mt-2">
+                            <div>Classification</div>
+                            <DropDownBox
+                                id="ProductClassificationSelection"
+                                value={classification?.code || null}
+                                placeholder='Product Classification'
+                                openOnFieldClick={true}
+                                opened={isClassificationBoxOpened}
+                                displayExpr={productClassificationGridBoxDisplayExpr}
+                                onValueChanged={handleProductClassificationGridBoxValueChanges}
+                                valueExpr={"code"}
+                                onOptionChanged={onProductClassificationGridBoxOpened}
+                                contentRender={ProductClassificationGridRender}
+                                className="border mt-2 rounded px-2 py-[2px] bg-white w-full"
+                                dataSource={classificationStore}
+                                dropDownOptions={{
+                                    width: 450
+                                }}
+                            />
+                        </div>
+
                         <div className="col-span-2 w-full h-full ">
                             <div className='flex flex-row'>
                                 <input
