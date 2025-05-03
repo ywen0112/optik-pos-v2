@@ -134,7 +134,7 @@ const PurchaseInvoice = () => {
   const SupplierDataGridOnSelectionChanged = useCallback((e) => {
     const selected = e.selectedRowsData?.[0];
     if (selected) {
-      setSupplierGridBoxValue({id: selected. creditorId, Code: selected.creditorCode, Name: selected.companyName});
+      setSupplierGridBoxValue({ id: selected.creditorId, Code: selected.creditorCode, Name: selected.companyName });
       setIsSupplierGridBoxOpened(false);
     }
   }, []);
@@ -186,7 +186,7 @@ const PurchaseInvoice = () => {
   const PurchasePersonDataGridOnSelectionChanged = useCallback((e) => {
     const selected = e.selectedRowsData?.[0];
     if (selected) {
-      setPurchasePersonGridBoxValue({id: selected.userId, Name: selected.userName});
+      setPurchasePersonGridBoxValue({ id: selected.userId, Name: selected.userName });
       setIsPurchasePersonGridBoxOpened(false);
     }
   }, []);
@@ -261,12 +261,23 @@ const PurchaseInvoice = () => {
     }
     setPurchaseItem(prev => {
       const exists = prev.find(record => record.purchaseInvoiceDetailId === data.purchaseInvoiceDetailId);
+
+      const updatedData = { ...data };
+
+      const qty = Number(updatedData.qty) || 0;
+      const unitPrice = Number(updatedData.price) || 0;
+      const isDiscByPercent = updatedData.discount;
+      const discAmt = Number(updatedData.discountAmount) || 0;
+      const totalAmount = qty * unitPrice;
+
+      updatedData.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
+
       if (exists) {
         return prev.map(record =>
-          record.purchaseInvoiceDetailId === data.purchaseInvoiceDetailId ? { ...record, ...data } : record
+          record.purchaseInvoiceDetailId === data.purchaseInvoiceDetailId ? { ...record, ...updatedData } : record
         );
       } else {
-        return [...prev, data];
+        return [...prev, updatedData];
       }
     })
   };
@@ -289,7 +300,7 @@ const PurchaseInvoice = () => {
         if (record.purchaseInvoiceDetailId === key) {
           const updatedRecord = { ...record, ...changedData };
 
-          if ('qty' in changedData || 'unitCost' in changedData || 'discount' in changedData || 'discountAmount' in changedData) {
+          if ('qty' in changedData || 'price' in changedData || 'discount' in changedData || 'discountAmount' in changedData) {
             const qty = Number(updatedRecord.qty) || 0;
             const unitPrice = Number(updatedRecord.price) || 0;
             const isDiscByPercent = updatedRecord.discount;
@@ -360,7 +371,7 @@ const PurchaseInvoice = () => {
         description: item.description ?? "",
         desc2: item.desc2 ?? "",
         qty: item.qty ?? 0,
-        unitPrice: item.unitPrice ?? 0,
+        unitPrice: item.price ?? 0,
         discount: item.discount ? "percent" : "rate" ?? "rate",
         discountAmount: item.discountAmount ?? 0,
         subTotal: item.subTotal ?? 0
@@ -392,7 +403,7 @@ const PurchaseInvoice = () => {
         description: item.description ?? "",
         desc2: item.desc2 ?? "",
         qty: item.qty ?? 0,
-        unitPrice: item.unitPrice ?? 0,
+        unitPrice: item.price ?? 0,
         discount: item.discount ? "percent" : "rate" ?? "rate",
         discountAmount: item.discountAmount ?? 0,
         subTotal: item.subTotal ?? 0
@@ -474,7 +485,7 @@ const PurchaseInvoice = () => {
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
       <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Purchase Invoice?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
-      
+
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
           <div className="items-center gap-1">
@@ -500,7 +511,7 @@ const PurchaseInvoice = () => {
                   contentRender={SupplierDataGridRender}
                   dropDownOptions={{
                     width: 400
-                }}
+                  }}
                 />
                 <textarea
                   id="SupplierName"
@@ -508,7 +519,7 @@ const PurchaseInvoice = () => {
                   rows={1}
                   className="border rounded p-2 w-full resize-none bg-white text-secondary"
                   placeholder="Name"
-                  onChange={() => { }}
+                  onChange={(e) => { setSupplierGridBoxValue(prev => ({ ...prev, Name: e.target.value })) }}
                   value={SupplierGridBoxValue.Name}
                 />
                 <button

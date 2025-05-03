@@ -108,7 +108,6 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
     setConfirmModal({ isOpen: false, action: null });
     try {
       if (confirmModal.action === "add") {
-        console.log(confirmModal.type)
         if (confirmModal.type === "Specs") {
           const res = await SaveSpectacles(confirmModal.data)
           if (res.success) {

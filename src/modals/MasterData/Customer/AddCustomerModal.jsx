@@ -399,7 +399,6 @@ const AddCustomerModal = ({
                                     ...debtorFormData,
                                     ...medicalInfoData,
                                 };
-                                console.log(selectedCustomer)
                                 onConfirm({
                                     isOpen: true,
                                     action: isEdit ? "edit" : "add",

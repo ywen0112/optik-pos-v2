@@ -178,7 +178,6 @@ const UserMaintenance = () => {
     if (!e.value) {
       setUserRole(null)
     }
-    console.log(editUser)
   }
 
   const onUserRoleGridBoxOpened = useCallback((e) => {

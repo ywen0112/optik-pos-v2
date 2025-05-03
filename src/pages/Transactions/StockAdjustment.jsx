@@ -42,13 +42,17 @@ const StockAdjustment = () => {
       data = { ...rowData, ...newValue }
     }
     setStockAdjustmentItems(prev => {
+      const updatedData = { ...data };
+      const qty = Number(updatedRecord.qty) || 0;
+      const unitCost = Number(updatedRecord.unitCost) || 0;
+      updatedData.subTotal = qty * unitCost;
       const exists = prev.find(record => record.stockAdjustmentDetailId === data.stockAdjustmentDetailId);
       if (exists) {
         return prev.map(record =>
-          record.stockAdjustmentDetailId === data.stockAdjustmentDetailId ? { ...record, ...data } : record
+          record.stockAdjustmentDetailId === data.stockAdjustmentDetailId ? { ...record, ...updatedData } : record
         );
       } else {
-        return [...prev, data];
+        return [...prev, updatedData];
       }
     })
   };

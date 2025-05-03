@@ -45,7 +45,6 @@ const TransactionItemDataGrid = ({ className, customStore, gridRef, onSelect, on
                 userId,
                 id: key
             });
-            console.log(res.data)
             return res.data;
         },
     });
@@ -178,45 +177,21 @@ const TransactionItemDataGrid = ({ className, customStore, gridRef, onSelect, on
                 }
                 }
             />
-            <Column dataField="description" caption="Description" allowEditing={false} />
-            <Column dataField="uom" caption="UOM" allowEditing={false} width={"80px"} />
+            <Column dataField="description" caption="Description" />
+            <Column dataField="uom" caption="UOM" width={"80px"} />
             <Column
                 dataField="qty"
                 caption="QTY"
                 width={"80px"}
-                editCellRender={({ data, setValue }) => {
-                    return (
-                        <NumberBox
-                            value={data?.qty}
-                            min={0}
-                            showSpinButtons={true}
-                            inputAttr={{ 'aria-label': 'Quantity' }}
-                            onValueChanged={(e) => {
-                                setValue(e.value);
-                            }}
-                        />
-                    );
-                }}
+                
             />
             <Column 
                 dataField="unitCost" 
                 caption="Unit Cost" 
                 width={"80px"} 
-                editCellRender={({ data, setValue }) => {
-                    return (
-                        <NumberBox
-                            value={data?.unitCost}
-                            min={0}
-                            showSpinButtons={true}
-                            inputAttr={{ 'aria-label': 'Quantity' }}
-                            onValueChanged={(e) => {
-                                setValue(e.value);
-                            }}
-                        />
-                    );
-                }}
+                
             />
-            <Column dataField="subTotal" caption="Amount" dataType="number" width={"80px"} />
+            <Column allowEditing={false} dataField="subTotal" caption="Amount" dataType="number" width={"80px"} />
             <Column
                 caption="Action"
                 width={"150px"}

@@ -20,7 +20,7 @@ const CompanySelectionDataGrid = ({ companies }) => {
 
     const handleCompanyDelete = (company) => {
         // Placeholder: Replace this with a real delete logic (API call, state update, etc.)
-        console.log("Delete company:", company);
+        // console.log("Delete company:", company);
         alert(`Delete company "${company.companyName}" clicked!`);
     };
 

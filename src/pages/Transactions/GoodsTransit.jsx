@@ -42,11 +42,15 @@ const GoodsTransit = () => {
     setGoodsTransitItems(prev => {
       const exists = prev.find(record => record.goodsTransitDetailId === data.goodsTransitDetailId);
       if (exists) {
+        const updatedData = { ...data };
+        const qty = Number(updatedRecord.qty) || 0;
+        const unitCost = Number(updatedRecord.unitCost) || 0;
+        updatedData.subTotal = qty * unitCost;
         return prev.map(record =>
-          record.goodsTransitDetailId === data.goodsTransitDetailId ? { ...record, ...data } : record
+          record.goodsTransitDetailId === data.goodsTransitDetailId ? { ...record, ...updatedData } : record
         );
       } else {
-        return [...prev, data];
+        return [...prev, updatedData];
       }
     })
   };
@@ -109,7 +113,7 @@ const GoodsTransit = () => {
       setErrorModal({ title: "Error", message: error.message });
       await newGoodsTransitRecords()
     }
-    if(confirmModal.action === "addPrint"){
+    if (confirmModal.action === "addPrint") {
       console.log("print acknowledgement");
     }
     setConfirmModal({ isOpen: false, action: "", data: null });
@@ -184,37 +188,37 @@ const GoodsTransit = () => {
   const gridRef = useRef(null);
 
   const goodsTransitItemStore = new CustomStore({
-          key: "goodsTransitDetailId",
-          load: async () => {
-              setSelectedItem(null)
-              return {
-                  data: goodsTransitItems ?? [],
-                  totalCount: goodsTransitItems?.length,
-              };
-          },
-          insert: async () => {
-              setSelectedItem(null)
-              return {
-                data: goodsTransitItems ?? [],
-                totalCount: goodsTransitItems?.length,
-              }
-          },
-          remove: async (key) => {
-              await handleRemoveRow(key)
-              return {
-                data: goodsTransitItems ?? [],
-                totalCount: goodsTransitItems?.length,
-              }
-          },
-          update: async (key, data) => {
-              await handleEditRow(key, data)
-              setSelectedItem(null)
-              return {
-                data: goodsTransitItems ?? [],
-                totalCount: goodsTransitItems?.length,
-              }
-          }
-      });
+    key: "goodsTransitDetailId",
+    load: async () => {
+      setSelectedItem(null)
+      return {
+        data: goodsTransitItems ?? [],
+        totalCount: goodsTransitItems?.length,
+      };
+    },
+    insert: async () => {
+      setSelectedItem(null)
+      return {
+        data: goodsTransitItems ?? [],
+        totalCount: goodsTransitItems?.length,
+      }
+    },
+    remove: async (key) => {
+      await handleRemoveRow(key)
+      return {
+        data: goodsTransitItems ?? [],
+        totalCount: goodsTransitItems?.length,
+      }
+    },
+    update: async (key, data) => {
+      await handleEditRow(key, data)
+      setSelectedItem(null)
+      return {
+        data: goodsTransitItems ?? [],
+        totalCount: goodsTransitItems?.length,
+      }
+    }
+  });
 
   return (
     <>
@@ -263,7 +267,7 @@ const GoodsTransit = () => {
           <div className="flex flex-col gap-1 w-1/2 ">
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
-              selected={masterData?.docDate ?? new Date().toISOString().slice(0,10)}
+              selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
               id="docDate"
               name="docDate"
               dateFormat="dd-MM-yyyy"

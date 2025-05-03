@@ -261,12 +261,22 @@ const CashSales = () => {
         }
         setCashSalesItem(prev => {
             const exists = prev.find(record => record.cashSalesDetailId === data.cashSalesDetailId);
+            const updatedData = { ...data };
+
+            const qty = Number(updatedData.qty) || 0;
+            const unitPrice = Number(updatedData.price) || 0;
+            const isDiscByPercent = updatedData.discount;
+            const discAmt = Number(updatedData.discountAmount) || 0;
+            const totalAmount = qty * unitPrice;
+
+            updatedData.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
+
             if (exists) {
                 return prev.map(record =>
-                    record.cashSalesDetailId === data.cashSalesDetailId ? { ...record, ...data } : record
+                    record.cashSalesDetailId === data.cashSalesDetailId ? { ...record, ...updatedData } : record
                 );
             } else {
-                return [...prev, data];
+                return [...prev, updatedData];
             }
         })
     };
@@ -289,7 +299,7 @@ const CashSales = () => {
                 if (record.cashSalesDetailId === key) {
                     const updatedRecord = { ...record, ...changedData };
 
-                    if ('qty' in changedData || 'unitCost' in changedData || 'discount' in changedData || 'discountAmount' in changedData) {
+                    if ('qty' in changedData || 'price' in changedData || 'discount' in changedData || 'discountAmount' in changedData) {
                         const qty = Number(updatedRecord.qty) || 0;
                         const unitPrice = Number(updatedRecord.price) || 0;
                         const isDiscByPercent = updatedRecord.discount;
@@ -361,7 +371,7 @@ const CashSales = () => {
                 description: item.description ?? "",
                 desc2: item.desc2 ?? "",
                 qty: item.qty ?? 0,
-                unitPrice: item.unitPrice ?? 0,
+                unitPrice: item.price ?? 0,
                 discount: item.discount ? "percent" : "rate" ?? "rate",
                 discountAmount: item.discountAmount ?? 0,
                 subTotal: item.subTotal ?? 0,
@@ -520,7 +530,7 @@ const CashSales = () => {
                                     rows={1}
                                     className="border rounded p-2 w-full resize-none bg-white text-secondary"
                                     placeholder="Name"
-                                    onChange={() => { }}
+                                    onChange={(e) => {setCustomerGridBoxValue(prev => ({...prev, Name: e.target.value}))}}
                                     value={CustomerGridBoxValue.Name}
                                 />
                                 <button

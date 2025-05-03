@@ -179,43 +179,19 @@ const TransactionItemWithDiscountDataGrid = ({ className, customStore, gridRef, 
                 }
                 }
             />
-            <Column dataField="description" caption="Description" allowEditing={false} />
-            <Column dataField="uom" caption="UOM" allowEditing={false} width={"80px"} />
+            <Column dataField="description" caption="Description"/>
+            <Column dataField="uom" caption="UOM" width={"80px"} />
             <Column
                 dataField="qty"
                 caption="QTY"
                 width={"80px"}
-                editCellRender={({ data, setValue }) => {
-                    return (
-                        <NumberBox
-                            value={data?.qty}
-                            min={0}
-                            showSpinButtons={true}
-                            inputAttr={{ 'aria-label': 'Quantity' }}
-                            onValueChanged={(e) => {
-                                setValue(e.value);
-                            }}
-                        />
-                    );
-                }}
+                
             />
             <Column
                 dataField="price"
                 caption="Unit Price"
                 width={"80px"}
-                editCellRender={({ data, setValue }) => {
-                    return (
-                        <NumberBox
-                            value={data?.price}
-                            min={0}
-                            showSpinButtons={true}
-                            inputAttr={{ 'aria-label': 'Quantity' }}
-                            onValueChanged={(e) => {
-                                setValue(e.value);
-                            }}
-                        />
-                    );
-                }}
+                
             />
             <Column
                 value={false}
@@ -226,7 +202,7 @@ const TransactionItemWithDiscountDataGrid = ({ className, customStore, gridRef, 
 
             />
             <Column dataField="discountAmount" caption="Disc Amnt" dataType="number" value={0} width={"80px"} />
-            <Column dataField="subTotal" caption="Amount" dataType="number" width={"80px"} />
+            <Column allowEditing={false} dataField="subTotal" caption="Amount" dataType="number" width={"80px"} />
             <Column
                 caption="Action"
                 width={"150px"}
