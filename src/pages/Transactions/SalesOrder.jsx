@@ -20,6 +20,7 @@ import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Trans
 import { SaveDebtor, NewDebtor, GetDebtor } from "../../api/maintenanceapi";
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
 import { NewSpectacles, NewContactLens, SaveContactLensProfile, SaveSpectacles } from "../../api/eyepowerapi";
+import CustomInput from "../../Components/input/dateInput";
 
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
@@ -69,6 +70,90 @@ const SalesOrder = () => {
     const gridRef = useRef(null);
 
     const total = currentTotal + parseFloat(rounding)
+
+    const [actualRX, setActualRX] = useState({
+        dominantEye: "",
+        opticalHeight: 0,
+        segmentHeight: 0,
+    });
+
+    const [prescribedRX, setPrescribedRX] = useState({
+        dominantEye: "",
+        opticalHeight: 0,
+        segmentHeight: 0,
+    })
+
+    const [prescribedReadingData, setPrescribedReadingData] = useState({
+        l_R_ADD: null,
+        l_R_AXIS: null,
+        l_R_CYL: null,
+        l_R_PD: null,
+        l_R_PRISM: null,
+        l_R_Remark: "",
+        l_R_SPH: null,
+        l_R_VA: null,
+        r_R_ADD: null,
+        r_R_AXIS: null,
+        r_R_CYL: null,
+        r_R_PRISM: null,
+        r_R_Remark: "",
+        r_R_SPH: null,
+        r_R_VA: null,
+    });
+
+    const [prescribedDistanceData, setPrescribedDistanceData] = useState({
+        l_D_ADD: null,
+        l_D_AXIS: null,
+        l_D_CYL: null,
+        l_D_PD: null,
+        l_D_PRISM: null,
+        l_D_Remark: "",
+        l_D_SPH: null,
+        l_D_VA: null,
+        r_D_ADD: null,
+        r_D_AXIS: null,
+        r_D_CYL: null,
+        r_D_PRISM: null,
+        r_D_Remark: "",
+        r_D_SPH: null,
+        r_D_VA: null,
+    });
+
+    const [actualReadingData, setActualReadingData] = useState({
+        l_R_ADD: null,
+        l_R_AXIS: null,
+        l_R_CYL: null,
+        l_R_PD: null,
+        l_R_PRISM: null,
+        l_R_Remark: "",
+        l_R_SPH: null,
+        l_R_VA: null,
+        r_R_ADD: null,
+        r_R_AXIS: null,
+        r_R_CYL: null,
+        r_R_PRISM: null,
+        r_R_Remark: "",
+        r_R_SPH: null,
+        r_R_VA: null,
+    });
+
+    const [actualDistanceData, setActualDistanceData] = useState({
+        l_D_ADD: null,
+        l_D_AXIS: null,
+        l_D_CYL: null,
+        l_D_PD: null,
+        l_D_PRISM: null,
+        l_D_Remark: "",
+        l_D_SPH: null,
+        l_D_VA: null,
+        r_D_ADD: null,
+        r_D_AXIS: null,
+        r_D_CYL: null,
+        r_D_PRISM: null,
+        r_D_Remark: "",
+        r_D_SPH: null,
+        r_D_VA: null,
+    });
 
     useEffect(() => {
         createNewSalesOrder();
@@ -274,7 +359,7 @@ const SalesOrder = () => {
                 columns={SalesPersonGridColumns}
                 hoverStateEnabled={true}
                 showBorders={false}
-                selectedRowKeys={SalesPersonGridBoxValue.id}
+                selectedRowKeys={SalesPersonGridBoxValue?.id ?? null}
                 onSelectionChanged={SalesPersonDataGridOnSelectionChanged}
                 height="100%"
                 remoteOperations={{
@@ -325,7 +410,7 @@ const SalesOrder = () => {
                 columns={PractitionerGridColumns}
                 hoverStateEnabled={true}
                 showBorders={false}
-                selectedRowKeys={PractionerGridBoxValue.id}
+                selectedRowKeys={PractionerGridBoxValue?.id}
                 onSelectionChanged={PractionerDataGridOnSelectionChanged}
                 height="100%"
                 remoteOperations={{
@@ -432,15 +517,15 @@ const SalesOrder = () => {
                 const updatedRes = {
                     ...res.data,
                     debtorId: CustomerGridBoxValue.id,
-                    cashSalesId: masterData.salesOrderId,
-                    cashSalesDetailId: rowData.salesOrderDetailId,
+                    salesOrderId: masterData.salesOrderId,
+                    salesOrderDetailId: rowData.salesOrderDetailId,
                     docDate: masterData.docDate,
                 }
                 setEyePowerSpectaclesFormData(prev => {
-                    const exists = prev.find(record => record.cashSalesDetailId === data.salesOrderDetailId);
+                    const exists = prev.find(record => record.salesOrderDetailId === data.salesOrderDetailId);
                     if (exists) {
                         return prev.map(record =>
-                            record.cashSalesDetailId === rowData.cashSalesDetailId ? { ...updatedRes, ...record } : record
+                            record.salesOrderDetailId === rowData.salesOrderDetailId ? { ...updatedRes, ...record } : record
                         );
                     } else {
                         return [...prev, updatedRes];
@@ -451,15 +536,15 @@ const SalesOrder = () => {
                 const updatedRes = {
                     ...res.data,
                     debtorId: CustomerGridBoxValue.id,
-                    cashSalesId: masterData.salesOrderId,
-                    cashSalesDetailId: rowData.salesOrderDetailId,
+                    salesOrderId: masterData.salesOrderId,
+                    salesOrderDetailId: rowData.salesOrderDetailId,
                     docDate: masterData.docDate,
                 }
                 setEyePowerContactLensFormData(prev => {
-                    const exists = prev.find(record => record.cashSalesDetailId === data.salesOrderDetailId);
+                    const exists = prev.find(record => record.salesOrderDetailId === data.salesOrderDetailId);
                     if (exists) {
                         return prev.map(record =>
-                            record.cashSalesDetailId === rowData.cashSalesDetailId ? { ...updatedRes, ...record } : record
+                            record.salesOrderDetailId === rowData.salesOrderDetailId ? { ...updatedRes, ...record } : record
                         );
                     } else {
                         return [...prev, updatedRes];
@@ -547,37 +632,193 @@ const SalesOrder = () => {
         try {
             const res = await SaveSalesOrder({ ...confirmModal.data });
             if (res.success) {
-                if(eyePowerContactLensFormData.length > 0){
-                    eyePowerContactLensFormData.forEach(async eyePower => await SaveContactLensProfile({...eyePower}));
+                if (eyePowerContactLensFormData.length > 0) {
+                    eyePowerContactLensFormData.forEach(async eyePower => await SaveContactLensProfile({ ...eyePower }));
                 }
-                if(eyePowerSpectaclesFormData.length > 0){
-                    eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({...eyePower}));
+                if (eyePowerSpectaclesFormData.length > 0) {
+                    eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({ ...eyePower }));
                 }
                 setNotifyModal({ isOpen: true, message: "Sales Order added successfully!" });
             } else throw new Error(res.errorMessage || "Failed to Add Sales Order");
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
             await createNewSalesOrder()
-            setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
-            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
-            setPractionerGridBoxValue({ id: "", Code: "", Name: "" })
+            setCustomerGridBoxValue(null)
+            setSalesPersonGridBoxValue(null)
+            setPractionerGridBoxValue(null)
             setSalesItem([]);
             setEyePowerContactLensFormData([]);
             setEyePowerSpectaclesFormData([]);
             setCurrentTotal(0);
+            setActualDistanceData({
+                l_D_ADD: null,
+                l_D_AXIS: null,
+                l_D_CYL: null,
+                l_D_PD: null,
+                l_D_PRISM: null,
+                l_D_Remark: "",
+                l_D_SPH: null,
+                l_D_VA: null,
+                r_D_ADD: null,
+                r_D_AXIS: null,
+                r_D_CYL: null,
+                r_D_PRISM: null,
+                r_D_Remark: "",
+                r_D_SPH: null,
+                r_D_VA: null,
+            })
+            setPrescribedDistanceData({
+                l_D_ADD: null,
+                l_D_AXIS: null,
+                l_D_CYL: null,
+                l_D_PD: null,
+                l_D_PRISM: null,
+                l_D_Remark: "",
+                l_D_SPH: null,
+                l_D_VA: null,
+                r_D_ADD: null,
+                r_D_AXIS: null,
+                r_D_CYL: null,
+                r_D_PRISM: null,
+                r_D_Remark: "",
+                r_D_SPH: null,
+                r_D_VA: null,
+            })
+            setActualReadingData({
+                l_R_ADD: null,
+                l_R_AXIS: null,
+                l_R_CYL: null,
+                l_R_PD: null,
+                l_R_PRISM: null,
+                l_R_Remark: "",
+                l_R_SPH: null,
+                l_R_VA: null,
+                r_R_ADD: null,
+                r_R_AXIS: null,
+                r_R_CYL: null,
+                r_R_PRISM: null,
+                r_R_Remark: "",
+                r_R_SPH: null,
+                r_R_VA: null,
+            })
+            setPrescribedReadingData({
+                l_R_ADD: null,
+                l_R_AXIS: null,
+                l_R_CYL: null,
+                l_R_PD: null,
+                l_R_PRISM: null,
+                l_R_Remark: "",
+                l_R_SPH: null,
+                l_R_VA: null,
+                r_R_ADD: null,
+                r_R_AXIS: null,
+                r_R_CYL: null,
+                r_R_PRISM: null,
+                r_R_Remark: "",
+                r_R_SPH: null,
+                r_R_VA: null,
+            })
+            setActualRX({
+                dominantEye: "",
+                opticalHeight: 0,
+                segmentHeight: 0,
+            })
+            setPrescribedRX({
+                dominantEye: "",
+                opticalHeight: 0,
+                segmentHeight: 0,
+            })
         }
         if (confirmModal.action === "addPrint") {
             console.log("print acknowledgement");
         }
         setConfirmModal({ isOpen: false, action: "", data: null });
         await createNewSalesOrder()
-        setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
-        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
-        setPractionerGridBoxValue({ id: "", Code: "", Name: "" })
+        setCustomerGridBoxValue(null)
+        setSalesPersonGridBoxValue(null)
+        setPractionerGridBoxValue(null)
         setEyePowerContactLensFormData([]);
         setEyePowerSpectaclesFormData([]);
         setSalesItem([]);
         setCurrentTotal(0);
+        setActualDistanceData({
+            l_D_ADD: null,
+            l_D_AXIS: null,
+            l_D_CYL: null,
+            l_D_PD: null,
+            l_D_PRISM: null,
+            l_D_Remark: "",
+            l_D_SPH: null,
+            l_D_VA: null,
+            r_D_ADD: null,
+            r_D_AXIS: null,
+            r_D_CYL: null,
+            r_D_PRISM: null,
+            r_D_Remark: "",
+            r_D_SPH: null,
+            r_D_VA: null,
+        })
+        setPrescribedDistanceData({
+            l_D_ADD: null,
+            l_D_AXIS: null,
+            l_D_CYL: null,
+            l_D_PD: null,
+            l_D_PRISM: null,
+            l_D_Remark: "",
+            l_D_SPH: null,
+            l_D_VA: null,
+            r_D_ADD: null,
+            r_D_AXIS: null,
+            r_D_CYL: null,
+            r_D_PRISM: null,
+            r_D_Remark: "",
+            r_D_SPH: null,
+            r_D_VA: null,
+        })
+        setActualReadingData({
+            l_R_ADD: null,
+            l_R_AXIS: null,
+            l_R_CYL: null,
+            l_R_PD: null,
+            l_R_PRISM: null,
+            l_R_Remark: "",
+            l_R_SPH: null,
+            l_R_VA: null,
+            r_R_ADD: null,
+            r_R_AXIS: null,
+            r_R_CYL: null,
+            r_R_PRISM: null,
+            r_R_Remark: "",
+            r_R_SPH: null,
+            r_R_VA: null,
+        })
+        setPrescribedReadingData({
+            l_R_ADD: null,
+            l_R_AXIS: null,
+            l_R_CYL: null,
+            l_R_PD: null,
+            l_R_PRISM: null,
+            l_R_Remark: "",
+            l_R_SPH: null,
+            l_R_VA: null,
+            r_R_ADD: null,
+            r_R_AXIS: null,
+            r_R_CYL: null,
+            r_R_PRISM: null,
+            r_R_Remark: "",
+            r_R_SPH: null,
+            r_R_VA: null,
+        })
+        setActualRX({
+            dominantEye: "",
+            opticalHeight: 0,
+            segmentHeight: 0,
+        })
+        setPrescribedRX({
+            dominantEye: "",
+            opticalHeight: 0,
+            segmentHeight: 0,
+        })
         return;
     }
 
@@ -590,8 +831,8 @@ const SalesOrder = () => {
             isVoid: false,
             debtorId: CustomerGridBoxValue?.id,
             debtorName: CustomerGridBoxValue?.Name,
-            salesPersonUserID: SalesPersonGridBoxValue.id,
-            practitionerUserID: PractionerGridBoxValue.id,
+            salesPersonUserID: SalesPersonGridBoxValue?.id,
+            practitionerUserID: PractionerGridBoxValue?.id,
             details: salesItem.map((item) => ({
                 salesOrderDetailId: item.salesOrderDetailId ?? "",
                 itemId: item.itemId ?? "",
@@ -624,8 +865,8 @@ const SalesOrder = () => {
             isVoid: false,
             debtorId: CustomerGridBoxValue?.id,
             debtorName: CustomerGridBoxValue?.Name,
-            salesPersonUserID: SalesPersonGridBoxValue.id,
-            practitionerUserID: PractionerGridBoxValue.id,
+            salesPersonUserID: SalesPersonGridBoxValue?.id,
+            practitionerUserID: PractionerGridBoxValue?.id,
             details: salesItem.map((item) => ({
                 salesOrderDetailId: item.salesOrderDetailId ?? "",
                 itemId: item.itemId ?? "",
@@ -685,89 +926,7 @@ const SalesOrder = () => {
     useEffect(() => { }, [setIsNormalItem])
 
     //Eye Power
-    const [actualRX, setActualRX] = useState({
-        dominantEye: "",
-        opticalHeight: 0,
-        segmentHeight: 0,
-    });
 
-    const [prescribedRX, setPrescribedRX] = useState({
-        dominantEye: "",
-        opticalHeight: 0,
-        segmentHeight: 0,
-    })
-
-    const [prescribedReadingData, setPrescribedReadingData] = useState({
-        l_R_ADD: null,
-        l_R_AXIS: null,
-        l_R_CYL: null,
-        l_R_PD: null,
-        l_R_PRISM: null,
-        l_R_Remark: "",
-        l_R_SPH: null,
-        l_R_VA: null,
-        r_R_ADD: null,
-        r_R_AXIS: null,
-        r_R_CYL: null,
-        r_R_PRISM: null,
-        r_R_Remark: "",
-        r_R_SPH: null,
-        r_R_VA: null,
-    });
-
-    const [prescribedDistanceData, setPrescribedDistanceData] = useState({
-        l_D_ADD: null,
-        l_D_AXIS: null,
-        l_D_CYL: null,
-        l_D_PD: null,
-        l_D_PRISM: null,
-        l_D_Remark: "",
-        l_D_SPH: null,
-        l_D_VA: null,
-        r_D_ADD: null,
-        r_D_AXIS: null,
-        r_D_CYL: null,
-        r_D_PRISM: null,
-        r_D_Remark: "",
-        r_D_SPH: null,
-        r_D_VA: null,
-    });
-
-    const [actualReadingData, setActualReadingData] = useState({
-        l_R_ADD: null,
-        l_R_AXIS: null,
-        l_R_CYL: null,
-        l_R_PD: null,
-        l_R_PRISM: null,
-        l_R_Remark: "",
-        l_R_SPH: null,
-        l_R_VA: null,
-        r_R_ADD: null,
-        r_R_AXIS: null,
-        r_R_CYL: null,
-        r_R_PRISM: null,
-        r_R_Remark: "",
-        r_R_SPH: null,
-        r_R_VA: null,
-    });
-
-    const [actualDistanceData, setActualDistanceData] = useState({
-        l_D_ADD: null,
-        l_D_AXIS: null,
-        l_D_CYL: null,
-        l_D_PD: null,
-        l_D_PRISM: null,
-        l_D_Remark: "",
-        l_D_SPH: null,
-        l_D_VA: null,
-        r_D_ADD: null,
-        r_D_AXIS: null,
-        r_D_CYL: null,
-        r_D_PRISM: null,
-        r_D_Remark: "",
-        r_D_SPH: null,
-        r_D_VA: null,
-    });
 
     const [activeRxTab, setActiveRxTab] = useState("Prescribed RX");
     const [activeRxMode, setActiveRxMode] = useState("Distance");
@@ -807,13 +966,13 @@ const SalesOrder = () => {
 
         if (currentActiveRow?.isSpectacles) {
             currentItemEyePower = eyePowerSpectaclesFormData.find(
-                item => item.cashSalesDetailId === currentActiveRow.salesOrderDetailId
+                item => item.salesOrderDetailId === currentActiveRow.salesOrderDetailId
             );
             prescribedRX = currentItemEyePower?.prescribedRXSpectacles ?? {};
             actualRX = currentItemEyePower?.actualRXSpectacles ?? {};
         } else if (currentActiveRow?.isContactLens) {
             currentItemEyePower = eyePowerContactLensFormData.find(
-                item => item.cashSalesDetailId === currentActiveRow.salesOrderDetailId
+                item => item.salesOrderDetailId === currentActiveRow.salesOrderDetailId
             );
             prescribedRX = currentItemEyePower?.prescribedRXContactLens ?? {};
             actualRX = currentItemEyePower?.actualRXContactLens ?? {};
@@ -922,10 +1081,10 @@ const SalesOrder = () => {
                 }
             }
             setEyePowerSpectaclesFormData(prev => {
-                const exists = prev.find(record => record.cashSalesDetailId === currentActiveRow.salesOrderDetailId);
+                const exists = prev.find(record => record.salesOrderDetailId === currentActiveRow.salesOrderDetailId);
                 if (exists) {
                     return prev.map(record =>
-                        record.cashSalesDetailId === currentActiveRow.cashSalesDetailId ? { ...record, ...mergedData } : record
+                        record.salesOrderDetailId === currentActiveRow.salesOrderDetailId ? { ...record, ...mergedData } : record
                     );
                 } else {
                     return [...prev, mergedData];
@@ -945,10 +1104,10 @@ const SalesOrder = () => {
                 }
             }
             setEyePowerContactLensFormData(prev => {
-                const exists = prev.find(record => record.cashSalesDetailId === currentActiveRow.salesOrderDetailId);
+                const exists = prev.find(record => record.salesOrderDetailId === currentActiveRow.salesOrderDetailId);
                 if (exists) {
                     return prev.map(record =>
-                        record.cashSalesDetailId === currentActiveRow.salesOrderDetailId ? { ...record, ...mergedData } : record
+                        record.salesOrderDetailId === currentActiveRow.salesOrderDetailId ? { ...record, ...mergedData } : record
                     );
                 } else {
                     return [...prev, mergedData];
@@ -992,8 +1151,8 @@ const SalesOrder = () => {
 
     const handleRemoveRow = async (key) => {
         setSalesItem(prev => prev.filter(record => record.salesOrderDetailId !== key));
-        setEyePowerSpectaclesFormData(prev => prev.filter(record => record.cashSalesDetailId !== key));
-        setEyePowerContactLensFormData(prev => prev.filter(record => record.cashSalesDetailId !== key));
+        setEyePowerSpectaclesFormData(prev => prev.filter(record => record.salesOrderDetailId !== key));
+        setEyePowerContactLensFormData(prev => prev.filter(record => record.salesOrderDetailId !== key));
         setActualRX({
             dominantEye: "",
             opticalHeight: 0,
@@ -1113,7 +1272,7 @@ const SalesOrder = () => {
                                 <DropDownBox
                                     id="CustomerSelection"
                                     className="border rounded p-1 w-1/2 h-[34px]"
-                                    value={CustomerGridBoxValue?.id || null}
+                                    value={CustomerGridBoxValue?.id ?? ""}
                                     opened={isCustomerGridBoxOpened}
                                     openOnFieldClick={true}
                                     valueExpr='debtorId'
@@ -1134,16 +1293,20 @@ const SalesOrder = () => {
                                     rows={1}
                                     className="border rounded p-2 w-full resize-none bg-white text-secondary"
                                     placeholder="Name"
-                                    onChange={(e) => {setCustomerGridBoxValue(prev => ({...prev, Name: e.target.value}))}}
-                                    value={CustomerGridBoxValue.Name}
+                                    onChange={(e) => { setCustomerGridBoxValue(prev => ({ ...prev, Name: e.target.value })) }}
+                                    value={CustomerGridBoxValue?.Name ?? ""}
                                 />
-                                <button
-                                    className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
-                                    onClick={() => {
-                                        handleNewCustomerModel()
-                                    }}
-                                >
-                                    ...</button>
+                                <div className="relative group">
+                                    <button
+                                        className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
+                                        onClick={handleNewCustomerModel}
+                                    >
+                                        ...
+                                    </button>
+                                    <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                                        Add New Customer
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1181,12 +1344,13 @@ const SalesOrder = () => {
                     <div className="flex flex-col gap-1">
                         <label htmlFor="date" className="font-medium text-secondary">Date</label>
                         <DatePicker
-                            selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
+                            customInput={<CustomInput />}
+                            selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
                             id="SalesDate"
                             name="SalesDate"
                             dateFormat="dd-MM-yyyy"
                             className="border rounded p-1 w-full bg-white h-[34px]"
-                            onChange={e => setMasterData(prev => ({ ...prev, docDate: e.toISOString().slice(0, 10) }))}
+                            onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
                         />
 
                     </div>
@@ -1195,7 +1359,7 @@ const SalesOrder = () => {
                         <DropDownBox
                             id="SalesPersonSelection"
                             className="border rounded w-full"
-                            value={SalesPersonGridBoxValue.id}
+                            value={SalesPersonGridBoxValue?.id ?? ""}
                             opened={isSalesPersonGridBoxOpened}
                             openOnFieldClick={true}
                             valueExpr='userId'
@@ -1212,7 +1376,8 @@ const SalesOrder = () => {
                         <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
                         <div className="flex flex-col space-y-1 w-full">
                             <DatePicker
-                                selected={masterData?.nextVisitDate ?? new Date().toISOString().slice(0, 10)}
+                                customInput={<CustomInput />}
+                                selected={masterData?.nextVisitDate ? new Date(masterData.nextVisitDate) : new Date()}
                                 id="nextVisit"
                                 name="nextVisit"
                                 dateFormat="dd-MM-yyyy"
@@ -1220,7 +1385,7 @@ const SalesOrder = () => {
                                 className="border rounded p-1 w-full bg-white text-secondary h-[34px]"
                                 onChange={e => {
                                     setSelectedInterval(null);
-                                    setMasterData(prev => ({ ...prev, nextVisitDate: e.toISOString().slice(0, 10) }))
+                                    setMasterData(prev => ({ ...prev, nextVisitDate: e }))
                                 }}
                             >
 
@@ -1251,7 +1416,7 @@ const SalesOrder = () => {
                         <DropDownBox
                             id="PractionerSelection"
                             className="border rounded w-full"
-                            value={PractionerGridBoxValue.id}
+                            value={PractionerGridBoxValue?.id ?? ""}
                             opened={isPractionerGridBoxOpened}
                             openOnFieldClick={true}
                             valueExpr='userId'
@@ -1273,8 +1438,9 @@ const SalesOrder = () => {
                 </div>
             </div>
 
-            <div className=" bg-white shadow rounded">
+            <div className="p-3 bg-white shadow rounded">
                 <TransactionItemWithDiscountDataGrid
+                    height={220}
                     className={"p-2"}
                     customStore={salesItemStore}
                     gridRef={gridRef}
@@ -1355,11 +1521,11 @@ const SalesOrder = () => {
                             <input
                                 type="checkbox"
                                 className="mr-1 accent-white bg-white"
-                                checked={activeRxTab === "Prescribed RX" ? prescribedRX?.dominentEye === "left" : actualRX?.segmentHeight === "left"}
+                                checked={activeRxTab === "Prescribed RX" ? prescribedRX?.dominantEye === "left" : actualRX?.segmentHeight === "left"}
                                 onChange={(e) =>
                                     activeRxTab === "Prescribed RX"
-                                        ? setPrescribedRX({ ...prescribedRX, dominentEye: e.target.checked ? "left" : "" })
-                                        : setActualRX({ ...actualRX, dominentEye: e.target.checked ? "left" : "" })
+                                        ? setPrescribedRX({ ...prescribedRX, dominantEye: e.target.checked ? "left" : "" })
+                                        : setActualRX({ ...actualRX, dominantEye: e.target.checked ? "left" : "" })
                                 }
                             />
                             Left
@@ -1369,11 +1535,11 @@ const SalesOrder = () => {
                             <input
                                 type="checkbox"
                                 className="mr-1 accent-white bg-white"
-                                checked={activeRxTab === "Prescribed RX" ? prescribedRX?.dominentEye === "right" : actualRX?.segmentHeight === "right"}
+                                checked={activeRxTab === "Prescribed RX" ? prescribedRX?.dominantEye === "right" : actualRX?.segmentHeight === "right"}
                                 onChange={(e) =>
                                     activeRxTab === "Prescribed RX"
-                                        ? setPrescribedRX({ ...prescribedRX, dominentEye: e.target.checked ? "right" : "" })
-                                        : setActualRX({ ...actualRX, dominentEye: e.target.checked ? "right" : "" })
+                                        ? setPrescribedRX({ ...prescribedRX, dominantEye: e.target.checked ? "right" : "" })
+                                        : setActualRX({ ...actualRX, dominantEye: e.target.checked ? "right" : "" })
                                 }
                             />
                             Right

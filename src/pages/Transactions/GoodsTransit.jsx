@@ -6,6 +6,7 @@ import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
 import { NewGoodsTransit, NewGoodsTransitDetail, SaveGoodsTransit } from "../../api/transactionapi";
 import TransactionItemDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGrid";
+import CustomInput from "../../Components/input/dateInput";
 
 
 const GoodsTransit = () => {
@@ -43,8 +44,8 @@ const GoodsTransit = () => {
       const exists = prev.find(record => record.goodsTransitDetailId === data.goodsTransitDetailId);
       if (exists) {
         const updatedData = { ...data };
-        const qty = Number(updatedRecord.qty) || 0;
-        const unitCost = Number(updatedRecord.unitCost) || 0;
+        const qty = Number(updatedData.qty) || 0;
+        const unitCost = Number(updatedData.unitCost) || 0;
         updatedData.subTotal = qty * unitCost;
         return prev.map(record =>
           record.goodsTransitDetailId === data.goodsTransitDetailId ? { ...record, ...updatedData } : record
@@ -267,12 +268,13 @@ const GoodsTransit = () => {
           <div className="flex flex-col gap-1 w-1/2 ">
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
+              customInput={<CustomInput/>}
               selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
               id="docDate"
               name="docDate"
               dateFormat="dd-MM-yyyy"
               className="border rounded p-1 w-full bg-white h-[34px]"
-              onChange={e => setMasterData(prev => ({ ...prev, docDate: e.toISOString().slice(0, 10) }))}
+              onChange={e => setMasterData(prev => ({ ...prev, docDate:e}))}
             />
 
           </div>
@@ -321,8 +323,9 @@ const GoodsTransit = () => {
         </div>
       </div>
 
-      <div className="mt-3 bg-white shadow rounded">
+      <div className="mt-3 p-3 bg-white shadow rounded">
         <TransactionItemDataGrid
+          height={500}
           className={"p-2"}
           customStore={goodsTransitItemStore}
           gridRef={gridRef}

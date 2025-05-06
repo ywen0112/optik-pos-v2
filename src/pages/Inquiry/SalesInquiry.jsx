@@ -16,6 +16,7 @@ import { getInfoLookUp } from "../../api/infolookupapi";
 import { GetDebtor } from "../../api/maintenanceapi";
 import SalesInquiryMasterDetailGrid from "../../Components/SalesInquiry";
 import { GetSalesInquiry } from "../../api/inquiryapi";
+import CustomInput from "../../Components/input/dateInput";
 
 const CustomerGridBoxDisplayExpr = (item) =>
   item ? `${item.debtorCode}-${item.companyName}` : "";
@@ -28,7 +29,12 @@ const CustomerGridColumns = [
 const SalesInquiry = () => {
   const companyId = sessionStorage.getItem("companyId");
   const userId = sessionStorage.getItem("userId");
-  const [startDate, setStartDate] = useState(new Date());
+  const [startDate, setStartDate] = useState(() => {
+    const today = new Date();
+    today.setMonth(today.getMonth() - 1);
+    return today;
+  });
+  
   const [endDate, setEndDate] = useState(new Date());
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isCustomerBoxOpen, setIsCustomerBoxOpen] = useState(false);
@@ -142,9 +148,15 @@ const SalesInquiry = () => {
         }
 
         const res = await GetSalesInquiry(params);
-
+        const enrichedSalesData = res.data?.map(sale => {
+          if (!sale.payments) return { ...sale, outstanding: sale.total }; // handle cases where payments are missing
+          const paymentsTotal = sale.payments.reduce((sum, p) => sum + (p.total || 0), 0);
+          const outstanding = sale.total - paymentsTotal;
+          return { ...sale, outstanding: outstanding };
+        });
+  
         return {
-          data: res.data,
+          data: enrichedSalesData,
           totalCount: res.totalRecords,
         };
       }
@@ -162,17 +174,19 @@ const SalesInquiry = () => {
           <label className="block text-secondary font-medium mb-1">Date Range</label>
           <div className="grid grid-cols-[1fr_auto_1fr] gap-2">
             <DatePicker
+              customInput={<CustomInput/>}
               selected={startDate}
               onChange={(date) => setStartDate(date)}
               className="border rounded px-2 py-1 text-secondary w-full"
-              dateFormat="dd-MM-yyyy"
+              dateFormat="dd/MM/yyyy"
             />
             <span className="text-secondary self-center">to</span>
             <DatePicker
+              customInput={<CustomInput/>}
               selected={endDate}
               onChange={(date) => setEndDate(date)}
               className="border rounded px-2 py-1 text-secondary w-full"
-              dateFormat="dd-MM-yyyy"
+              dateFormat="dd/MM/yyyy"
             />
           </div>
         </div>

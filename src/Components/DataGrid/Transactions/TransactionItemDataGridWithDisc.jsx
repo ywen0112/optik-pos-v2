@@ -14,7 +14,7 @@ const ItemGridColumns = [
     { dataField: "balQty", caption: "Bal Qty", width: "10%" }
 ];
 
-const TransactionItemWithDiscountDataGrid = ({ className, customStore, gridRef, onSelect, onNew, loading, selectedItem, setSelectedItem, setItemGroup, setActiveItem }) => {
+const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, gridRef, onSelect, onNew, loading, selectedItem, setSelectedItem, setItemGroup, setActiveItem }) => {
     const companyId = sessionStorage.getItem("companyId");
 
     const [currentRow, setCurrentRow] = useState(null);
@@ -55,6 +55,10 @@ const TransactionItemWithDiscountDataGrid = ({ className, customStore, gridRef, 
             setSelectedItem(selected);
             onSelect(selected, currentRow);
         }
+        const grid = gridRef.current?.instance;
+                if (grid) {
+                    grid.cancelEditData();
+                }
         setDropDownBoxOpen(false);
     }, [currentRow]);
 
@@ -113,7 +117,7 @@ const TransactionItemWithDiscountDataGrid = ({ className, customStore, gridRef, 
     return (
         <StandardDataGridComponent
             ref={gridRef}
-            height={300}
+            height={height}
             keyExpr={customStore.key}
             dataSource={customStore}
             className={className}

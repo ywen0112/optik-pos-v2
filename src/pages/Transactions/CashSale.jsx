@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, forwardRef } from "react";
 import DataGrid, {
     Paging,
     Selection,
@@ -19,6 +19,7 @@ import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal"
 
 import CashSalesPaymentModal from "../../modals/Transactions/CashSalesPaymentModal";
 import { NewCashSales, NewCashSalesDetail, SaveCashSale } from "../../api/transactionapi";
+import CustomInput from "../../Components/input/dateInput";
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
 const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
@@ -198,7 +199,7 @@ const CashSales = () => {
                 columns={SalesPersonGridColumns}
                 hoverStateEnabled={true}
                 showBorders={true}
-                selectedRowKeys={SalesPersonGridBoxValue.id}
+                selectedRowKeys={SalesPersonGridBoxValue?.id}
                 onSelectionChanged={SalesPersonDataGridOnSelectionChanged}
                 height="100%"
                 remoteOperations={{
@@ -282,6 +283,10 @@ const CashSales = () => {
     };
 
     const handleAddNewRow = async () => {
+        if (CustomerGridBoxValue?.id === "") {
+            setErrorModal({ title: "Failed to Add Item", message: "Please Select a Customer to proceed" });
+            return;
+        }
         try {
             const res = await NewCashSalesDetail({});
             if (res.success) {
@@ -347,8 +352,8 @@ const CashSales = () => {
         }
         setConfirmModal({ isOpen: false, action: "", data: null });
         await createNewCashSales()
-        setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
-        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
+        setCustomerGridBoxValue(null)
+        setSalesPersonGridBoxValue(null)
         setCashSalesItem([]);
         setCurrentSalesTotal(0);
         return;
@@ -491,12 +496,14 @@ const CashSales = () => {
         }
     });
 
+    
+
     return (
         <>
             <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Goods Transit?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
             <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
-
+            
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <div className="items-center gap-1">
@@ -509,7 +516,7 @@ const CashSales = () => {
                                 <DropDownBox
                                     id="CustomerSelection"
                                     className="border rounded p-1 w-1/2 h-[34px]"
-                                    value={CustomerGridBoxValue?.id || null}
+                                    value={CustomerGridBoxValue?.id ?? ""}
                                     opened={isCustomerGridBoxOpened}
                                     openOnFieldClick={true}
                                     valueExpr='debtorId'
@@ -530,16 +537,22 @@ const CashSales = () => {
                                     rows={1}
                                     className="border rounded p-2 w-full resize-none bg-white text-secondary"
                                     placeholder="Name"
-                                    onChange={(e) => {setCustomerGridBoxValue(prev => ({...prev, Name: e.target.value}))}}
-                                    value={CustomerGridBoxValue.Name}
+                                    onChange={(e) => { setCustomerGridBoxValue(prev => ({ ...prev, Name: e.target.value })) }}
+                                    value={CustomerGridBoxValue?.Name ?? ""}
                                 />
-                                <button
-                                    className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
-                                    onClick={() => {
-                                        handleNewCustomerModel()
-                                    }}
-                                >
-                                    ...</button>
+                                <div className="relative group">
+                                    <button
+                                        className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
+                                        onClick={handleNewCustomerModel}
+                                    >
+                                        ...
+                                    </button>
+                                    <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                                        Add New Customer
+                                    </span>
+                                </div>
+
+
                             </div>
                         </div>
                     </div>
@@ -589,21 +602,21 @@ const CashSales = () => {
                     <div className="flex flex-col gap-1 w-1/2">
                         <label htmlFor="date" className="font-medium text-secondary">Date</label>
                         <DatePicker
-                            selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
+                            customInput={<CustomInput />}
+                            selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
                             id="SalesDate"
                             name="SalesDate"
                             dateFormat="dd-MM-yyyy"
                             className="border rounded p-1 w-full bg-white h-[34px]"
-                            onChange={e => setMasterData(prev => ({ ...prev, docDate: e.toISOString().slice(0, 10) }))}
+                            onChange={e => setMasterData(prev => ({ ...prev, docDate:e}))}
                         />
-
                     </div>
                     <div className="flex flex-col gap-1 w-1/2">
                         <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
                         <DropDownBox
                             id="SalesPersonSelection"
                             className="border rounded w-full"
-                            value={SalesPersonGridBoxValue.id}
+                            value={SalesPersonGridBoxValue?.id ?? null}
                             opened={isSalesPersonGridBoxOpened}
                             openOnFieldClick={true}
                             valueExpr='userId'
@@ -623,8 +636,9 @@ const CashSales = () => {
                 </div>
             </div>
 
-            <div className="mt-3 bg-white shadow rounded">
+            <div className="mt-3 p-3 bg-white shadow rounded">
                 <TransactionItemWithDiscountDataGrid
+                    height={400}
                     className={"p-2"}
                     customStore={cashSalesItemStore}
                     gridRef={gridRef}
@@ -634,8 +648,6 @@ const CashSales = () => {
                     setSelectedItem={setSelectedItem}
                 />
             </div>
-
-
 
             <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4">
                 <div className="w-full grid grid-cols-2 gap-6 items-start text-sm text-secondary font-medium">
@@ -679,6 +691,7 @@ const CashSales = () => {
 
 
             </div>
+
             <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
                 <div className="flex flex-row">
                     <input
@@ -692,7 +705,7 @@ const CashSales = () => {
 
                 </div>
 
-                <div className="w-ful flex flex-row justify-end">
+                <div className="w-full flex flex-row justify-end">
                     <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
                         onClick={() => setCashSalesPayment(true)}>
                         Payment

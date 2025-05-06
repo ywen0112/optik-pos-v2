@@ -7,6 +7,7 @@ import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
 import { NewStockAdjustment, NewStockAdjustmentDetail, SaveStockAdjustment } from "../../api/transactionapi";
 import TransactionItemDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGrid";
+import CustomInput from "../../Components/input/dateInput";
 
 const StockAdjustment = () => {
   const companyId = sessionStorage.getItem("companyId");
@@ -43,8 +44,8 @@ const StockAdjustment = () => {
     }
     setStockAdjustmentItems(prev => {
       const updatedData = { ...data };
-      const qty = Number(updatedRecord.qty) || 0;
-      const unitCost = Number(updatedRecord.unitCost) || 0;
+      const qty = Number(updatedData.qty) || 0;
+      const unitCost = Number(updatedData.unitCost) || 0;
       updatedData.subTotal = qty * unitCost;
       const exists = prev.find(record => record.stockAdjustmentDetailId === data.stockAdjustmentDetailId);
       if (exists) {
@@ -262,20 +263,22 @@ const stockAdjustmentItemStore = new CustomStore({
           <div className="flex flex-col gap-1 w-1/2 ">
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
+              customInput={<CustomInput/>}
               selected={masterData?.docDate ?? new Date().toISOString().slice(0,10)}
               id="StockAdjustmentDate"
               name="StockAdjustmentDate"
               dateFormat="dd-MM-yyyy"
               className="border rounded p-1 w-full bg-white h-[34px]"
-              onChange={e => setMasterData(prev => ({ ...prev, docDate: e.toISOString().slice(0, 10) }))}
+              onChange={e => setMasterData(prev => ({ ...prev, docDate:e}))}
             />
 
           </div>
         </div>
       </div>
 
-      <div className="mt-3 bg-white shadow rounded">
+      <div className="mt-3 p-3 bg-white shadow rounded">
         <TransactionItemDataGrid
+            height={500}
             className={"p-2"}
             customStore={stockAdjustmentItemStore}
             gridRef={gridRef}

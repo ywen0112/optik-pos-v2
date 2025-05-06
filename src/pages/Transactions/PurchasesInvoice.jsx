@@ -19,6 +19,7 @@ import AddSupplierModal from "../../modals/MasterData/Supplier/AddSupplierModal"
 
 import PurchaseInvoicePaymentModal from "../../modals/Transactions/PurcaseInvoicePaymentModal";
 import { NewPurchaseInvoice, NewPurchaseInvoiceDetail, SavePurchaseInvoice } from "../../api/transactionapi";
+import CustomInput from "../../Components/input/dateInput";
 
 const SupplierGridBoxDisplayExpr = (item) => item && `${item.creditorCode}`;
 const PurchasePersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
@@ -61,7 +62,7 @@ const PurchaseInvoice = () => {
 
   const createNewPruchaseInvoice = async () => {
     try {
-      const res = await NewPurchaseInvoice({ companyId, userId, id: "" }); // id is empty
+      const res = await NewPurchaseInvoice({ companyId, userId, id: "" });
       if (res.success) {
         setMasterData(res.data);
       } else throw new Error(res.errorMessage || "Failed to add new Purchase Records");
@@ -146,7 +147,7 @@ const PurchaseInvoice = () => {
         columns={SupplierGridColumns}
         hoverStateEnabled={true}
         showBorders={false}
-        selectedRowKeys={SupplierGridBoxValue.id}
+        selectedRowKeys={SupplierGridBoxValue?.id}
         onSelectionChanged={SupplierDataGridOnSelectionChanged}
         height="300px"
         remoteOperations={{
@@ -283,6 +284,10 @@ const PurchaseInvoice = () => {
   };
 
   const handleAddNewRow = async () => {
+    if (SupplierGridBoxValue?.id === "") {
+      setErrorModal({ title: "Failed to Add Item", message: "Please Select a Supplier to proceed" });
+      return;
+  }
     try {
       const res = await NewPurchaseInvoiceDetail({});
       if (res.success) {
@@ -337,8 +342,8 @@ const PurchaseInvoice = () => {
     } catch (error) {
       setErrorModal({ title: "Error", message: error.message });
       await createNewPruchaseInvoice()
-      setSupplierGridBoxValue({ id: "", Code: "", Name: "" })
-      setPurchasePersonGridBoxValue({ id: "", Code: "", Name: "" })
+      setSupplierGridBoxValue(null)
+      setPurchasePersonGridBoxValue(null)
       setPurchaseItem([]);
       setCurrentTotal(0);
     }
@@ -347,8 +352,8 @@ const PurchaseInvoice = () => {
     }
     setConfirmModal({ isOpen: false, action: "", data: null });
     await createNewPruchaseInvoice()
-    setSupplierGridBoxValue({ id: "", Code: "", Name: "" })
-    setPurchasePersonGridBoxValue({ id: "", Code: "", Name: "" })
+    setSupplierGridBoxValue(null)
+    setPurchasePersonGridBoxValue(null)
     setPurchaseItem([]);
     setCurrentTotal(0);
     return;
@@ -498,7 +503,7 @@ const PurchaseInvoice = () => {
                 <DropDownBox
                   id="SupplierSelection"
                   className="border rounded p-1 w-1/2 h-[34px]"
-                  value={SupplierGridBoxValue?.id || null}
+                  value={SupplierGridBoxValue?.id ?? ""}
                   opened={isSupplierGridBoxOpened}
                   openOnFieldClick={true}
                   valueExpr='creditorId'
@@ -520,13 +525,19 @@ const PurchaseInvoice = () => {
                   className="border rounded p-2 w-full resize-none bg-white text-secondary"
                   placeholder="Name"
                   onChange={(e) => { setSupplierGridBoxValue(prev => ({ ...prev, Name: e.target.value })) }}
-                  value={SupplierGridBoxValue.Name}
+                  value={SupplierGridBoxValue?.Name}
                 />
-                <button
-                  className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
-                  onClick={handleNewSupplierModal}
-                >
-                  ...</button>
+                <div className="relative group">
+                  <button
+                    className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
+                    onClick={handleNewSupplierModal}
+                  >
+                    ...
+                  </button>
+                  <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                    Add New Supplier
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -587,7 +598,7 @@ const PurchaseInvoice = () => {
             <DropDownBox
               id="PurchasePersonSelection"
               className="border rounded w-full"
-              value={PurchasePersonGridBoxValue.id}
+              value={PurchasePersonGridBoxValue?.id}
               opened={isPurchasePersonGridBoxOpened}
               openOnFieldClick={true}
               valueExpr='userId'
@@ -603,12 +614,13 @@ const PurchaseInvoice = () => {
           <div className="flex flex-col gap-1">
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
+              customInput={<CustomInput />}
               selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
               id="PurchaseDate"
               name="PurchaseDate"
               dateFormat="dd-MM-yyyy"
               className="border rounded p-1 w-full bg-white h-[34px]"
-              onChange={e => setMasterData(prev => ({ ...prev, docDate: e.toISOString().slice(0, 10) }))}
+              onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
             />
 
           </div>
@@ -624,8 +636,9 @@ const PurchaseInvoice = () => {
         </div>
       </div>
 
-      <div className="mt-3 bg-white shadow rounded">
+      <div className="mt-3 p-3 bg-white shadow rounded">
         <TransactionItemWithDiscountDataGrid
+          height={400}
           className={"p-2"}
           customStore={purchaseItemStore}
           gridRef={gridRef}
