@@ -168,7 +168,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
 
         <div className="grid grid-cols-[40%_60%]">
           {/* Left Side - DataGrid */}
-          <div className="h-full border-r-2 p-4 overflow-y-auto">
+          <div className="h-full border-r p-4 overflow-y-auto">
             <CustomerHistoryRXDataGrid
               rxHistoryStore={rxHistoryStore}
               className="p-2"
@@ -181,7 +181,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
           </div>
 
           {/* Right Side - Details */}
-          <div className="h-full overflow-y-auto p-4">
+          <div className="h-full overflow-y-auto p-4 border ">
             {/* Prescribed/Actual Toggle */}
             {selectedRX && (<div className="flex space-x-4 mb-6">
               {["Prescribed", "Actual"].map((tab) => (
