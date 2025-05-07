@@ -3,6 +3,7 @@ import { Column, Toolbar, Item, MasterDetail } from "devextreme-react/data-grid"
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import CustomStore from "devextreme/data/custom_store";
+import CustomInput from "../input/dateInput";
 
 import { GetDebtorSalesHistorys } from "../../api/maintenanceapi";
 
@@ -97,26 +98,28 @@ const SalesHistoryDataGrid = ({ className, onError }) => {
         <div>
             <label className="mr-1">From</label>
             <DatePicker
+            customInput={<CustomInput/>}
             selected={fromDate}
             onChange={(date) => {
                 setFromDate(date);
                 handleDateChange();
             }}
-            className="border px-1 rounded h-[40px] w-full cursor-pointer"
-            dateFormat="yyyy-MM-dd"
+            className="border-2 px-1 rounded h-[40px] w-full cursor-pointer"
+            dateFormat="dd/MM/yyyy"
             />
         </div>
 
         <div>
             <label className="mr-1">To</label>
             <DatePicker
+            customInput={<CustomInput/>}
             selected={toDate}
             onChange={(date) => {
                 setToDate(date);
                 handleDateChange();
             }}
-            className="border px-1 rounded h-[40px] w-full cursor-pointer"
-            dateFormat="yyyy-MM-dd"
+            className="border-2 px-1 rounded h-[40px] w-full cursor-pointer"
+           dateFormat="dd/MM/yyyy"
             />
         </div>
         </div>

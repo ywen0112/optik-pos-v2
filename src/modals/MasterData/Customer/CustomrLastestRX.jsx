@@ -17,19 +17,19 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto border rounded p-4">
+    <div className="w-full h-[77vh] overflow-y-auto p-4">
       {/* Spectacles Section */}
-      <div className="border w-full mt-4 p-2">
+      <div className="border-2 w-full mt-4 p-2">
         <div className="mb-4">
           <div className="text-center">
-            <h5 className="font-semibold mb-2">Spectacles</h5>
+            <h3 className="font-semibold mb-2">Spectacles</h3>
           </div>
 
           <label className="col-span-2">Doc Date</label>
           <input
             type="text"
             readOnly
-            className="col-span-2 border px-2 h-[40px] ml-2 "
+            className="col-span-2 border-2 px-2 h-[40px] ml-2 "
             value={formatDate(latesSpecRXData.docDate)}
           />
 
@@ -54,7 +54,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
               <input
                 type="text"
                 readOnly
-                className="mr-2 border w-full h-[40px] px-2 "
+                className="mr-2 border-2 w-full h-[40px] px-2 "
                 placeholder="Spectacles Type"
                 value={latesSpecRXData.spectaclesType}
               />
@@ -63,7 +63,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
               <input
                 type="text"
                 readOnly
-                className="mr-2 border w-full h-[40px] px-2 "
+                className="mr-2 border-2 w-full h-[40px] px-2 "
                 placeholder="Optical Height"
                 value={latesSpecRXData.opticalHeight}
               />
@@ -72,7 +72,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
               <input
                 type="text"
                 readOnly
-                className="mr-2 border w-full h-[40px] px-2 "
+                className="mr-2 border-2 w-full h-[40px] px-2 "
                 placeholder="Segment Height"
                 value={latesSpecRXData.segmentHeight}
               />
@@ -115,7 +115,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 key={`r-${field}`}
                 type="text"
                 readOnly
-                className="border px-2 h-[40px] "
+                className="border-2 px-2 h-[40px] "
                 value={latesSpecRXData[
                   activeSpectaclesTab === 'SpecDistance' ? `r_D_${field}` : `r_R_${field}`
                 ] || ""}
@@ -128,7 +128,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 key={`l-${field}`}
                 type="text"
                 readOnly
-                className="border px-2 h-[40px] "
+                className="border-2 px-2 h-[40px] "
                 value={latesSpecRXData[
                   activeSpectaclesTab === 'SpecDistance' ? `l_D_${field}` : `l_R_${field}`
                 ] || ""}
@@ -139,17 +139,17 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
       </div>
 
       {/* Contact Lens Section */}
-      <div className="border w-full mt-4 p-2">
+      <div className="border-2 w-full mt-4 p-2">
         <div className="mb-4">
           <div className="text-center">
-            <h5 className="font-semibold mb-2">Contact Lens</h5>
+            <h3 className="font-semibold mb-2">Contact Lens</h3>
           </div>
 
           <label className="col-span-2">Doc Date</label>
           <input
             type="text"
             readOnly
-            className="col-span-2 border px-2 h-[40px] ml-2 "
+            className="col-span-2 border-2 px-2 h-[40px] ml-2 "
             value={formatDate(latestLensRXData.docDate)}
           />
 
@@ -180,7 +180,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 key={`lens-r-${field}`}
                 type="text"
                 readOnly
-                className="border px-2 h-[40px] "
+                className="border-2 px-2 h-[40px] "
                 value={latestLensRXData[
                   activeLensTab === 'LensDistance' ? `r_D_${field}` : `r_R_${field}`
                 ] || ""}
@@ -194,7 +194,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 key={`lens-l-${field}`}
                 type="text"
                 readOnly
-                className="border px-2 h-[40px] "
+                className="border-2 px-2 h-[40px] "
                 value={latestLensRXData[
                   activeLensTab === 'LensDistance' ? `l_D_${field}` : `l_R_${field}`
                 ] || ""}

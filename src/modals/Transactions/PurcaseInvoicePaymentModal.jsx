@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { GetPaymentMethodRecords } from '../../api/maintenanceapi';
 import{ NewPurchaseInvoicePayment, NewPurchaseInvoicePaymentDetail, SavePurchaseInvoicePayment } from '../../api/transactionapi';
 import NotificationModal from '../NotificationModal';
-import { X, Plus } from "lucide-react"
+import { X, Plus } from "lucide-react";
+import CustomStore from 'devextreme/data/custom_store';
+import { getInfoLookUp } from "../../api/infolookupapi";
+import { List } from "devextreme-react";
 
 const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId, purchaseInvoiceId, onError }) => {
-  const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPayments, setSelectedPayments] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [offset, setOffset] = useState(0);
   const [activePaymentMethod, setActivePaymentMethod] = useState(null);
   const [purchaseInvoicePaymentData, setPurchaseInvoicePaymentData] = useState(null);
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: '' });
@@ -18,30 +18,33 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
 
   useEffect(() => {
     if (isOpen) {
-      fetchPaymentMethods();
       setSelectedPayments([]);
       createNewPurchaseInvoicePayment();
       setActivePaymentMethod(null);
     }
   }, [isOpen]);
 
-  const fetchPaymentMethods = async (isLoadMore = false) => {
-    try {
-      const params = { companyId, keyword: '', offset: isLoadMore ? offset : 0, limit: 10 };
-      const response = await GetPaymentMethodRecords(params);
-      if (response?.success) {
-        const newData = response.data ?? [];
-        setPaymentMethods(prev => (isLoadMore ? [...prev, ...newData] : newData));
-        setHasMore(newData.length === params.limit);
-        setOffset(prev => (isLoadMore ? prev + params.limit : params.limit));
-      } else {
-        throw new Error(response?.message || "Failed to fetch Payment Methods.");
-      }
-    } catch (error) {
-      setPaymentMethods([]);
-      onError({ title: 'Fetch Error', message: error.message });
-    }
-  };
+  const paymentMethodStore = new CustomStore({
+          key: "paymentMethodId",
+  
+          load: async (loadOptions) => {
+              const filter = loadOptions.filter;
+              let keyword = filter?.[2] || "";
+  
+              const params = {
+                  keyword: keyword || "",
+                  offset: loadOptions.skip,
+                  limit: loadOptions.take,
+                  type: "payment_method",
+                  companyId,
+              };
+              const res = await getInfoLookUp(params);
+              return {
+                  data: res.data,
+                  totalCount: res.totalRecords,
+              };
+          },
+      });
 
   const createNewPurchaseInvoicePayment = async () => {
     try {
@@ -53,29 +56,24 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
       onError({ title: 'New Error', message: error.message || "Failed to add new Purchase Payment." });
     }
   };
-
-  const isSelected = (paymentMethodId) => {
-    return selectedPayments.some(item => item.paymentMethodId === paymentMethodId);
-  };
   
   const addPaymentMethod = async (method) => {
-    const alreadyExists = selectedPayments.some(item => item.paymentMethodId === method.paymentMethodId);
-    if (alreadyExists) return;
-
     try {
       const response = await NewPurchaseInvoicePaymentDetail();
       if (response?.success && response.data) {
-        setSelectedPayments(prev => [...prev, {
+        const newEntry = {
           ...method,
-          amount: '0.00',
+          uid: Date.now() + Math.random(), 
+          amount: '',
           purchaseInvoicePaymentDetailId: response.data.purchaseInvoicePaymentDetailId,
           reference: '',
           refno: '',
           ccno: '',
           approvalcode: '',
           remark: ''
-        }]);
-        setActivePaymentMethod(method);
+        };
+        setSelectedPayments(prev => [...prev, newEntry]);
+        setActivePaymentMethod(newEntry);
         setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
         setRawAmountDigits('');
         setFocusedField('amount');
@@ -92,7 +90,7 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
       const removed = prev[index];
       const updated = prev.filter((_, i) => i !== index);
   
-      if (activePaymentMethod?.paymentMethodId === removed.paymentMethodId) {
+      if (activePaymentMethod?.uid === removed.uid) {
         setActivePaymentMethod(null);
         setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
         setRawAmountDigits('');
@@ -144,7 +142,7 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
   };
 
   const handlePlusClick = () => {
-    const selectedIndex = selectedPayments.findIndex(item => item.paymentMethodId === activePaymentMethod.paymentMethodId);
+    const selectedIndex = selectedPayments.findIndex(item => item.uid === activePaymentMethod.uid);
     if (selectedIndex !== -1) {
       const updated = [...selectedPayments];
       updated[selectedIndex] = { ...updated[selectedIndex], ...paymentDetails };
@@ -183,18 +181,17 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
   };
 
   const renderCashFields = () => (
-    <div className="space-y-4">
+    <div className="space-y-4 text-lg">
       <div className="flex items-center gap-1">
         <span className="w-32 font-medium">Amount</span>
         <input
           type="text"
-          placeholder='0.00'
           value={formatRawAmount(rawAmountDigits)}
           onChange={handleAmountChange}
           onKeyDown={handleAmountKeyDown}
           onFocus={() => setFocusedField('amount')}
           autoFocus={focusedField === 'amount'} 
-          className="border p-1 h-[40px] flex-1 text-right"
+          className="border-2 p-1 h-[40px] flex-1 text-right"
         />
       </div>
       <div className='text-right'>
@@ -213,7 +210,7 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
   };
 
   const renderCreditCardFields = () => (
-    <div className="space-y-2">
+    <div className="space-y-2 text-lg">
       {Object.entries(fieldKeyMap).map(([label, key], idx) => (
         <div key={idx} className="flex items-center gap-1">
           <span className="w-32">{label}</span>
@@ -223,7 +220,7 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
             onFocus={() => setFocusedField(key)}
             onChange={(e) => setPaymentDetails(prev => ({ ...prev, [label.toLowerCase().replace(' ', '')]: e.target.value }))}
 
-            className="border p-1 h-[40px] flex-1 text-right"
+            className="border-2 p-1 h-[40px] flex-1 text-right"
           />
         </div>
       ))}
@@ -231,13 +228,12 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
         <span className="w-32">Amount</span>
         <input
           type="text"
-          placeholder='0.00'
           value={formatRawAmount(rawAmountDigits)}
           onChange={handleAmountChange}
           onKeyDown={handleAmountKeyDown}
           onFocus={() => setFocusedField('amount')}
           autoFocus={focusedField === 'amount'} 
-          className="border p-1 h-[40px] flex-1 text-right"
+          className="border-2 p-1 h-[40px] flex-1 text-right"
         />
       </div>
       <div className='text-right'>
@@ -265,6 +261,12 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
       setPaymentDetails(prev => ({ ...prev, amount: formatRawAmount(updated) }));
       return;
     }
+
+    if (input === 'clear') {
+      setRawAmountDigits('');
+      setPaymentDetails(prev => ({ ...prev, amount: '0.00' }));
+      return;
+    }
   
     if (!/^\d$/.test(input)) return;
   
@@ -288,24 +290,22 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
             </div>
         </div>
 
-        <div className="flex flex-row h-[83vh]">
+        <div className="flex flex-row h-[82vh]">
             {/* Left Section */}
             <div className="flex-1 border-r p-4 flex flex-col h-full">
-                <div className="border p-4 mb-4">
+                <div className="border-2 p-4 mb-4">
                     <h3 className="font-semibold mb-2">Total Amount</h3>
-                    <label>{total?.toFixed(2) || "0.00"}</label>
+                    <label className="text-lg">{total?.toFixed(2) || "0.00"}</label>
                 </div>
 
-                <div className="border flex-1 overflow-y-auto mb-4 p-2">
-                    <div className="space-y-2">
+                <div className="border-2 flex-1 overflow-y-auto mb-4 p-2">
+                  <div className="space-y-2 text-lg">
                     {selectedPayments.length > 0 ? (
                         selectedPayments.map((item, index) => (
                           <div
-                            key={item.paymentMethodId}
-                            className={`group flex items-center gap-1 border p-2 rounded cursor-pointer 
-                              ${activePaymentMethod?.paymentMethodId === item.paymentMethodId 
-                                ? 'border-primary' 
-                                : 'hover:bg-gray-100'}`}
+                            key={item.uid}
+                            className={`group flex items-center gap-1 border-2 p-2 rounded cursor-pointer 
+                              ${activePaymentMethod?.uid === item.uid  ? 'border-primary' : 'hover:bg-gray-100'}`}
                             onClick={() => {
                               setActivePaymentMethod(item);
                               setPaymentDetails({
@@ -333,7 +333,7 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
                             }}
                             className="text-red-500 hover:text-red-700 group-hover:bg-gray-100"
                           >
-                            <X size={18} />
+                            <X size={20} />
                           </button>
                         </div>
                         ))
@@ -349,53 +349,36 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
                     type="text"
                     value={calculateBalance()}
                     readOnly
-                    className="w-full"
+                    className="w-full text-lg"
                 />
                 </div>
             </div>
 
             {/* Middle Section */}
-            <div className="flex-1 border-r p-4 flex flex-col h-[85vh]">
-                <div className="p-4 mb-4 border">
-                    <h3 className="font-semibold mb-8">Payment Methods</h3>
-                </div>
-                <div className="border flex-1 overflow-y-auto mb-4 p-2 "
-                    onScroll={(e) => {
-                    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-                    if (scrollHeight - scrollTop <= clientHeight + 50) { 
-                        if (hasMore) {
-                        fetchPaymentMethods(true);
-                        }
-                    }
-                    }}
-                >
-                    <div className="space-y-2">
-                    {paymentMethods.length > 0 ? (
-                        paymentMethods.map((method) => (
-                          <div
-                            key={method.paymentMethodId}
-                            className={`border p-2 rounded cursor-pointer ${isSelected(method.paymentMethodId) ? 'bg-gray-100 text-secondary cursor-not-allowed' : 'hover:bg-gray-100'}`}
-                            onClick={() => {
-                              if (!isSelected(method.paymentMethodId)) {
-                                addPaymentMethod(method);
-                              }
-                              setFocusedField('amount');
-                            }}
-                          >
-                            {method.paymentMethodCode}
-                          </div>
-                        ))
-                    ) : (
-                        <p className="text-gray-500">No payment methods found.</p>
-                    )}
+            <div className="flex-1 border-r p-4 flex flex-col h-[80vh]">
+              <div className="p-4 mb-4 border">
+                  <h3 className="font-semibold mb-8">Payment Methods</h3>
+              </div>
+              <List
+                  dataSource={paymentMethodStore}
+                  height="100%"
+                  repaintChangesOnly={true}
+                  searchEnabled={false}
+                  focusStateEnabled={false}
+                  pageLoadMode="scrollBottom"
+                  itemRender={(data) => (
+                    <div
+                    className="p-2 cursor-pointer hover:bg-gray-100 text-lg"
+                      onClick={() => {
+                        addPaymentMethod(data); 
+                        setFocusedField('amount');
+                      }}
+                    >
+                      {data.paymentMethodCode}
                     </div>
-
-                    {hasMore && (
-                    <div className="flex justify-center items-center py-2">
-                        <div className="w-6 h-6 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-                    </div>
-                    )}
-                </div>
+                  )}
+                  className="border-2 p-2"
+                />
             </div>
 
             {/* Right Section */}
@@ -404,16 +387,17 @@ const PurchaseInvoicePaymentModal = ({ isOpen, onClose, total, companyId, userId
                 {renderActivePaymentMethodFields()}
               </div>
             
-              <div className="flex-1 border mt-4 p-4 flex flex-col justify-center items-center">
+              <div className="flex-1 border-2 mt-4 p-4 flex flex-col justify-center items-center">
                 <div className="grid grid-cols-3 gap-4 w-full max-w-[300px]">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'backspace', 0].map((value, index) => (
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'backspace', 0, 'clear'].map((value, index) => (
                   <button
                     key={index}
-                    className="h-16 text-xl font-semibold border rounded flex items-center justify-center hover:bg-gray-100"
+                    className={`h-18 text-2xl font-semibold border rounded flex items-center justify-center transition
+                      ${value === 'clear' ? 'bg-primary text-white hover:bg-primary/90' : 'hover:bg-gray-100'}`}
                     onClick={() => handleNumberPadInput(value)}
                   >
-                    {value === 'backspace' ? '⌫' : value}
-                  </button>
+                      {value === 'backspace' ? '⌫' : value === 'clear' ? 'C' : value}
+                    </button>
                 ))}
                 </div>
               </div>

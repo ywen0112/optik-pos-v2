@@ -298,12 +298,14 @@ const getSalesOrder             = `${ApiBaseUrl}SalesOrder/Get`;
 const saveSalesOrder            = `${ApiBaseUrl}SalesOrder/Save`;
 const voidSalesOrder           = `${ApiBaseUrl}SalesOrder/Void`;
 
-export const GetSalesOrderRecords = ({companyId, keyword, offset, limit}) =>{
+export const GetSalesOrderRecords = ({companyId, keyword, offset, limit, fromDate, toDate}) =>{
     const body = JSON.stringify({
         companyId,
         keyword,
         offset,
         limit,
+        fromDate,
+        toDate
     });
 
     return postRequest(getSalesOrderRecords, body);

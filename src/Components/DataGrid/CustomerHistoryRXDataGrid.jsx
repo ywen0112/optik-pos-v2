@@ -28,7 +28,7 @@ const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick, from
               setFromDate(date);
               handleDateChange();
             }}
-            className="border px-1 rounded h-[40px] w-full cursor-pointer"
+            className="border-2 px-1 rounded h-[40px] w-full cursor-pointer"
             dateFormat="dd/MM/yyyy"
           />
         </div>
@@ -42,7 +42,7 @@ const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick, from
               setToDate(date);
               handleDateChange();
             }}
-            className="border px-1 rounded h-[40px] w-full cursor-pointer"
+            className="border-2 px-1 rounded h-[40px] w-full cursor-pointer"
             dateFormat="dd/MM/yyyy"
           />
         </div>

@@ -168,7 +168,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
 
         <div className="grid grid-cols-[40%_60%]">
           {/* Left Side - DataGrid */}
-          <div className="h-full border-r overflow-y-auto">
+          <div className="h-full border-r-2 p-4 overflow-y-auto">
             <CustomerHistoryRXDataGrid
               rxHistoryStore={rxHistoryStore}
               className="p-2"
@@ -205,22 +205,22 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
               <div className="grid grid-cols-4 gap-1 mb-4">
                 <div className="col-span-1 mt-2">
                   <label className="block mb-2">Spectacles Type</label>
-                  <input type="text" readOnly className="border px-2 h-[40px]" placeholder="Spectacles Type" value={selectedRX?.[activeTab === "Prescribed" ? "prescribedRXSpectacles" : "actualRXSpectacles"]?.spectaclesType || ""} />
+                  <input type="text" readOnly className="border-2 px-2 h-[40px]" placeholder="Spectacles Type" value={selectedRX?.[activeTab === "Prescribed" ? "prescribedRXSpectacles" : "actualRXSpectacles"]?.spectaclesType || ""} />
                 </div>
 
                 <div className="col-span-1 mt-2">
                   <label className="block mb-2">Optical Height</label>
-                  <input type="text" readOnly className="border px-2 h-[40px]" placeholder="Optical Height" value={selectedRX?.[activeTab === "Prescribed" ? "prescribedRXSpectacles" : "actualRXSpectacles"]?.opticalHiehgt || ""} />
+                  <input type="text" readOnly className="border-2 px-2 h-[40px]" placeholder="Optical Height" value={selectedRX?.[activeTab === "Prescribed" ? "prescribedRXSpectacles" : "actualRXSpectacles"]?.opticalHiehgt || ""} />
                 </div>
 
                 <div className="col-span-1 mt-2">
                   <label className="block mb-2">Segment Height</label>
-                  <input type="text" readOnly className="border px-2 h-[40px]" placeholder="Segment Height" value={selectedRX?.[activeTab === "Prescribed" ? "prescribedRXSpectacles" : "actualRXSpectacles"]?.segmentHiehgt || ""} />
+                  <input type="text" readOnly className="border-2 px-2 h-[40px]" placeholder="Segment Height" value={selectedRX?.[activeTab === "Prescribed" ? "prescribedRXSpectacles" : "actualRXSpectacles"]?.segmentHiehgt || ""} />
                 </div>
 
                 <div className="col-span-1 mt-2">
                   <label className="block mb-2">Dominent Eye</label>
-                  <input type="text" readOnly className="border px-2 h-[40px]" placeholder="Dominent Eye" value={selectedRX?.[activeTab === "Prescribed" ? "prescribedRXSpectacles" : "actualRXSpectacles"]?.dominentEye || ""} />
+                  <input type="text" readOnly className="border-2 px-2 h-[40px]" placeholder="Dominent Eye" value={selectedRX?.[activeTab === "Prescribed" ? "prescribedRXSpectacles" : "actualRXSpectacles"]?.dominentEye || ""} />
                 </div>
               </div>
 
@@ -239,7 +239,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                     key={`spec-left-${field}`}
                     type="text"
                     readOnly
-                    className="border px-2 h-[40px]"
+                    className="border-2 px-2 h-[40px]"
                     value={renderSpecValue("l_D", field)}
                   />
                 ))}
@@ -250,7 +250,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                     key={`spec-right-${field}`}
                     type="text"
                     readOnly
-                    className="border px-2 h-[40px]"
+                    className="border-2 px-2 h-[40px]"
                     value={renderSpecValue("r_D", field)}
                   />
                 ))}
@@ -259,7 +259,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
             )}
 
             {/* Contact Lens Section */}
-            {selectedRX?.type === "ContactLens" && (<div className="pt-4 border-t">
+            {selectedRX?.type === "ContactLens" && (<div className="pt-4 border-t-2">
               <div className="text-center">
                 <h5 className="font-semibold mb-4">Contact Lens</h5>
               </div>
@@ -281,7 +281,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                     key={`lens-left-${field}`}
                     type="text"
                     readOnly
-                    className="border px-2 h-[40px]"
+                    className="border-2 px-2 h-[40px]"
                     value={renderLensValue("l_D", field)}
                   />
                 ))}
@@ -293,7 +293,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                     key={`lens-right-${field}`}
                     type="text"
                     readOnly
-                    className="border px-2 h-[40px]"
+                    className="border-2 px-2 h-[40px]"
                     value={renderLensValue("r_D", field)}
                   />
                 ))}

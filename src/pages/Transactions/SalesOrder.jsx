@@ -13,7 +13,7 @@ import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
 import SalesOrderPaymentModal from "../../modals/Transactions/SalesOrderPaymentModal";
-import { NewSalesOrder, NewSalesOrderDetail, SaveSalesOrder } from "../../api/transactionapi";
+import { GetSalesOrderRecords, NewSalesOrder, NewSalesOrderDetail, SaveSalesOrder } from "../../api/transactionapi";
 import { getInfoLookUp } from "../../api/infolookupapi";
 import { GetSpecificUser } from "../../api/userapi";
 import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGridWithDisc";
@@ -26,6 +26,7 @@ import CustomInput from "../../Components/input/dateInput";
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
 const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
 const PractitionerGridBoxDisplatExpr = (item) => item && `${item.userName}`;
+const SalesOrderGridBoxDisplatExpr = (item) => item && `${item.docNo}`;
 const CustomerGridColumns = [
     { dataField: "debtorCode", caption: "Code", width: "30%" },
     { dataField: "companyName", caption: "Name", width: "50%" }
@@ -35,6 +36,11 @@ const SalesPersonGridColumns = [
 ];
 const PractitionerGridColumns = [
     { dataField: "userName", caption: "Name", width: "100%" }
+];
+const SalesOrderGridColumns = [
+    { dataField: "docNo", caption: "Doc No", width: "40%" },
+    { dataField: "debtorCode", caption: "Code", width: "30%" },
+    { dataField: "debtorName", caption: "Name", width: "50%" }
 ];
 
 const SalesOrder = () => {
@@ -53,6 +59,8 @@ const SalesOrder = () => {
     const [SalesPersonGridBoxValue, setSalesPersonGridBoxValue] = useState({ id: "", Code: "", Name: "" });
     const [isPractionerGridBoxOpened, setIsPractionerGridBoxOpened] = useState(false);
     const [PractionerGridBoxValue, setPractionerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
+    const [isSalesOrderGridBoxOpened, setIsSalesOrderGridBoxOpened] = useState(false);
+    const [SalesOrderGridBoxValue, setSalesOrderGridBoxValue] = useState({});
 
     const [showCustomerModal, setShowCustomerModal] = useState(false);
     const [newCustomer, setNewCustomer] = useState(null);
@@ -66,6 +74,7 @@ const SalesOrder = () => {
     const [eyePowerContactLensFormData, setEyePowerContactLensFormData] = useState([]);
 
     const [salesOrderPayment, setSalesOrderPayment] = useState(false);
+    const [selectedSalesOrder, setSelectedSalesOrder] = useState(null);
 
     const gridRef = useRef(null);
 
@@ -251,6 +260,25 @@ const SalesOrder = () => {
         },
     });
 
+    const salesOrderStore = new CustomStore({
+        key: "salesOrderId",
+        load: async (loadOptions) => {
+            const filter = loadOptions.filter;
+            let keyword = filter?.[2] || "";
+
+            const res = await GetSalesOrderRecords({
+                keyword: keyword || "",
+                offset: loadOptions.skip,
+                limit: loadOptions.take,
+                companyId,
+                fromDate: "1970-01-01T00:00:00",
+                toDate: new Date().toISOString(),
+            });
+            return res?.data || [];
+        },
+    });    
+
+
     const createNewSalesOrder = async () => {
         try {
             const response = await NewSalesOrder({ companyId, userId, id: userId });
@@ -342,6 +370,102 @@ const SalesOrder = () => {
             </DataGrid>
         ),
         [CustomerGridBoxValue, CustomerDataGridOnSelectionChanged],
+    );
+
+    const handleSalesOrderGridBoxValueChanged = (e) => {
+        const selected = e.value;
+        if (!selected) {
+            setSalesOrderGridBoxValue({}); // or reset to default
+            return;
+        }
+        setSalesOrderGridBoxValue({
+            id: selected.salesOrderId,
+            DocNo: selected.docNo,
+            Code: selected.debtorCode,
+            Name: selected.debtorName,
+            SalesPerson: selected.salesPerson,
+            RefNo: selected.refNo,
+            Practitioner: selected.practitioner,
+            DocDate: selected.docDate,
+            NextVisitDate: selected.nextVisitDate
+        });
+    }
+
+    const SalesOrderDataGridOnSelectionChanged = useCallback((e) => {
+        const selected = e.selectedRowsData?.[0];
+        if (selected) {
+            setSalesOrderGridBoxValue({
+                id: selected.salesOrderId,
+                DocNo: selected.docNo,
+                Code: selected.debtorCode,
+                Name: selected.debtorName
+            });
+            setIsSalesOrderGridBoxOpened(false);
+    
+            // 💡 Set master data (basic info)
+            setMasterData(prev => ({
+                ...prev,
+                salesOrderId: selected.salesOrderId,
+                docNo: selected.docNo,
+                docDate: selected.docDate,
+                refNo: selected.refNo,
+                remark: selected.remark,
+                nextVisitDate: selected.nextVisitDate,
+                isReady: selected.isReady,
+                isCollected: selected.isCollected
+            }));
+    
+            // 💡 Set customer
+            setCustomerGridBoxValue({
+                id: selected.debtorId,
+                Code: selected.debtorCode,
+                Name: selected.debtorName
+            });
+    
+            // 💡 Set salesperson and practitioner if available
+            setSalesPersonGridBoxValue({ id: selected.userId, Name: selected.salesPerson });
+            setPractionerGridBoxValue({ id: selected.practitionerUserID, Name: selected.practitioner });
+    
+        }
+    }, []);
+    
+
+    const onSalesOrderGridBoxOpened = useCallback((e) => {
+        if (e.name === 'opened') {
+            setIsSalesOrderGridBoxOpened(e.value);
+        }
+    }, []);
+
+    const SalesOrderDataGridRender = useCallback(
+        () => (
+            <DataGrid
+                dataSource={salesOrderStore}
+                columns={SalesOrderGridColumns}
+                hoverStateEnabled={true}
+                showBorders={true}
+                selectedRowKeys={SalesOrderGridBoxValue?.salesOrderId}
+                onSelectionChanged={SalesOrderDataGridOnSelectionChanged}
+                height="300px"
+                remoteOperations={{
+                    paging: true,
+                    filtering: true,
+                }}
+            >
+                <Selection mode="single" />
+                <Paging
+                    enabled={true}
+                    pageSize={10}
+                />
+                <Scrolling mode="infinite" />
+
+                <SearchPanel
+                    visible={true}
+                    width="100%"
+                    highlightSearchText={true}
+                />
+            </DataGrid>
+        ),
+        [SalesOrderGridBoxValue, SalesOrderDataGridOnSelectionChanged],
     );
 
     const SalesPersonDataGridOnSelectionChanged = useCallback((e) => {
@@ -1432,9 +1556,6 @@ const SalesOrder = () => {
                             }}
                         />
                     </div>
-
-
-
                 </div>
             </div>
 
@@ -1673,16 +1794,28 @@ const SalesOrder = () => {
 
             </div>
             <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
-                <div className="flex flex-row">
-                    <input
-                        type="text"
-                        placeholder="search"
-                        className="p-2 w-44 m-[2px]"
+                <div className="flex flex-row gap-1">
+                    <DropDownBox
+                        id="SalesOrderSelection"
+                        className="border rounded w-full"
+                        value={selectedSalesOrder}
+                        opened={isSalesOrderGridBoxOpened}
+                        openOnFieldClick={true}
+                        valueExpr={null}
+                        displayExpr={SalesOrderGridBoxDisplatExpr}
+                        placeholder="Search Sales Record"
+                        showClearButton={true}
+                        onValueChanged={handleSalesOrderGridBoxValueChanged}
+                        dataSource={salesOrderStore}
+                        onOptionChanged={onSalesOrderGridBoxOpened}
+                        contentRender={SalesOrderDataGridRender}
+                        dropDownOptions={{
+                            width: 400
+                        }}
                     />
-                    <button className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    {/* <button className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Clear
-                    </button>
-
+                    </button> */}
                 </div>
 
                 <div className="w-full flex flex-row justify-end">

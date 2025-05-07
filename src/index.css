@@ -39,9 +39,21 @@ td[aria-label="Column Action"] {
   text-align: center !important;
 }
 
-
 #SalesOrderItemTable{
   font-family: 'Roboto', sans-serif;
+}
+
+.dx-list-item.dx-state-focused,
+.dx-list-item.dx-state-active,
+.dx-list-item.dx-list-item-selected {
+  background-color: transparent !important;
+  color: inherit !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dx-list .dx-empty-message, .dx-list-item-content { 
+  padding: 5px !important;
 }
 
 @layer base {

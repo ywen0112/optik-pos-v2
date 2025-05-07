@@ -1,6 +1,6 @@
 const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData, isView }) => {
     return (
-        <div className="w-full h-full overflow-y-auto border rounded p-4">
+        <div className="w-full h-full overflow-y-auto border-2 rounded p-4">
             <div className="mt-2">
                 <label className="block">Medical History</label>
                 <div className="grid grid-cols-4 gap-1 mb-2">
@@ -34,7 +34,7 @@ const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData, isView }) =>
                     <input
                         readOnly={isView}
                         type="text"
-                        className="mr-2 border w-full h-[40px] px-2"
+                        className="mr-2 border-2 w-full h-[40px] px-2"
                         placeholder="Others"
                         value={medicalInfoData.medicalOthers}
                         onChange={(e) =>
@@ -89,7 +89,7 @@ const CustomerMedicalInfo = ({ medicalInfoData, setMedicalInfoData, isView }) =>
                     <input
                         readOnly={isView}
                         type="text"
-                        className="mr-2 border w-full h-[40px] px-2"
+                        className="mr-2 border-2 w-full h-[40px] px-2"
                         placeholder="Others"
                         value={medicalInfoData.ocularOthers}
                         onChange={(e) =>
