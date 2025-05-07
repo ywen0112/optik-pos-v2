@@ -125,7 +125,7 @@ const SalesInquiry = () => {
         />
       </DataGrid>
     ),
-    [selectedCustomer, CustomerDataGridOnSelectionChanged],
+    [],
   );
 
   const handleGetInquiry = async () => {
@@ -154,7 +154,7 @@ const SalesInquiry = () => {
           const outstanding = sale.total - paymentsTotal;
           return { ...sale, outstanding: outstanding };
         });
-  
+        
         return {
           data: enrichedSalesData,
           totalCount: res.totalRecords,

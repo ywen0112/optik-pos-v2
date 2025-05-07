@@ -102,6 +102,13 @@ const StockAdjustment = () => {
   }
 
   const confirmAction = async () => {
+    if(confirmModal.action === "clear"){
+      setConfirmModal({ isOpen: false, action: "", data: null });
+      await newStockAdjustmentRecords()
+      setStockAdjustmentItems([]);
+      setCurrentTotal(0);
+      return;
+    }
     try {
       const res = await SaveStockAdjustment({ ...confirmModal.data });
       if (res.success) {
@@ -119,6 +126,13 @@ const StockAdjustment = () => {
     setStockAdjustmentItems([]);
     setCurrentTotal(0);
     return;
+  }
+
+  const handleClear = () =>{
+    setConfirmModal({
+      isOpen: true,
+      action: "clear",
+    })
   }
 
   const handleSavePrint = () => {
@@ -215,10 +229,20 @@ const stockAdjustmentItemStore = new CustomStore({
           }
       });
 
+      const confirmationTitleMap = {
+        add: "Confirm New",
+        clear: "Confirm Clear"
+      };
+    
+      const confirmationMessageMap = {
+        add: "Are you sure you want to add Stock Adjustment?",
+        clear: "Are you sure you want to clear this page input?"
+      };
+
   return (
     <>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
-      <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Goods Transit?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
+      <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.action]} message={confirmationMessageMap[confirmModal.action]} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
 
       <div className="grid grid-cols-2 gap-6">
@@ -323,7 +347,7 @@ const stockAdjustmentItemStore = new CustomStore({
             placeholder="search"
             className="p-2 w-44 m-[2px]"
           />
-          <button className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+          <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
             Clear
           </button>
 

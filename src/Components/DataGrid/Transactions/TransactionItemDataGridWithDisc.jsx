@@ -111,6 +111,7 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
             if(setActiveItem){setActiveItem(e.data)};
             setCurrentRow(e.data);
             grid.editCell(e.rowIndex, e.column.dataField);
+            setDropDownBoxOpen(true)
         }
     }, [])
 

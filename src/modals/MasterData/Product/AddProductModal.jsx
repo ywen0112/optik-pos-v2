@@ -585,11 +585,12 @@ const UpdateProductModal = ({
 
                     <div className="absolute bottom-0 right-0 bg-white py-4 pr-6 flex justify-end w-full border-t">
                         <div className="flex gap-1">
-                            <button onClick={handleClose} className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700">
+                            <button onClick={() => { setProductMinPrice(null); setProductCost(null); handleClose}} className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700">
                                 Cancel
                             </button>
                             <button className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
                                 onClick={() => {
+                                    setProductMinPrice(null); setProductCost(null);
                                     if (!formData?.description.trim()) {
                                         onError({
                                             title: "Validation Error",

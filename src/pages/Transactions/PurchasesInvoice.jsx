@@ -20,6 +20,7 @@ import AddSupplierModal from "../../modals/MasterData/Supplier/AddSupplierModal"
 import PurchaseInvoicePaymentModal from "../../modals/Transactions/PurcaseInvoicePaymentModal";
 import { NewPurchaseInvoice, NewPurchaseInvoiceDetail, SavePurchaseInvoice } from "../../api/transactionapi";
 import CustomInput from "../../Components/input/dateInput";
+import { UserPlus } from "lucide-react";
 
 const SupplierGridBoxDisplayExpr = (item) => item && `${item.creditorCode}`;
 const PurchasePersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
@@ -169,7 +170,7 @@ const PurchaseInvoice = () => {
         />
       </DataGrid>
     ),
-    [SupplierGridBoxValue, SupplierDataGridOnSelectionChanged],
+    [],
   );
 
   const handleSupplierGridBoxValueChanged = (e) => {
@@ -221,7 +222,7 @@ const PurchaseInvoice = () => {
         />
       </DataGrid>
     ),
-    [PurchasePersonGridBoxValue, PurchasePersonDataGridOnSelectionChanged],
+    [],
   );
 
   const handlePurchasePersonGridBoxValueChanged = (e) => {
@@ -287,7 +288,7 @@ const PurchaseInvoice = () => {
     if (SupplierGridBoxValue?.id === "") {
       setErrorModal({ title: "Failed to Add Item", message: "Please Select a Supplier to proceed" });
       return;
-  }
+    }
     try {
       const res = await NewPurchaseInvoiceDetail({});
       if (res.success) {
@@ -334,6 +335,15 @@ const PurchaseInvoice = () => {
   }
 
   const confirmAction = async () => {
+    if (confirmModal?.action === "clear") {
+      setConfirmModal({ isOpen: false, action: "", data: null });
+      await createNewPruchaseInvoice()
+      setSupplierGridBoxValue(null)
+      setPurchasePersonGridBoxValue(null)
+      setPurchaseItem([]);
+      setCurrentTotal(0);
+      return;
+    }
     try {
       const res = await SavePurchaseInvoice({ ...confirmModal.data });
       if (res.success) {
@@ -358,6 +368,23 @@ const PurchaseInvoice = () => {
     setCurrentTotal(0);
     return;
   }
+
+  const handleClear = () => {
+    setConfirmModal({
+      isOpen: true,
+      action: "clear",
+    })
+  }
+
+  const confirmationTitleMap = {
+    add: "Confirm New",
+    clear: "Confirm Clear"
+  };
+
+  const confirmationMessageMap = {
+    add: "Are you sure you want to add Purchase Invoice?",
+    clear: "Are you sure you want to clear this page input?"
+  };
 
   const handleSavePrint = () => {
     if (purchaseItem.length <= 0) {
@@ -421,6 +448,46 @@ const PurchaseInvoice = () => {
       action: "add",
       data: formData,
     })
+  }
+
+  const handleSaveAfterPayment = async ({ action }) => {
+    if (purchaseItem.length <= 0) {
+      return;
+    }
+    const formData = {
+      ...masterData,
+      isVoid: false,
+      creditorId: SupplierGridBoxValue?.id,
+      creditorName: SupplierGridBoxValue?.Name,
+      purchasePersonUserID: PurchasePersonGridBoxValue.id,
+      details: purchaseItem.map((item) => ({
+        purchaseInvoiceDetailId: item.purchaseInvoiceDetailId ?? "",
+        itemId: item.itemId ?? "",
+        itemUOMId: item.itemUOMId ?? "",
+        description: item.description ?? "",
+        desc2: item.desc2 ?? "",
+        qty: item.qty ?? 0,
+        unitPrice: item.price ?? 0,
+        discount: item.discount ? "percent" : "rate" ?? "rate",
+        discountAmount: item.discountAmount ?? 0,
+        subTotal: item.subTotal ?? 0
+      })),
+      tax: tax ?? 0,
+      total: total,
+    }
+    const res = await SavePurchaseInvoice(formData);
+    if (!res.success) {
+      setErrorModal({ title: "Failed to Save", message: res?.errorMessage });
+    }
+    if (action === "save-print") {
+      console.log("print acknowledgement");
+    }
+    await createNewPruchaseInvoice()
+    setSupplierGridBoxValue(null)
+    setPurchasePersonGridBoxValue(null)
+    setPurchaseItem([]);
+    setCurrentTotal(0);
+    return;
   }
 
   const confirmAddSupplierAction = async ({ action, data }) => {
@@ -488,7 +555,7 @@ const PurchaseInvoice = () => {
   return (
     <>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
-      <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Purchase Invoice?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
+      <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.action]} message={confirmationMessageMap[confirmModal.action]} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
 
       <div className="grid grid-cols-2 gap-6">
@@ -529,10 +596,10 @@ const PurchaseInvoice = () => {
                 />
                 <div className="relative group">
                   <button
-                    className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
+                    className="items-center h-[34px] text-secondary hover:bg-grey-500 hover:text-primary flex"
                     onClick={handleNewSupplierModal}
                   >
-                    ...
+                    <UserPlus />
                   </button>
                   <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                     Add New Supplier
@@ -568,7 +635,7 @@ const PurchaseInvoice = () => {
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 items-center gap-1">
+        <div className="grid grid-cols-2 mt-[-18px] items-center gap-1">
           <div className="flex flex-col gap-1">
             <label htmlFor="refNo" className="font-medium text-secondary">Supplier Ref</label>
             <input
@@ -698,7 +765,7 @@ const PurchaseInvoice = () => {
             placeholder="search"
             className="p-2 w-44 m-[2px]"
           />
-          <button className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+          <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
             Clear
           </button>
 
@@ -725,6 +792,7 @@ const PurchaseInvoice = () => {
           userId={userId}
           purchaseInvoiceId={masterData?.purchaseInvoiceId}
           onError={setErrorModal}
+          onSave={handleSaveAfterPayment}
         />
       </div>
     </>

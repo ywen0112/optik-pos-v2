@@ -9,29 +9,13 @@ import { GetDebtorSalesHistorys } from "../../api/maintenanceapi";
 
 import StandardDataGridComponent from "../BaseDataGrid";
 
-const SalesHistoryDataGrid = ({ className, onError }) => {
+const SalesHistoryDataGrid = ({ className, onError, debtorId }) => {
   const companyId = sessionStorage.getItem("companyId")
   const userId = sessionStorage.getItem("userId");
   const salesDataGridRef = useRef(null);
   const [fromDate, setFromDate] = useState(new Date());
   const [toDate, setToDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
-
-  const formatDateLocalFrom = (date) => {
-    if (!date) return null;
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${year}-${month}-${day}T00:00:00`;
-  };
-
-  const formatDateLocalToTo = (date) => {
-    if (!date) return null;
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${year}-${month}-${day}T23:59:59`;
-  };
 
   const handleDateChange = () => {
     if (salesDataGridRef.current) {
@@ -44,32 +28,7 @@ const SalesHistoryDataGrid = ({ className, onError }) => {
     load: async (loadOptions) => {
         const skip = loadOptions.skip ?? 0;
         const take = loadOptions.take ?? 10;
-        const keyword = loadOptions.filter?.[2][2] || "";
-        const formatDateLocalFrom = (date) => {
-            if (!date) return null;
-            const year = date.getFullYear();
-            const month = (date.getMonth() + 1).toString().padStart(2, "0");
-            const day = date.getDate().toString().padStart(2, "0");
-            return `${year}-${month}-${day}T00:00:00`;
-        };
-        const formatDateLocalTo = (date) => {
-            if (!date) return null;
-            const year = date.getFullYear();
-            const month = (date.getMonth() + 1).toString().padStart(2, "0");
-            const day = date.getDate().toString().padStart(2, "0");
-            return `${year}-${month}-${day}T23:59:59`;
-        };
-        let fromDate = formatDateLocalFrom;
-        let toDate = formatDateLocalTo;
-
-        if (Array.isArray(loadOptions.filter)) {
-            if (loadOptions.filter[0]?.[0] === "fromDate") {
-                fromDate = loadOptions.filter[0]?.[2] || formatDateLocalFrom;
-            }
-            if (loadOptions.filter[1]?.[0] === "toDate") {
-                toDate = loadOptions.filter[1]?.[2] || formatDateLocalTo;
-            }
-        }
+        const keyword = debtorId;
 
         try {
             const response = await GetDebtorSalesHistorys({

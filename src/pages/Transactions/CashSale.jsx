@@ -20,6 +20,7 @@ import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal"
 import CashSalesPaymentModal from "../../modals/Transactions/CashSalesPaymentModal";
 import { NewCashSales, NewCashSalesDetail, SaveCashSale } from "../../api/transactionapi";
 import CustomInput from "../../Components/input/dateInput";
+import { UserPlus } from "lucide-react";
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
 const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
@@ -169,7 +170,7 @@ const CashSales = () => {
                 />
             </DataGrid>
         ),
-        [CustomerGridBoxValue, CustomerDataGridOnSelectionChanged],
+        [],
     );
 
     const handleCustomerGridBoxValueChanged = (e) => {
@@ -221,7 +222,7 @@ const CashSales = () => {
                 />
             </DataGrid>
         ),
-        [SalesPersonGridBoxValue, SalesPersonDataGridOnSelectionChanged],
+        [],
     );
 
     const handleSalesPersonGridBoxValueChanged = (e) => {
@@ -333,6 +334,15 @@ const CashSales = () => {
     }
 
     const confirmAction = async () => {
+        if (confirmModal.action === "clear") {
+            setConfirmModal({ isOpen: false, action: "", data: null });
+            await createNewCashSales()
+            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });            
+            setCashSalesItem([]);
+            setCurrentSalesTotal(0);
+            return;
+        }
         try {
             const res = await SaveCashSale({ ...confirmModal.data });
             if (res.success) {
@@ -342,18 +352,20 @@ const CashSales = () => {
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
             await createNewCashSales()
-            setCustomerGridBoxValue({ id: "", Code: "", Name: "" })
-            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" })
+            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+            
             setCashSalesItem([]);
             setCurrentSalesTotal(0);
         }
-        if (confirmModal.action === "addPrint") {
+        if (confirmModal.action === "save-print") {
             console.log("print acknowledgement");
         }
         setConfirmModal({ isOpen: false, action: "", data: null });
         await createNewCashSales()
-        setCustomerGridBoxValue(null)
-        setSalesPersonGridBoxValue(null)
+        setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+        
         setCashSalesItem([]);
         setCurrentSalesTotal(0);
         return;
@@ -389,6 +401,13 @@ const CashSales = () => {
             isOpen: true,
             action: "addPrint",
             data: formData,
+        })
+    }
+
+    const handleClear = () => {
+        setConfirmModal({
+            isOpen: true,
+            action: "clear",
         })
     }
 
@@ -462,6 +481,48 @@ const CashSales = () => {
         }
     };
 
+    const handleProcessAfterSavePayment = async ({ action }) => {
+        if (cashSalesItem.length <= 0) {
+            return;
+        }
+        const formData = {
+            ...masterData,
+            isVoid: false,
+            debtorId: CustomerGridBoxValue?.id,
+            debtorName: CustomerGridBoxValue?.Name,
+            salesPersonUserID: SalesPersonGridBoxValue.id,
+            details: cashSalesItem.map((item) => ({
+                cashSalesDetailId: item.cashSalesDetailId ?? "",
+                itemId: item.itemId ?? "",
+                itemUOMId: item.itemUOMId ?? "",
+                description: item.description ?? "",
+                desc2: item.desc2 ?? "",
+                qty: item.qty ?? 0,
+                unitPrice: item.price ?? 0,
+                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discountAmount: item.discountAmount ?? 0,
+                subTotal: item.subTotal ?? 0,
+                classification: item.classification ?? ""
+            })),
+            roundingAdjustment: rounding ?? 0,
+            total: total,
+        }
+        const res = await SaveCashSale(formData);
+        if (!res.success) {
+            setErrorModal({ title: "Failed to Save", message: res?.errorMessage });
+        };
+        if (action === "save-print") {
+            console.log("print acknowledgement");
+        }
+        await createNewCashSales()
+        setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+        
+        setCashSalesItem([]);
+        setCurrentSalesTotal(0);
+        return;
+    }
+
 
     const cashSalesItemStore = new CustomStore({
         key: "cashSalesDetailId",
@@ -496,14 +557,23 @@ const CashSales = () => {
         }
     });
 
-    
 
+    const confirmationTitleMap = {
+        add: "Confirm New",
+        clear: "Confirm Clear"
+      };
+    
+      const confirmationMessageMap = {
+        add: "Are you sure you want to add Cash Sales?",
+        clear: "Are you sure you want to clear this page input?"
+      };
+    
     return (
         <>
             <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
-            <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Goods Transit?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
+            <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.action]} message={confirmationMessageMap[confirmModal.action]} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
             <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
-            
+
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <div className="items-center gap-1">
@@ -542,10 +612,10 @@ const CashSales = () => {
                                 />
                                 <div className="relative group">
                                     <button
-                                        className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
+                                        className="items-center h-[34px] text-secondary hover:bg-grey-500 hover:text-primary flex"
                                         onClick={handleNewCustomerModel}
                                     >
-                                        ...
+                                        <UserPlus />
                                     </button>
                                     <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                                         Add New Customer
@@ -608,7 +678,7 @@ const CashSales = () => {
                             name="SalesDate"
                             dateFormat="dd-MM-yyyy"
                             className="border rounded p-1 w-full bg-white h-[34px]"
-                            onChange={e => setMasterData(prev => ({ ...prev, docDate:e}))}
+                            onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
                         />
                     </div>
                     <div className="flex flex-col gap-1 w-1/2">
@@ -654,7 +724,7 @@ const CashSales = () => {
 
 
                     <div className="flex flex-col">
-
+                            
                     </div>
 
                     <div className="flex flex-col space-y-1">
@@ -699,7 +769,7 @@ const CashSales = () => {
                         placeholder="search"
                         className="p-2 w-44 m-[2px]"
                     />
-                    <button className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Clear
                     </button>
 
@@ -726,6 +796,7 @@ const CashSales = () => {
                     userId={userId}
                     salesOrderId={masterData?.cashSalesId}
                     onError={setErrorModal}
+                    onSave={handleProcessAfterSavePayment}
                 />
             </div>
         </>

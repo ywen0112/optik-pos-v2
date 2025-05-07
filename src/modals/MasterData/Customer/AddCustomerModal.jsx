@@ -368,6 +368,7 @@ const AddCustomerModal = ({
 
                     {activeTab === "Sales History" && (isEdit || isView) &&(
                         <SalesHistory
+                            debtorId={selectedCustomer?.debtorId}
                             className={"p-2"}
                             companyId={companyId}
                             onError={setErrorModal}

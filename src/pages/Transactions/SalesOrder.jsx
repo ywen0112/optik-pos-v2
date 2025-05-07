@@ -8,7 +8,7 @@ import DataGrid, {
 import CustomStore from 'devextreme/data/custom_store';
 import DropDownBox from 'devextreme-react/drop-down-box';
 import DatePicker from "react-datepicker";
-import { Copy } from "lucide-react";
+import { Copy, UserPlus } from "lucide-react";
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
@@ -189,7 +189,7 @@ const SalesOrder = () => {
             };
         },
         byKey: async (key) => {
-            if (!key) return null;
+            if (!key || key === "") return null;
             const res = await GetDebtor({
                 companyId,
                 userId,
@@ -221,6 +221,7 @@ const SalesOrder = () => {
             };
         },
         byKey: async (key) => {
+            if (!key || key === "") return null;
             const res = await GetSpecificUser({
                 companyId,
                 userId,
@@ -251,6 +252,7 @@ const SalesOrder = () => {
             };
         },
         byKey: async (key) => {
+            if (!key || key === "") return null;
             const res = await GetSpecificUser({
                 companyId,
                 userId,
@@ -274,9 +276,10 @@ const SalesOrder = () => {
                 fromDate: "1970-01-01T00:00:00",
                 toDate: new Date().toISOString(),
             });
+            console.log(res.data)
             return res?.data || [];
         },
-    });    
+    });
 
 
     const createNewSalesOrder = async () => {
@@ -369,7 +372,7 @@ const SalesOrder = () => {
                 />
             </DataGrid>
         ),
-        [CustomerGridBoxValue, CustomerDataGridOnSelectionChanged],
+        [],
     );
 
     const handleSalesOrderGridBoxValueChanged = (e) => {
@@ -401,7 +404,7 @@ const SalesOrder = () => {
                 Name: selected.debtorName
             });
             setIsSalesOrderGridBoxOpened(false);
-    
+
             // 💡 Set master data (basic info)
             setMasterData(prev => ({
                 ...prev,
@@ -414,21 +417,21 @@ const SalesOrder = () => {
                 isReady: selected.isReady,
                 isCollected: selected.isCollected
             }));
-    
+
             // 💡 Set customer
             setCustomerGridBoxValue({
                 id: selected.debtorId,
                 Code: selected.debtorCode,
                 Name: selected.debtorName
             });
-    
+
             // 💡 Set salesperson and practitioner if available
             setSalesPersonGridBoxValue({ id: selected.userId, Name: selected.salesPerson });
             setPractionerGridBoxValue({ id: selected.practitionerUserID, Name: selected.practitioner });
-    
+
         }
     }, []);
-    
+
 
     const onSalesOrderGridBoxOpened = useCallback((e) => {
         if (e.name === 'opened') {
@@ -465,7 +468,7 @@ const SalesOrder = () => {
                 />
             </DataGrid>
         ),
-        [SalesOrderGridBoxValue, SalesOrderDataGridOnSelectionChanged],
+        [],
     );
 
     const SalesPersonDataGridOnSelectionChanged = useCallback((e) => {
@@ -504,7 +507,7 @@ const SalesOrder = () => {
                 />
             </DataGrid>
         ),
-        [SalesPersonGridBoxValue, SalesPersonDataGridOnSelectionChanged],
+        [],
     );
 
     const handleSalesPersonGridBoxValueChanged = (e) => {
@@ -753,6 +756,96 @@ const SalesOrder = () => {
     }, [handleEditRow, salesItem])
 
     const confirmAction = async () => {
+        if (confirmModal.action === "clear") {
+            setConfirmModal({ isOpen: false, action: "", data: null });
+            await createNewSalesOrder()
+            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+            setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
+            setEyePowerContactLensFormData([]);
+            setEyePowerSpectaclesFormData([]);
+            setSalesItem([]);
+            setCurrentTotal(0);
+            setActualDistanceData({
+                l_D_ADD: null,
+                l_D_AXIS: null,
+                l_D_CYL: null,
+                l_D_PD: null,
+                l_D_PRISM: null,
+                l_D_Remark: "",
+                l_D_SPH: null,
+                l_D_VA: null,
+                r_D_ADD: null,
+                r_D_AXIS: null,
+                r_D_CYL: null,
+                r_D_PRISM: null,
+                r_D_Remark: "",
+                r_D_SPH: null,
+                r_D_VA: null,
+            })
+            setPrescribedDistanceData({
+                l_D_ADD: null,
+                l_D_AXIS: null,
+                l_D_CYL: null,
+                l_D_PD: null,
+                l_D_PRISM: null,
+                l_D_Remark: "",
+                l_D_SPH: null,
+                l_D_VA: null,
+                r_D_ADD: null,
+                r_D_AXIS: null,
+                r_D_CYL: null,
+                r_D_PRISM: null,
+                r_D_Remark: "",
+                r_D_SPH: null,
+                r_D_VA: null,
+            })
+            setActualReadingData({
+                l_R_ADD: null,
+                l_R_AXIS: null,
+                l_R_CYL: null,
+                l_R_PD: null,
+                l_R_PRISM: null,
+                l_R_Remark: "",
+                l_R_SPH: null,
+                l_R_VA: null,
+                r_R_ADD: null,
+                r_R_AXIS: null,
+                r_R_CYL: null,
+                r_R_PRISM: null,
+                r_R_Remark: "",
+                r_R_SPH: null,
+                r_R_VA: null,
+            })
+            setPrescribedReadingData({
+                l_R_ADD: null,
+                l_R_AXIS: null,
+                l_R_CYL: null,
+                l_R_PD: null,
+                l_R_PRISM: null,
+                l_R_Remark: "",
+                l_R_SPH: null,
+                l_R_VA: null,
+                r_R_ADD: null,
+                r_R_AXIS: null,
+                r_R_CYL: null,
+                r_R_PRISM: null,
+                r_R_Remark: "",
+                r_R_SPH: null,
+                r_R_VA: null,
+            })
+            setActualRX({
+                dominantEye: "",
+                opticalHeight: 0,
+                segmentHeight: 0,
+            })
+            setPrescribedRX({
+                dominantEye: "",
+                opticalHeight: 0,
+                segmentHeight: 0,
+            })
+            return;
+        }
         try {
             const res = await SaveSalesOrder({ ...confirmModal.data });
             if (res.success) {
@@ -767,9 +860,9 @@ const SalesOrder = () => {
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
             await createNewSalesOrder()
-            setCustomerGridBoxValue(null)
-            setSalesPersonGridBoxValue(null)
-            setPractionerGridBoxValue(null)
+            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+            setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
             setSalesItem([]);
             setEyePowerContactLensFormData([]);
             setEyePowerSpectaclesFormData([]);
@@ -858,9 +951,9 @@ const SalesOrder = () => {
         }
         setConfirmModal({ isOpen: false, action: "", data: null });
         await createNewSalesOrder()
-        setCustomerGridBoxValue(null)
-        setSalesPersonGridBoxValue(null)
-        setPractionerGridBoxValue(null)
+        setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+        setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
         setEyePowerContactLensFormData([]);
         setEyePowerSpectaclesFormData([]);
         setSalesItem([]);
@@ -1012,6 +1105,130 @@ const SalesOrder = () => {
             action: "add",
             data: formData,
         })
+    }
+
+    const handleSaveAfterPayment = async ({ action }) => {
+        if (salesItem.length <= 0) {
+            return;
+        }
+        const formData = {
+            ...masterData,
+            isVoid: false,
+            debtorId: CustomerGridBoxValue?.id,
+            debtorName: CustomerGridBoxValue?.Name,
+            salesPersonUserID: SalesPersonGridBoxValue?.id,
+            practitionerUserID: PractionerGridBoxValue?.id,
+            details: salesItem.map((item) => ({
+                salesOrderDetailId: item.salesOrderDetailId ?? "",
+                itemId: item.itemId ?? "",
+                itemUOMId: item.itemUOMId ?? "",
+                description: item.description ?? "",
+                desc2: item.desc2 ?? "",
+                qty: item.qty ?? 0,
+                unitPrice: item.price ?? 0,
+                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discountAmount: item.discountAmount ?? 0,
+                subTotal: item.subTotal ?? 0,
+                classification: item.classification ?? ""
+            })),
+            roundingAdjustment: rounding ?? 0,
+            total: total,
+        }
+
+        const res = await SaveSalesOrder(formData);
+        if (!res.success) {
+            setErrorModal({ title: "Failed to Save", message: res?.errorMessage });
+        };
+        if (action === "save-print") {
+            console.log("print acknowledgement");
+        }
+        await createNewSalesOrder()
+        setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+        setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
+        setEyePowerContactLensFormData([]);
+        setEyePowerSpectaclesFormData([]);
+        setSalesItem([]);
+        setCurrentTotal(0);
+        setActualDistanceData({
+            l_D_ADD: null,
+            l_D_AXIS: null,
+            l_D_CYL: null,
+            l_D_PD: null,
+            l_D_PRISM: null,
+            l_D_Remark: "",
+            l_D_SPH: null,
+            l_D_VA: null,
+            r_D_ADD: null,
+            r_D_AXIS: null,
+            r_D_CYL: null,
+            r_D_PRISM: null,
+            r_D_Remark: "",
+            r_D_SPH: null,
+            r_D_VA: null,
+        })
+        setPrescribedDistanceData({
+            l_D_ADD: null,
+            l_D_AXIS: null,
+            l_D_CYL: null,
+            l_D_PD: null,
+            l_D_PRISM: null,
+            l_D_Remark: "",
+            l_D_SPH: null,
+            l_D_VA: null,
+            r_D_ADD: null,
+            r_D_AXIS: null,
+            r_D_CYL: null,
+            r_D_PRISM: null,
+            r_D_Remark: "",
+            r_D_SPH: null,
+            r_D_VA: null,
+        })
+        setActualReadingData({
+            l_R_ADD: null,
+            l_R_AXIS: null,
+            l_R_CYL: null,
+            l_R_PD: null,
+            l_R_PRISM: null,
+            l_R_Remark: "",
+            l_R_SPH: null,
+            l_R_VA: null,
+            r_R_ADD: null,
+            r_R_AXIS: null,
+            r_R_CYL: null,
+            r_R_PRISM: null,
+            r_R_Remark: "",
+            r_R_SPH: null,
+            r_R_VA: null,
+        })
+        setPrescribedReadingData({
+            l_R_ADD: null,
+            l_R_AXIS: null,
+            l_R_CYL: null,
+            l_R_PD: null,
+            l_R_PRISM: null,
+            l_R_Remark: "",
+            l_R_SPH: null,
+            l_R_VA: null,
+            r_R_ADD: null,
+            r_R_AXIS: null,
+            r_R_CYL: null,
+            r_R_PRISM: null,
+            r_R_Remark: "",
+            r_R_SPH: null,
+            r_R_VA: null,
+        })
+        setActualRX({
+            dominantEye: "",
+            opticalHeight: 0,
+            segmentHeight: 0,
+        })
+        setPrescribedRX({
+            dominantEye: "",
+            opticalHeight: 0,
+            segmentHeight: 0,
+        })
+        return;
     }
 
     const salesItemStore = new CustomStore({
@@ -1249,7 +1466,12 @@ const SalesOrder = () => {
     ]);
 
 
-
+    const handleClear = () => {
+        setConfirmModal({
+            isOpen: true,
+            action: "clear",
+        })
+    }
 
     const getRxData = () => {
         if (activeRxTab === "Prescribed RX" && activeRxMode === "Reading") return prescribedReadingData;
@@ -1357,11 +1579,20 @@ const SalesOrder = () => {
         });
     }
 
+    const confirmationTitleMap = {
+        add: "Confirm New",
+        clear: "Confirm Clear"
+    };
+
+    const confirmationMessageMap = {
+        add: "Are you sure you want to add Sales Order?",
+        clear: "Are you sure you want to clear this page input?"
+    };
 
     return (
         <>
             <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
-            <ConfirmationModal isOpen={confirmModal.isOpen} title={"Confirm Add"} message={"Are you sure you want to add Sales Order?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
+            <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.action]} message={confirmationMessageMap[confirmModal.action]} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
             <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
             <ConfirmationModal
                 isOpen={showCopyModal}
@@ -1422,10 +1653,10 @@ const SalesOrder = () => {
                                 />
                                 <div className="relative group">
                                     <button
-                                        className="flex justify-center items-center w-3 h-[34px] text-secondary hover:bg-grey-500 hover:text-primary"
+                                        className="items-center h-[34px] text-secondary hover:bg-grey-500 hover:text-primary flex"
                                         onClick={handleNewCustomerModel}
                                     >
-                                        ...
+                                        <UserPlus />
                                     </button>
                                     <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                                         Add New Customer
@@ -1453,8 +1684,8 @@ const SalesOrder = () => {
                     </div>
                 </div>
                 <div className="grid grid-cols-2 items-center gap-1">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
+                    <div className="flex flex-col gap-1 ">
+                        <label htmlFor="refNo" className="font-medium text-secondary mt-[-10px]">Ref No.</label>
                         <input
                             type="text"
                             id="refNo"
@@ -1466,7 +1697,7 @@ const SalesOrder = () => {
                         />
                     </div>
                     <div className="flex flex-col gap-1">
-                        <label htmlFor="date" className="font-medium text-secondary">Date</label>
+                        <label htmlFor="date" className="font-medium text-secondary mt-[-10px]">Date</label>
                         <DatePicker
                             customInput={<CustomInput />}
                             selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
@@ -1813,9 +2044,9 @@ const SalesOrder = () => {
                             width: 400
                         }}
                     />
-                    {/* <button className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Clear
-                    </button> */}
+                    </button>
                 </div>
 
                 <div className="w-full flex flex-row justify-end">
@@ -1843,6 +2074,7 @@ const SalesOrder = () => {
                     userId={userId}
                     salesOrderId={masterData?.salesOrderId}
                     onError={setErrorModal}
+                    onSave={handleSaveAfterPayment}
                 />
             </div>
         </>

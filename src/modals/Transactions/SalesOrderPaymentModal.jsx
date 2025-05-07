@@ -7,7 +7,7 @@
   import { getInfoLookUp } from "../../api/infolookupapi";
   import { List } from "devextreme-react";
 
-  const SalesOrderPaymentModal = ({ isOpen, onClose, total, companyId, userId, salesOrderId, onError }) => {
+  const SalesOrderPaymentModal = ({ isOpen, onClose, total, companyId, userId, salesOrderId, onError, onSave }) => {
     const [selectedPayments, setSelectedPayments] = useState([]);
     const [activePaymentMethod, setActivePaymentMethod] = useState(null);
     const [salesOrderPaymentData, setSalesOrderPaymentData] = useState(null);
@@ -110,7 +110,7 @@
       return totalPayments >= total ? 'Change' : 'Balance';
     };
   
-    const handleSave = async () => {
+    const handleSave = async ({action}) => {
       try {
         const payload = {
           actionData: { companyId, userId, id: salesOrderId },
@@ -130,6 +130,7 @@
         await SaveSalesOrderPayment(payload);
         setFocusedField(null); 
         setRawAmountDigits('');
+        await onSave({action: action})
         setNotifyModal({ isOpen: true, message: 'Payment made successfully!' });
       } catch (error) {
         onError({ title: 'Save Error', message: error.message || "Failed to save Sales Order Payment."});
@@ -294,9 +295,9 @@
           <div className="flex flex-row h-[82vh]">
               {/* Left Section */}
               <div className="flex-1 border-r p-4 flex flex-col h-full">
-                  <div className="border-2 p-4 mb-4">
+                  <div className="border-2 grid grid-cols-2 p-4 mb-4">
                       <h3 className="font-semibold mb-2">Total Amount</h3>
-                      <label className="text-lg">{total?.toFixed(2) || "0.00"}</label>
+                      <label className="text-2xl font-bold flex flex-row-reverse">{total?.toFixed(2) || "0.00"}</label>
                   </div>
 
                   <div className="border-2 flex-1 overflow-y-auto mb-4 p-2">
@@ -344,13 +345,13 @@
                       </div>
                   </div>
 
-                  <div className="border-2 p-4">
+                  <div className="grid grid-cols-2 border-2 p-4">
                   <h3 className="font-semibold mb-2">{getBalanceLabel()}</h3>
                   <input
                       type="text"
                       value={calculateBalance()}
                       readOnly
-                      className="w-full text-lg"
+                      className="w-full text-2xl font-bold text-end"
                   />
                   </div>
               </div>
@@ -393,7 +394,7 @@
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'backspace', 0, 'clear'].map((value, index) => (
                     <button
                       key={index}
-                      className={`h-18 text-2xl font-semibold border rounded flex items-center justify-center transition
+                      className={`h-18 text-2xl font-semibold border border-black rounded flex items-center justify-center transition
                         ${value === 'clear' ? 'bg-primary text-white hover:bg-primary/90' : 'hover:bg-gray-100'}`}
                       onClick={() => handleNumberPadInput(value)}
                     >
@@ -410,7 +411,10 @@
                   <button onClick={onClose} className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700">
                       Cancel
                   </button>
-                  <button onClick={handleSave} className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90">
+                  <button onClick={() => handleSave({ action: 'save-print' })} className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90">
+                      Save & Print
+                  </button>
+                  <button onClick={() => handleSave({ action: 'save' })} className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90">
                       Save
                   </button>
               </div>

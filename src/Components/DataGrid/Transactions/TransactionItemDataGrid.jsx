@@ -109,6 +109,7 @@ const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSe
         if (e.rowType === "data" && grid) {
             setCurrentRow(e.data);
             grid.editCell(e.rowIndex, e.column.dataField); // Start editing cell directly
+            setDropDownBoxOpen(true)
         }
     },[])
 
