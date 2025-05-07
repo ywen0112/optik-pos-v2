@@ -276,7 +276,6 @@ const SalesOrder = () => {
                 fromDate: "1970-01-01T00:00:00",
                 toDate: new Date().toISOString(),
             });
-            console.log(res.data)
             return res?.data || [];
         },
     });
