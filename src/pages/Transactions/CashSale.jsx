@@ -794,7 +794,7 @@ const CashSales = () => {
                     total={total}
                     companyId={companyId}
                     userId={userId}
-                    salesOrderId={masterData?.cashSalesId}
+                    cashSalesId={masterData?.cashSalesId}
                     onError={setErrorModal}
                     onSave={handleProcessAfterSavePayment}
                 />
