@@ -76,6 +76,9 @@ const SalesOrder = () => {
     const [salesOrderPayment, setSalesOrderPayment] = useState(false);
     const [selectedSalesOrder, setSelectedSalesOrder] = useState(null);
 
+    const decimalRegex = /^\d*(\.\d{0,2})?$/;
+    const roundUpToQuarter = (val) => Math.ceil(val * 4) / 4;
+
     const gridRef = useRef(null);
 
     const total = currentTotal + parseFloat(rounding)
@@ -1939,7 +1942,32 @@ const SalesOrder = () => {
                                                         step="0.25"
                                                         className="w-full border rounded px-1 py-0.5 text-left text-secondary bg-white"
                                                         value={getRxData()?.[key] || ""}
-                                                        onChange={(e) => handleRxChange(eye === "Left" ? "l" : "r", dataFieldMapping[activeRxMode], field, e.target.value)}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val === "" || decimalRegex.test(val)) {
+                                                              handleRxChange(
+                                                                eye === "Left" ? "l" : "r",
+                                                                dataFieldMapping[activeRxMode],
+                                                                field,
+                                                                val
+                                                              );
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            const raw = parseFloat(e.target.value);
+                                                            if (!isNaN(raw)) {
+                                                              const isPD = field === "PD";
+                                                              const newVal = isPD
+                                                                ? raw.toFixed(2)
+                                                                : roundUpToQuarter(raw).toFixed(2);
+                                                              handleRxChange(
+                                                                eye === "Left" ? "l" : "r",
+                                                                dataFieldMapping[activeRxMode],
+                                                                field,
+                                                                newVal
+                                                              );
+                                                            }
+                                                        }}
                                                     />
                                                 </td>
                                             );
@@ -1948,8 +1976,15 @@ const SalesOrder = () => {
                                             <input
                                                 type="text"
                                                 className="w-28 border rounded px-1 py-0.5 text-left text-secondary bg-white"
-                                                value={getRxData()?.[`${eye === "Left" ? "l" : "r"}_R_Remark`] || ""}
-                                                onChange={(e) => handleRxChange(eye === "Left" ? "l" : "r", "R_Remark", e.target.value)}
+                                                value={getRxData()?.[`${eye === "Left" ? "l" : "r"}_${dataFieldMapping[activeRxMode]}_Remark`] || ""}
+                                                onChange={(e) => {
+                                                    const remarkKey = `${eye === "Left" ? "l" : "r"}_${dataFieldMapping[activeRxMode]}_Remark`;
+                                                    const setter = getRxSetter();
+                                                    setter((prev) => ({
+                                                      ...prev,
+                                                      [remarkKey]: e.target.value
+                                                    }));
+                                                }}
                                             />
                                         </td>
                                     </tr>
