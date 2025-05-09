@@ -807,7 +807,7 @@ const PurchaseInvoice = () => {
         <PurchaseInvoicePaymentModal
           isOpen={purchaseInvoicePayment}
           onClose={() => setPurchaseInvoicePayment(false)}
-          total={total}
+          total={balance}
           companyId={companyId}
           userId={userId}
           purchaseInvoiceId={masterData?.purchaseInvoiceId}
