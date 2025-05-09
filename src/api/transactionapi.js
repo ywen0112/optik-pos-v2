@@ -449,12 +449,14 @@ const getStockAdjustment            = `${ApiBaseUrl}StockAdjustment/Get`;
 const saveStockAdjustment            = `${ApiBaseUrl}StockAdjustment/Save`;
 const voidStockAdjustment         = `${ApiBaseUrl}StockAdjustment/Void`;
 
-export const GetStockAdjustmentRecords = ({companyId, keyword, offset, limit}) =>{
+export const GetStockAdjustmentRecords = ({companyId, keyword, offset, limit, fromDate, toDate}) =>{
     const body = JSON.stringify({
         companyId,
         keyword,
         offset,
         limit,
+        fromDate,
+        toDate,
     });
 
     return postRequest(getStockAdjustmentRecords, body);

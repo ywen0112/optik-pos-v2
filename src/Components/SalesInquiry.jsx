@@ -9,7 +9,7 @@ import DataGrid, {
 import TabPanel from 'devextreme-react/tab-panel';
 import 'devextreme/dist/css/dx.light.css';
 import StandardDataGridComponent from './BaseDataGrid';
-import { DollarSign } from 'lucide-react';
+import { DollarSign, PackageOpen } from 'lucide-react';
 
 const DetailTabs = ({ data }) => {
     const details = data.details || [];
@@ -107,17 +107,34 @@ const SalesInquiryMasterDetailGrid = ({ salesData }) => {
             />
             <Column
                 caption="Action"
-                cellRender={({ data }) => (
-                    data.outstanding > 0 ? (
-                        <div className=" text-blue-400 hover:cursor-pointer flex justify-center "
+                cellRender={(data) => {
+                    const item = data.data;
+                    return (
+                        <div className="flex justify-center gap-2 text-blue-400">
+                            <div
+                                className="hover:cursor-pointer"
                                 onClick={(e) => {
-                                    e.stopPropagation(); // prevent row click event (select)
-                                    // onEdit(cellData.data, "view");
-                                }}>
-                                <DollarSign size={20} />
+                                    e.stopPropagation(); // prevent row click
+                                    // onCollect(item);
+                                }}
+                            >
+                                <PackageOpen size={20} />
                             </div>
-                    ) : null
-                )}
+                            {item.outstanding > 0 && (
+                                <div
+                                    className="hover:cursor-pointer"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        // onPay(item);
+                                    }}
+                                >
+                                    <DollarSign size={20} />
+                                </div>
+                            )}
+                        </div>
+                    );
+                }}
+
             />
 
             <MasterDetail enabled={true} render={DetailTabs} />

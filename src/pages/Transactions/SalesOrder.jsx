@@ -13,11 +13,11 @@ import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
 import SalesOrderPaymentModal from "../../modals/Transactions/SalesOrderPaymentModal";
-import { GetSalesOrderRecords, NewSalesOrder, NewSalesOrderDetail, SaveSalesOrder } from "../../api/transactionapi";
+import { GetSalesOrder, GetSalesOrderRecords, NewSalesOrder, NewSalesOrderDetail, SaveSalesOrder } from "../../api/transactionapi";
 import { getInfoLookUp } from "../../api/infolookupapi";
 import { GetSpecificUser } from "../../api/userapi";
 import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGridWithDisc";
-import { SaveDebtor, NewDebtor, GetDebtor } from "../../api/maintenanceapi";
+import { SaveDebtor, NewDebtor, GetDebtor, GetItem, GetItemGroup } from "../../api/maintenanceapi";
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
 import { NewSpectacles, NewContactLens, SaveContactLensProfile, SaveSpectacles } from "../../api/eyepowerapi";
 import CustomInput from "../../Components/input/dateInput";
@@ -26,7 +26,6 @@ import CustomInput from "../../Components/input/dateInput";
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
 const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
 const PractitionerGridBoxDisplatExpr = (item) => item && `${item.userName}`;
-const SalesOrderGridBoxDisplatExpr = (item) => item && `${item.docNo}`;
 const CustomerGridColumns = [
     { dataField: "debtorCode", caption: "Code", width: "30%" },
     { dataField: "companyName", caption: "Name", width: "50%" }
@@ -51,16 +50,18 @@ const SalesOrder = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [rounding, setRounding] = useState("0.00")
     const [currentTotal, setCurrentTotal] = useState(0)
+    const [paidAmount, setPaidAmount] = useState(0)
+    const [balance, setBalance] = useState(0)
 
     const [selectedInterval, setSelectedInterval] = useState(null);
-    const [CustomerGridBoxValue, setCustomerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
+    const [CustomerGridBoxValue, setCustomerGridBoxValue] = useState({ debtorId: "", debtorCode: "", companyName: "" });
     const [isCustomerGridBoxOpened, setIsCustomerGridBoxOpened] = useState(false);
     const [isSalesPersonGridBoxOpened, setIsSalePersonGridBoxOpened] = useState(false);
     const [SalesPersonGridBoxValue, setSalesPersonGridBoxValue] = useState({ id: "", Code: "", Name: "" });
     const [isPractionerGridBoxOpened, setIsPractionerGridBoxOpened] = useState(false);
     const [PractionerGridBoxValue, setPractionerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
     const [isSalesOrderGridBoxOpened, setIsSalesOrderGridBoxOpened] = useState(false);
-    const [SalesOrderGridBoxValue, setSalesOrderGridBoxValue] = useState({});
+    const [selectedSalesOrder, setSelectedSalesOrder] = useState({ salesOrderId: "", docNo: "" });
 
     const [showCustomerModal, setShowCustomerModal] = useState(false);
     const [newCustomer, setNewCustomer] = useState(null);
@@ -74,7 +75,6 @@ const SalesOrder = () => {
     const [eyePowerContactLensFormData, setEyePowerContactLensFormData] = useState([]);
 
     const [salesOrderPayment, setSalesOrderPayment] = useState(false);
-    const [selectedSalesOrder, setSelectedSalesOrder] = useState(null);
 
     const decimalRegex = /^\d*(\.\d{0,2})?$/;
     const roundUpToQuarter = (val) => Math.ceil(val * 4) / 4;
@@ -265,25 +265,6 @@ const SalesOrder = () => {
         },
     });
 
-    const salesOrderStore = new CustomStore({
-        key: "salesOrderId",
-        load: async (loadOptions) => {
-            const filter = loadOptions.filter;
-            let keyword = filter?.[2] || "";
-
-            const res = await GetSalesOrderRecords({
-                keyword: keyword || "",
-                offset: loadOptions.skip,
-                limit: loadOptions.take,
-                companyId,
-                fromDate: "1970-01-01T00:00:00",
-                toDate: new Date().toISOString(),
-            });
-            return res?.data || [];
-        },
-    });
-
-
     const createNewSalesOrder = async () => {
         try {
             const response = await NewSalesOrder({ companyId, userId, id: userId });
@@ -327,14 +308,14 @@ const SalesOrder = () => {
 
     const handleCustomerGridBoxValueChanged = (e) => {
         if (!e.value) {
-            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+            setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         }
     };
 
     const CustomerDataGridOnSelectionChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
         if (selected) {
-            setCustomerGridBoxValue({ id: selected.debtorId, Code: selected.debtorCode, Name: selected.companyName });
+            setCustomerGridBoxValue({ debtorId: selected.debtorId, debtorCode: selected.debtorCode, companyName: selected.companyName });
             setIsCustomerGridBoxOpened(false);
         }
     }, []);
@@ -354,102 +335,6 @@ const SalesOrder = () => {
                 showBorders={true}
                 selectedRowKeys={CustomerGridBoxValue?.debtorId}
                 onSelectionChanged={CustomerDataGridOnSelectionChanged}
-                height="300px"
-                remoteOperations={{
-                    paging: true,
-                    filtering: true,
-                }}
-            >
-                <Selection mode="single" />
-                <Paging
-                    enabled={true}
-                    pageSize={10}
-                />
-                <Scrolling mode="infinite" />
-
-                <SearchPanel
-                    visible={true}
-                    width="100%"
-                    highlightSearchText={true}
-                />
-            </DataGrid>
-        ),
-        [],
-    );
-
-    const handleSalesOrderGridBoxValueChanged = (e) => {
-        const selected = e.value;
-        if (!selected) {
-            setSalesOrderGridBoxValue({}); // or reset to default
-            return;
-        }
-        setSalesOrderGridBoxValue({
-            id: selected.salesOrderId,
-            DocNo: selected.docNo,
-            Code: selected.debtorCode,
-            Name: selected.debtorName,
-            SalesPerson: selected.salesPerson,
-            RefNo: selected.refNo,
-            Practitioner: selected.practitioner,
-            DocDate: selected.docDate,
-            NextVisitDate: selected.nextVisitDate
-        });
-    }
-
-    const SalesOrderDataGridOnSelectionChanged = useCallback((e) => {
-        const selected = e.selectedRowsData?.[0];
-        if (selected) {
-            setSalesOrderGridBoxValue({
-                id: selected.salesOrderId,
-                DocNo: selected.docNo,
-                Code: selected.debtorCode,
-                Name: selected.debtorName
-            });
-            setIsSalesOrderGridBoxOpened(false);
-
-            // 💡 Set master data (basic info)
-            setMasterData(prev => ({
-                ...prev,
-                salesOrderId: selected.salesOrderId,
-                docNo: selected.docNo,
-                docDate: selected.docDate,
-                refNo: selected.refNo,
-                remark: selected.remark,
-                nextVisitDate: selected.nextVisitDate,
-                isReady: selected.isReady,
-                isCollected: selected.isCollected
-            }));
-
-            // 💡 Set customer
-            setCustomerGridBoxValue({
-                id: selected.debtorId,
-                Code: selected.debtorCode,
-                Name: selected.debtorName
-            });
-
-            // 💡 Set salesperson and practitioner if available
-            setSalesPersonGridBoxValue({ id: selected.userId, Name: selected.salesPerson });
-            setPractionerGridBoxValue({ id: selected.practitionerUserID, Name: selected.practitioner });
-
-        }
-    }, []);
-
-
-    const onSalesOrderGridBoxOpened = useCallback((e) => {
-        if (e.name === 'opened') {
-            setIsSalesOrderGridBoxOpened(e.value);
-        }
-    }, []);
-
-    const SalesOrderDataGridRender = useCallback(
-        () => (
-            <DataGrid
-                dataSource={salesOrderStore}
-                columns={SalesOrderGridColumns}
-                hoverStateEnabled={true}
-                showBorders={true}
-                selectedRowKeys={SalesOrderGridBoxValue?.salesOrderId}
-                onSelectionChanged={SalesOrderDataGridOnSelectionChanged}
                 height="300px"
                 remoteOperations={{
                     paging: true,
@@ -642,10 +527,10 @@ const SalesOrder = () => {
             setIsNormalItem(false)
             let res;
             if (data.isSpectacles) {
-                res = await NewSpectacles({ companyId, userId, id: CustomerGridBoxValue.id });
+                res = await NewSpectacles({ companyId, userId, id: CustomerGridBoxValue.debtorId });
                 const updatedRes = {
                     ...res.data,
-                    debtorId: CustomerGridBoxValue.id,
+                    debtorId: CustomerGridBoxValue.debtorId,
                     salesOrderId: masterData.salesOrderId,
                     salesOrderDetailId: rowData.salesOrderDetailId,
                     docDate: masterData.docDate,
@@ -661,10 +546,10 @@ const SalesOrder = () => {
                     }
                 })
             } else if (data.isContactLens) {
-                res = await NewContactLens({ companyId, userId, id: CustomerGridBoxValue.id });
+                res = await NewContactLens({ companyId, userId, id: CustomerGridBoxValue.debtorId });
                 const updatedRes = {
                     ...res.data,
-                    debtorId: CustomerGridBoxValue.id,
+                    debtorId: CustomerGridBoxValue.debtorId,
                     salesOrderId: masterData.salesOrderId,
                     salesOrderDetailId: rowData.salesOrderDetailId,
                     docDate: masterData.docDate,
@@ -711,7 +596,7 @@ const SalesOrder = () => {
     };
 
     const handleAddNewRow = async () => {
-        if (CustomerGridBoxValue?.id === "") {
+        if (CustomerGridBoxValue?.debtorId === "") {
             setErrorModal({ title: "Failed to Add Item", message: "Please Select a Customer to proceed" });
             return;
         }
@@ -732,7 +617,6 @@ const SalesOrder = () => {
             return prev.map(record => {
                 if (record.salesOrderDetailId === key) {
                     const updatedRecord = { ...record, ...changedData };
-                    console.log(updatedRecord)
                     if ('qty' in changedData || 'price' in changedData || 'discount' in changedData || 'discountAmount' in changedData) {
                         const qty = Number(updatedRecord.qty) || 0;
                         const unitPrice = Number(updatedRecord.price) || 0;
@@ -754,20 +638,25 @@ const SalesOrder = () => {
             return sum + (Number(item.subTotal) || 0);
         }, 0);
 
+        const bal = total - paidAmount;
+        setBalance(bal);
         setCurrentTotal(total);
-    }, [handleEditRow, salesItem])
+    }, [handleEditRow, salesItem, paidAmount])
 
     const confirmAction = async () => {
         if (confirmModal.action === "clear") {
             setConfirmModal({ isOpen: false, action: "", data: null });
             await createNewSalesOrder()
-            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+            setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
             setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
             setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
             setEyePowerContactLensFormData([]);
             setEyePowerSpectaclesFormData([]);
             setSalesItem([]);
             setCurrentTotal(0);
+            setBalance(0);
+            setPaidAmount(0);
+            setSelectedSalesOrder({ salesOrderId: "", docNo: "" })
             setActualDistanceData({
                 l_D_ADD: null,
                 l_D_AXIS: null,
@@ -862,7 +751,7 @@ const SalesOrder = () => {
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
             await createNewSalesOrder()
-            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+            setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
             setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
             setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
             setSalesItem([]);
@@ -953,7 +842,7 @@ const SalesOrder = () => {
         }
         setConfirmModal({ isOpen: false, action: "", data: null });
         await createNewSalesOrder()
-        setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+        setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
         setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
         setEyePowerContactLensFormData([]);
@@ -1048,8 +937,8 @@ const SalesOrder = () => {
         const formData = {
             ...masterData,
             isVoid: false,
-            debtorId: CustomerGridBoxValue?.id,
-            debtorName: CustomerGridBoxValue?.Name,
+            debtorId: CustomerGridBoxValue?.debtorId,
+            debtorName: CustomerGridBoxValue?.companyName,
             salesPersonUserID: SalesPersonGridBoxValue?.id,
             practitionerUserID: PractionerGridBoxValue?.id,
             details: salesItem.map((item) => ({
@@ -1082,8 +971,8 @@ const SalesOrder = () => {
         const formData = {
             ...masterData,
             isVoid: false,
-            debtorId: CustomerGridBoxValue?.id,
-            debtorName: CustomerGridBoxValue?.Name,
+            debtorId: CustomerGridBoxValue?.debtorId,
+            debtorName: CustomerGridBoxValue?.companyName,
             salesPersonUserID: SalesPersonGridBoxValue?.id,
             practitionerUserID: PractionerGridBoxValue?.id,
             details: salesItem.map((item) => ({
@@ -1102,6 +991,7 @@ const SalesOrder = () => {
             roundingAdjustment: rounding ?? 0,
             total: total,
         }
+        console.log(formData)
         setConfirmModal({
             isOpen: true,
             action: "add",
@@ -1116,8 +1006,8 @@ const SalesOrder = () => {
         const formData = {
             ...masterData,
             isVoid: false,
-            debtorId: CustomerGridBoxValue?.id,
-            debtorName: CustomerGridBoxValue?.Name,
+            debtorId: CustomerGridBoxValue?.debtorId,
+            debtorName: CustomerGridBoxValue?.companyName,
             salesPersonUserID: SalesPersonGridBoxValue?.id,
             practitionerUserID: PractionerGridBoxValue?.id,
             details: salesItem.map((item) => ({
@@ -1145,7 +1035,7 @@ const SalesOrder = () => {
             console.log("print acknowledgement");
         }
         await createNewSalesOrder()
-        setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+        setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
         setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
         setEyePowerContactLensFormData([]);
@@ -1268,6 +1158,139 @@ const SalesOrder = () => {
 
     useEffect(() => { }, [setIsNormalItem])
 
+    const handleSalesOrderGridBoxValueChanged = (e) => {
+        if (!e.value) {
+            setSelectedSalesOrder({ salesOrderId: "", docNo: "" });
+        }
+    }
+
+    const salesOrderStore = new CustomStore({
+        key: "salesOrderId",
+        load: async (loadOptions) => {
+            const filter = loadOptions.filter;
+            let keyword = filter?.[2] || "";
+
+            const res = await GetSalesOrderRecords({
+                keyword: keyword || "",
+                offset: loadOptions.skip,
+                limit: loadOptions.take,
+                companyId,
+                fromDate: "1970-01-01T00:00:00",
+                toDate: new Date()
+            });
+            return {
+                data: res.data,
+                totalCount: res.totalRecords
+            }
+        },
+        byKey: async (key) => {
+            const res = await GetSalesOrder({
+                companyId,
+                userId,
+                id: key
+            });
+            return res.data
+        }
+    })
+    const onSalesOrderGridBoxOpened = useCallback((e) => {
+        if (e.name === 'opened') {
+            setIsSalesOrderGridBoxOpened(e.value);
+        }
+    }, [])
+
+    const SalesOrderDataGridOnSelectionChanged = useCallback(async (e) => {
+        const selected = e.selectedRowKeys?.[0];
+        if (selected) {
+            const recordRes = await GetSalesOrder({
+                companyId,
+                userId,
+                id: selected
+            })
+
+            setSelectedSalesOrder({ salesOrderId: selected, docNo: recordRes.data?.docNo })
+            setCustomerGridBoxValue({ debtorId: recordRes.data?.debtorId, debtorCode: recordRes.data?.debtorCode, companyName: recordRes.data?.debtorName })
+            setSalesPersonGridBoxValue({ id: recordRes.data?.salesPersonUserID })
+            setPractionerGridBoxValue({ id: recordRes.data?.practitionerUserID })
+            setMasterData(recordRes.data)
+            const details = recordRes?.data?.details ?? [];
+            const paidAmount = (recordRes.data?.payments ?? []).reduce((sum, payment) => {
+                const detailSum = (payment.details ?? []).reduce((dSum, item) => {
+                    return dSum + (Number(item.amount) || 0);
+                }, 0);
+                return sum + detailSum;
+            }, 0);
+
+            setPaidAmount(paidAmount);
+            setEyePowerContactLensFormData([])
+            setEyePowerSpectaclesFormData([])
+            const enrichedItems = await Promise.all(
+                details.map(async (item) => {
+                    setEyePowerContactLensFormData(prev => [...prev, item?.contactLens])
+                    setEyePowerSpectaclesFormData(prev => [...prev, item?.spectacles])
+                    if (!item.itemCode && !item.uom) {
+                        try {
+                            const res = await GetItem({
+                                companyId,
+                                userId,
+                                id: item.itemId
+                            });
+                            const groupRes = await GetItemGroup({
+                                companyId,
+                                userId,
+                                id: res.data?.itemGroupId
+                            })
+                            return {
+                                ...item,
+                                itemCode: res.data.itemCode,
+                                uom: res.data.itemUOM?.uom,
+                                isSpectacles: groupRes.data?.isSpectacles,
+                                isContactLens: groupRes.data?.isContactLens,
+                                isNormalItem: groupRes.data?.isNormalItem
+
+                            };
+                        } catch (error) {
+                            console.error("Failed to fetch item info:", error);
+                        }
+                    }
+                    return item;
+                })
+            )
+            setSalesItem(enrichedItems)
+        }
+        setIsSalesOrderGridBoxOpened(false)
+    })
+
+    const SalesOrderDataGridRender = useCallback(
+        () => (
+            <DataGrid
+                dataSource={salesOrderStore}
+                columns={SalesOrderGridColumns}
+                hoverStateEnabled={true}
+                showBorders={true}
+                selectedRowKeys={selectedSalesOrder?.salesOrderId}
+                onSelectionChanged={SalesOrderDataGridOnSelectionChanged}
+                height="300px"
+                remoteOperations={{
+                    paging: true,
+                    filtering: true,
+                }}
+            >
+                <Selection mode="single" />
+                <Paging
+                    enabled={true}
+                    pageSize={10}
+                />
+                <Scrolling mode="infinite" />
+
+                <SearchPanel
+                    visible={true}
+                    width="100%"
+                    highlightSearchText={true}
+                />
+            </DataGrid>
+        ), []
+    )
+
     //Eye Power
 
 
@@ -1309,13 +1332,13 @@ const SalesOrder = () => {
 
         if (currentActiveRow?.isSpectacles) {
             currentItemEyePower = eyePowerSpectaclesFormData.find(
-                item => item.salesOrderDetailId === currentActiveRow.salesOrderDetailId
+                item => item?.salesOrderDetailId === currentActiveRow?.salesOrderDetailId
             );
             prescribedRX = currentItemEyePower?.prescribedRXSpectacles ?? {};
             actualRX = currentItemEyePower?.actualRXSpectacles ?? {};
         } else if (currentActiveRow?.isContactLens) {
             currentItemEyePower = eyePowerContactLensFormData.find(
-                item => item.salesOrderDetailId === currentActiveRow.salesOrderDetailId
+                item => item?.salesOrderDetailId === currentActiveRow?.salesOrderDetailId
             );
             prescribedRX = currentItemEyePower?.prescribedRXContactLens ?? {};
             actualRX = currentItemEyePower?.actualRXContactLens ?? {};
@@ -1424,10 +1447,10 @@ const SalesOrder = () => {
                 }
             }
             setEyePowerSpectaclesFormData(prev => {
-                const exists = prev.find(record => record.salesOrderDetailId === currentActiveRow.salesOrderDetailId);
+                const exists = prev.find(record => record?.salesOrderDetailId === currentActiveRow?.salesOrderDetailId);
                 if (exists) {
                     return prev.map(record =>
-                        record.salesOrderDetailId === currentActiveRow.salesOrderDetailId ? { ...record, ...mergedData } : record
+                        record?.salesOrderDetailId === currentActiveRow?.salesOrderDetailId ? { ...record, ...mergedData } : record
                     );
                 } else {
                     return [...prev, mergedData];
@@ -1447,10 +1470,10 @@ const SalesOrder = () => {
                 }
             }
             setEyePowerContactLensFormData(prev => {
-                const exists = prev.find(record => record.salesOrderDetailId === currentActiveRow.salesOrderDetailId);
+                const exists = prev.find(record => record?.salesOrderDetailId === currentActiveRow?.salesOrderDetailId);
                 if (exists) {
                     return prev.map(record =>
-                        record.salesOrderDetailId === currentActiveRow.salesOrderDetailId ? { ...record, ...mergedData } : record
+                        record?.salesOrderDetailId === currentActiveRow?.salesOrderDetailId ? { ...record, ...mergedData } : record
                     );
                 } else {
                     return [...prev, mergedData];
@@ -1629,7 +1652,7 @@ const SalesOrder = () => {
                                 <DropDownBox
                                     id="CustomerSelection"
                                     className="border rounded p-1 w-1/2 h-[34px]"
-                                    value={CustomerGridBoxValue?.id ?? ""}
+                                    value={CustomerGridBoxValue?.debtorId}
                                     opened={isCustomerGridBoxOpened}
                                     openOnFieldClick={true}
                                     valueExpr='debtorId'
@@ -1650,8 +1673,8 @@ const SalesOrder = () => {
                                     rows={1}
                                     className="border rounded p-2 w-full resize-none bg-white text-secondary"
                                     placeholder="Name"
-                                    onChange={(e) => { setCustomerGridBoxValue(prev => ({ ...prev, Name: e.target.value })) }}
-                                    value={CustomerGridBoxValue?.Name ?? ""}
+                                    onChange={(e) => { setCustomerGridBoxValue(prev => ({ ...prev, companyName: e.target.value })) }}
+                                    value={CustomerGridBoxValue?.companyName ?? ""}
                                 />
                                 <div className="relative group">
                                     <button
@@ -1945,27 +1968,27 @@ const SalesOrder = () => {
                                                         onChange={(e) => {
                                                             const val = e.target.value;
                                                             if (val === "" || decimalRegex.test(val)) {
-                                                              handleRxChange(
-                                                                eye === "Left" ? "l" : "r",
-                                                                dataFieldMapping[activeRxMode],
-                                                                field,
-                                                                val
-                                                              );
+                                                                handleRxChange(
+                                                                    eye === "Left" ? "l" : "r",
+                                                                    dataFieldMapping[activeRxMode],
+                                                                    field,
+                                                                    val
+                                                                );
                                                             }
                                                         }}
                                                         onBlur={(e) => {
                                                             const raw = parseFloat(e.target.value);
                                                             if (!isNaN(raw)) {
-                                                              const isPD = field === "PD";
-                                                              const newVal = isPD
-                                                                ? raw.toFixed(2)
-                                                                : roundUpToQuarter(raw).toFixed(2);
-                                                              handleRxChange(
-                                                                eye === "Left" ? "l" : "r",
-                                                                dataFieldMapping[activeRxMode],
-                                                                field,
-                                                                newVal
-                                                              );
+                                                                const isPD = field === "PD";
+                                                                const newVal = isPD
+                                                                    ? raw.toFixed(2)
+                                                                    : roundUpToQuarter(raw).toFixed(2);
+                                                                handleRxChange(
+                                                                    eye === "Left" ? "l" : "r",
+                                                                    dataFieldMapping[activeRxMode],
+                                                                    field,
+                                                                    newVal
+                                                                );
                                                             }
                                                         }}
                                                     />
@@ -1981,8 +2004,8 @@ const SalesOrder = () => {
                                                     const remarkKey = `${eye === "Left" ? "l" : "r"}_${dataFieldMapping[activeRxMode]}_Remark`;
                                                     const setter = getRxSetter();
                                                     setter((prev) => ({
-                                                      ...prev,
-                                                      [remarkKey]: e.target.value
+                                                        ...prev,
+                                                        [remarkKey]: e.target.value
                                                     }));
                                                 }}
                                             />
@@ -1996,7 +2019,7 @@ const SalesOrder = () => {
             </div>
 
             <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4">
-                <div className="w-full grid grid-cols-2 gap-6 items-start text-sm text-secondary font-medium">
+                <div className="w-full grid grid-cols-3 gap-6 items-start text-sm text-secondary font-medium">
 
 
                     <div className="flex flex-col">
@@ -2021,6 +2044,23 @@ const SalesOrder = () => {
                                 Collected
                             </label>
                         </div>
+                    </div>
+
+                    <div className="flex flex-col space-y-1">
+                        {[
+                            { label: "Paid", value: paidAmount },
+                            { label: "Outstanding", value: balance },
+                        ].map(({ label, value }) => (
+                            <div key={label} className="grid grid-cols-[auto,30%] gap-1">
+                                {label === "Outstanding"
+                                    ? (<label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{value >= 0 ? label : "Change"}</label>)
+                                    : (<label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{label}</label>)
+                                }
+                                <div className="border rounded px-5 py-2 bg-gray-100 w-full min-h-5 text-right">
+                                    {Math.abs(value)?.toFixed(2)}
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     <div className="flex flex-col space-y-1">
@@ -2063,13 +2103,14 @@ const SalesOrder = () => {
                     <DropDownBox
                         id="SalesOrderSelection"
                         className="border rounded w-full"
-                        value={selectedSalesOrder}
+                        value={selectedSalesOrder?.salesOrderId}
                         opened={isSalesOrderGridBoxOpened}
                         openOnFieldClick={true}
-                        valueExpr={null}
-                        displayExpr={SalesOrderGridBoxDisplatExpr}
-                        placeholder="Search Sales Record"
-                        showClearButton={true}
+                        valueExpr={"salesOrderId"}
+                        displayExpr={(item) => item && `${item.docNo ?? ""}`}
+                        placeholder="Search"
+                        showClearButton={false}
+                        showDropDownButton={true}
                         onValueChanged={handleSalesOrderGridBoxValueChanged}
                         dataSource={salesOrderStore}
                         onOptionChanged={onSalesOrderGridBoxOpened}
@@ -2103,7 +2144,7 @@ const SalesOrder = () => {
                 <SalesOrderPaymentModal
                     isOpen={salesOrderPayment}
                     onClose={() => setSalesOrderPayment(false)}
-                    total={total}
+                    total={balance}
                     companyId={companyId}
                     userId={userId}
                     salesOrderId={masterData?.salesOrderId}

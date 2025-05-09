@@ -14,11 +14,11 @@ import NotificationModal from "../../modals/NotificationModal";
 import { getInfoLookUp } from "../../api/infolookupapi";
 import { GetSpecificUser } from "../../api/userapi";
 import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGridWithDisc";
-import { SaveDebtor, NewDebtor, GetDebtor } from "../../api/maintenanceapi";
+import { SaveDebtor, NewDebtor, GetDebtor, GetItem } from "../../api/maintenanceapi";
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
 
 import CashSalesPaymentModal from "../../modals/Transactions/CashSalesPaymentModal";
-import { NewCashSales, NewCashSalesDetail, SaveCashSale } from "../../api/transactionapi";
+import { GetCashSale, GetCashSalesRecords, NewCashSales, NewCashSalesDetail, SaveCashSale } from "../../api/transactionapi";
 import CustomInput from "../../Components/input/dateInput";
 import { UserPlus } from "lucide-react";
 
@@ -31,6 +31,11 @@ const CustomerGridColumns = [
 const SalesPersonGridColumns = [
     { dataField: "userName", caption: "Name", width: "100%" }
 ];
+const CashSalesGridColumns = [
+    { dataField: "docNo", caption: "Doc No", width: "40%" },
+    { dataField: "debtorCode", caption: "Code", width: "30%" },
+    { dataField: "debtorName", caption: "Name", width: "50%" }
+];
 
 const CashSales = () => {
     const companyId = sessionStorage.getItem("companyId");
@@ -40,13 +45,17 @@ const CashSales = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [rounding, setRounding] = useState("0.00")
     const [currentSalesTotal, setCurrentSalesTotal] = useState(0);
+    const [paidAmount, setPaidAmount] = useState(0);
+    const [balance, setBalance] = useState(0);
 
     const [isCustomerGridBoxOpened, setIsCustomerGridBoxOpened] = useState(false);
-    const [CustomerGridBoxValue, setCustomerGridBoxValue] = useState({ id: "", Code: "", Name: "" });
+    const [CustomerGridBoxValue, setCustomerGridBoxValue] = useState({ debtorId: "", debtorCode: "", companyName: "" });
     const [isSalesPersonGridBoxOpened, setIsSalePersonGridBoxOpened] = useState(false);
     const [SalesPersonGridBoxValue, setSalesPersonGridBoxValue] = useState({ id: "", Name: "" });
     const [newCustomer, setNewCustomer] = useState(null);
     const [showCustomerModal, setShowCustomerModal] = useState(false);
+    const [selectedCashSales, setSelectedCashSales] = useState({ cashSalesId: "", docNo: "" });
+    const [isCashSalesGridBoxOpened, setIsCashSalesGridBoxOpened] = useState(false);
 
     const [cashSalesPayment, setCashSalesPayment] = useState(false);
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
@@ -136,7 +145,7 @@ const CashSales = () => {
     const CustomerDataGridOnSelectionChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
         if (selected) {
-            setCustomerGridBoxValue({ id: selected.debtorId, Code: selected.debtorCode, Name: selected.companyName });
+            setCustomerGridBoxValue({ debtorId: selected.debtorId, debtorCode: selected.debtorCode, companyName: selected.companyName });
             setIsCustomerGridBoxOpened(false);
         }
     }, []);
@@ -175,7 +184,7 @@ const CashSales = () => {
 
     const handleCustomerGridBoxValueChanged = (e) => {
         if (!e.value) {
-            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+            setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         }
     };
 
@@ -284,7 +293,7 @@ const CashSales = () => {
     };
 
     const handleAddNewRow = async () => {
-        if (CustomerGridBoxValue?.id === "") {
+        if (CustomerGridBoxValue?.debtorId === "") {
             setErrorModal({ title: "Failed to Add Item", message: "Please Select a Customer to proceed" });
             return;
         }
@@ -325,9 +334,10 @@ const CashSales = () => {
         const total = cashSalesItem?.reduce((sum, item) => {
             return sum + (Number(item.subTotal) || 0);
         }, 0);
-
+        const bal = total - paidAmount;
+        setBalance(bal);
         setCurrentSalesTotal(total);
-    }, [handleEditRow])
+    }, [handleEditRow, cashSalesItem, paidAmount])
 
     const handleRemoveRow = async (key) => {
         setCashSalesItem(prev => prev.filter(record => record.cashSalesDetailId !== key));
@@ -337,8 +347,8 @@ const CashSales = () => {
         if (confirmModal.action === "clear") {
             setConfirmModal({ isOpen: false, action: "", data: null });
             await createNewCashSales()
-            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
-            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });            
+            setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
+            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
             setCashSalesItem([]);
             setCurrentSalesTotal(0);
             return;
@@ -352,9 +362,9 @@ const CashSales = () => {
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
             await createNewCashSales()
-            setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+            setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
             setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-            
+
             setCashSalesItem([]);
             setCurrentSalesTotal(0);
         }
@@ -363,9 +373,9 @@ const CashSales = () => {
         }
         setConfirmModal({ isOpen: false, action: "", data: null });
         await createNewCashSales()
-        setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+        setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-        
+
         setCashSalesItem([]);
         setCurrentSalesTotal(0);
         return;
@@ -378,8 +388,8 @@ const CashSales = () => {
         const formData = {
             ...masterData,
             isVoid: false,
-            debtorId: CustomerGridBoxValue?.id,
-            debtorName: CustomerGridBoxValue?.Name,
+            debtorId: CustomerGridBoxValue?.debtorId,
+            debtorName: CustomerGridBoxValue?.companyName,
             salesPersonUserID: SalesPersonGridBoxValue.id,
             details: cashSalesItem.map((item) => ({
                 cashSalesDetailId: item.cashSalesDetailId ?? "",
@@ -418,8 +428,8 @@ const CashSales = () => {
         const formData = {
             ...masterData,
             isVoid: false,
-            debtorId: CustomerGridBoxValue?.id,
-            debtorName: CustomerGridBoxValue?.Name,
+            debtorId: CustomerGridBoxValue?.debtorId,
+            debtorName: CustomerGridBoxValue?.companyName,
             salesPersonUserID: SalesPersonGridBoxValue.id,
             details: cashSalesItem.map((item) => ({
                 cashSalesDetailId: item.cashSalesDetailId ?? "",
@@ -488,8 +498,8 @@ const CashSales = () => {
         const formData = {
             ...masterData,
             isVoid: false,
-            debtorId: CustomerGridBoxValue?.id,
-            debtorName: CustomerGridBoxValue?.Name,
+            debtorId: CustomerGridBoxValue?.debtorId,
+            debtorName: CustomerGridBoxValue?.companyName,
             salesPersonUserID: SalesPersonGridBoxValue.id,
             details: cashSalesItem.map((item) => ({
                 cashSalesDetailId: item.cashSalesDetailId ?? "",
@@ -515,9 +525,9 @@ const CashSales = () => {
             console.log("print acknowledgement");
         }
         await createNewCashSales()
-        setCustomerGridBoxValue({ id: "", Code: "", Name: "" });
+        setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-        
+
         setCashSalesItem([]);
         setCurrentSalesTotal(0);
         return;
@@ -561,13 +571,132 @@ const CashSales = () => {
     const confirmationTitleMap = {
         add: "Confirm New",
         clear: "Confirm Clear"
-      };
-    
-      const confirmationMessageMap = {
+    };
+
+    const confirmationMessageMap = {
         add: "Are you sure you want to add Cash Sales?",
         clear: "Are you sure you want to clear this page input?"
-      };
-    
+    };
+
+    const handleCashSalesGridBoxValueChanged = (e) => {
+        if (!e.value) {
+            setSelectedCashSales({ cashSalesId: "", docNo: "" });
+        }
+    }
+
+    const cashSalesStore = new CustomStore({
+        key: "cashSalesId",
+        load: async (loadOptions) => {
+            const filter = loadOptions.filter;
+            let keyword = filter?.[2] || "";
+
+            const res = await GetCashSalesRecords({
+                keyword: keyword || "",
+                offset: loadOptions.skip,
+                limit: loadOptions.take,
+                companyId,
+                fromDate: "1970-01-01T00:00:00",
+                toDate: new Date()
+            });
+            return {
+                data: res.data,
+                totalCount: res.totalRecords
+            }
+        },
+        byKey: async (key) => {
+            const res = await GetCashSale({
+                companyId,
+                userId,
+                id: key
+            });
+            return res.data
+        }
+    })
+
+    const onCashSalesGridBoxOpened = useCallback((e) => {
+        if (e.name === 'opened') {
+            setIsCashSalesGridBoxOpened(e.value);
+        }
+    }, [])
+
+    const CashSalesDataGridOnSelectionChanged = useCallback(async (e) => {
+        const selected = e.selectedRowKeys?.[0];
+        if (selected) {
+            const recordRes = await GetCashSale({
+                companyId,
+                userId,
+                id: selected
+            })
+            setSelectedCashSales({ cashSalesId: selected, docNo: recordRes.data?.docNo })
+            setCustomerGridBoxValue({ debtorId: recordRes.data?.debtorId, debtorCode: recordRes.data?.debtorCode, companyName: recordRes.data?.debtorName })
+            setSalesPersonGridBoxValue({ id: recordRes.data?.salesPersonUserID })
+            setMasterData(recordRes.data)
+            const details = recordRes?.data?.details ?? [];
+            const paidAmount = (recordRes.data?.payments ?? []).reduce((sum, payment) => {
+                const detailSum = (payment.details ?? []).reduce((dSum, item) => {
+                    return dSum + (Number(item.amount) || 0);
+                }, 0);
+                return sum + detailSum;
+            }, 0);
+            setPaidAmount(paidAmount);
+            const enrichedItems = await Promise.all(
+                details.map(async (item) => {
+                    if (!item.itemCode && !item.uom) {
+                        try {
+                            const res = await GetItem({
+                                companyId,
+                                userId,
+                                id: item.itemId
+                            });
+                            return {
+                                ...item,
+                                itemCode: res.data.itemCode,
+                                uom: res.data.itemUOM?.uom,
+
+                            };
+                        } catch (error) {
+                            console.error("Failed to fetch item info:", error);
+                        }
+                    }
+                    return item;
+                })
+            )
+            setCashSalesItem(enrichedItems);
+        }
+        setIsCashSalesGridBoxOpened(false);
+    })
+
+    const CashSalesDataGridRender = useCallback(
+        () => (
+            <DataGrid
+                dataSource={cashSalesStore}
+                columns={CashSalesGridColumns}
+                hoverStateEnabled={true}
+                showBorders={true}
+                selectedRowKeys={selectedCashSales?.cashSalesId}
+                onSelectionChanged={CashSalesDataGridOnSelectionChanged}
+                height="300px"
+                remoteOperations={{
+                    paging: true,
+                    filtering: true,
+                }}
+            >
+                <Selection mode="single" />
+                <Paging
+                    enabled={true}
+                    pageSize={10}
+                />
+                <Scrolling mode="infinite" />
+
+                <SearchPanel
+                    visible={true}
+                    width="100%"
+                    highlightSearchText={true}
+                />
+            </DataGrid>
+        ), []
+    )
+
     return (
         <>
             <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
@@ -586,7 +715,7 @@ const CashSales = () => {
                                 <DropDownBox
                                     id="CustomerSelection"
                                     className="border rounded p-1 w-1/2 h-[34px]"
-                                    value={CustomerGridBoxValue?.id ?? ""}
+                                    value={CustomerGridBoxValue?.debtorId ?? ""}
                                     opened={isCustomerGridBoxOpened}
                                     openOnFieldClick={true}
                                     valueExpr='debtorId'
@@ -607,8 +736,8 @@ const CashSales = () => {
                                     rows={1}
                                     className="border rounded p-2 w-full resize-none bg-white text-secondary"
                                     placeholder="Name"
-                                    onChange={(e) => { setCustomerGridBoxValue(prev => ({ ...prev, Name: e.target.value })) }}
-                                    value={CustomerGridBoxValue?.Name ?? ""}
+                                    onChange={(e) => { setCustomerGridBoxValue(prev => ({ ...prev, companyName: e.target.value })) }}
+                                    value={CustomerGridBoxValue?.companyName ?? ""}
                                 />
                                 <div className="relative group">
                                     <button
@@ -720,11 +849,24 @@ const CashSales = () => {
             </div>
 
             <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4">
-                <div className="w-full grid grid-cols-2 gap-6 items-start text-sm text-secondary font-medium">
+                <div className="w-full grid grid-cols-3 gap-6 items-start text-sm text-secondary font-medium">
 
 
                     <div className="flex flex-col">
-                            
+
+                    </div>
+                    <div className="flex flex-col space-y-1">
+                        {[
+                            { label: "Paid", value: paidAmount },
+                            { label: "Outstanding", value: balance },
+                        ].map(({ label, value }) => (
+                            <div key={label} className="grid grid-cols-[auto,30%] gap-1">
+                                <label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{value>0 ? label : "Change"}</label>
+                                <div className="border rounded px-5 py-2 bg-gray-100 w-full min-h-5 text-right">
+                                    {Math.abs(value)?.toFixed(2)}
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     <div className="flex flex-col space-y-1">
@@ -764,10 +906,24 @@ const CashSales = () => {
 
             <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
                 <div className="flex flex-row">
-                    <input
-                        type="text"
-                        placeholder="search"
-                        className="p-2 w-44 m-[2px]"
+                    <DropDownBox
+                        id="CashSalesSelection"
+                        className="border rounded w-full"
+                        value={selectedCashSales?.cashSalesId}
+                        opened={isCashSalesGridBoxOpened}
+                        openOnFieldClick={true}
+                        valueExpr={"cashSalesId"}
+                        displayExpr={(item) => item && `${item.docNo ?? ""}`}
+                        placeholder="Search"
+                        showClearButton={false}
+                        showDropDownButton={true}
+                        onValueChanged={handleCashSalesGridBoxValueChanged}
+                        dataSource={cashSalesStore}
+                        onOptionChanged={onCashSalesGridBoxOpened}
+                        contentRender={CashSalesDataGridRender}
+                        dropDownOptions={{
+                            width: 400
+                        }}
                     />
                     <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Clear
@@ -791,7 +947,7 @@ const CashSales = () => {
                 <CashSalesPaymentModal
                     isOpen={cashSalesPayment}
                     onClose={() => setCashSalesPayment(false)}
-                    total={total}
+                    total={balance}
                     companyId={companyId}
                     userId={userId}
                     cashSalesId={masterData?.cashSalesId}

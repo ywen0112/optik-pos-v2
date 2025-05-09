@@ -40,6 +40,8 @@ const PurchaseInvoice = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [tax, setTax] = useState("0.00");
   const [currentTotal, setCurrentTotal] = useState(0);
+  const [paidAmount, setPaidAmount] = useState(0);
+  const [balance, setBalance] = useState(0);
 
   const [SupplierGridBoxValue, setSupplierGridBoxValue] = useState({ id: "", Code: "", Name: "" });
   const [isSupplierGridBoxOpened, setIsSupplierGridBoxOpened] = useState(false);
@@ -326,9 +328,10 @@ const PurchaseInvoice = () => {
     const total = purchaseItem?.reduce((sum, item) => {
       return sum + (Number(item.subTotal) || 0);
     }, 0);
-
+    const bal = total - paidAmount;
+    setBalance(bal);
     setCurrentTotal(total);
-  }, [handleEditRow])
+  }, [handleEditRow, purchaseItem, paidAmount])
 
   const handleRemoveRow = async (key) => {
     setPurchaseItem(prev => prev.filter(record => record.purchaseInvoiceDetailId !== key));
@@ -717,11 +720,28 @@ const PurchaseInvoice = () => {
       </div>
 
       <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4 overflow-y-auto">
-        <div className="w-full grid grid-cols-2 gap-6 items-start text-sm text-secondary font-medium">
+        <div className="w-full grid grid-cols-3 gap-6 items-start text-sm text-secondary font-medium">
 
 
           <div className="flex flex-col">
 
+          </div>
+
+          <div className="flex flex-col space-y-1">
+            {[
+              { label: "Paid", value: paidAmount },
+              { label: "Outstanding", value: balance },
+            ].map(({ label, value }) => (
+              <div key={label} className="grid grid-cols-[auto,30%] gap-1">
+                {label === "Outstanding" 
+                  ? (<label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{value >= 0 ? label : "Change"}</label>)
+                  : (<label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{label}</label>)
+                }
+                <div className="border rounded px-5 py-2 bg-gray-100 w-full min-h-5 text-right">
+                  {Math.abs(value)?.toFixed(2)}
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="flex flex-col space-y-1">
