@@ -158,7 +158,7 @@ const GoodsTransit = () => {
           highlightSearchText={true}
         />
       </DataGrid>
-    ), []
+    ), [selectedGoodsTransit, GoodsTransitDataGridOnSelectionChanged]
   );
 
   const newGoodsTransitRecords = async () => {

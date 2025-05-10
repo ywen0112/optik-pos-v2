@@ -265,7 +265,10 @@ const SalesInquiry = () => {
             onPay={handleAddPaymentForSales}
           />
         </div>
-        {paymentItem && paymentItem?.docType === "Cash Sales" && (
+        
+
+      </div>
+      {paymentItem && paymentItem?.docType === "Cash Sales" && (
           <CashSalesPaymentModal
             isOpen={salesPayment}
             onClose={() => setSalesPayment(false)}
@@ -290,8 +293,6 @@ const SalesInquiry = () => {
             onSave={handleProcessAfterSavePayment}
           />
         )}
-
-      </div>
     </>
   );
 };

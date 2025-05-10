@@ -158,7 +158,7 @@ const StockAdjustment = () => {
           highlightSearchText={true}
         />
       </DataGrid>
-    ), []
+    ), [selectedStockAdjustment, StockAdjustmentDataGridOnSelectionChanged]
   );
 
   const newStockAdjustmentRecords = async () => {

@@ -989,7 +989,6 @@ const SalesOrder = () => {
             roundingAdjustment: rounding ?? 0,
             total: total,
         }
-        console.log(formData)
         setConfirmModal({
             isOpen: true,
             action: "add",
@@ -1286,7 +1285,7 @@ const SalesOrder = () => {
                     highlightSearchText={true}
                 />
             </DataGrid>
-        ), []
+        ), [selectedSalesOrder, SalesOrderDataGridOnSelectionChanged]
     )
 
     //Eye Power

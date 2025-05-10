@@ -679,7 +679,7 @@ const PurchaseInvoice = () => {
                     highlightSearchText={true}
                 />
             </DataGrid>
-        ), []
+        ), [selectedPurchaseInvoice, PurchaseInvoiceDataGridOnSelectionChanged]
     )
 
 

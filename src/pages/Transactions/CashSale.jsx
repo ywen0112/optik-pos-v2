@@ -692,7 +692,7 @@ const CashSales = () => {
                     highlightSearchText={true}
                 />
             </DataGrid>
-        ), []
+        ), [selectedCashSales, CashSalesDataGridOnSelectionChanged]
     )
 
     return (
