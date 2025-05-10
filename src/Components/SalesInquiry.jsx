@@ -68,9 +68,10 @@ const DetailTabs = ({ data }) => {
 };
 
 
-const SalesInquiryMasterDetailGrid = ({ salesData }) => {
+const SalesInquiryMasterDetailGrid = ({ ref, salesData, onPay }) => {
     return (
         <StandardDataGridComponent
+            ref={ref}
             height={480}
             dataSource={salesData}
             // className={className}
@@ -125,7 +126,7 @@ const SalesInquiryMasterDetailGrid = ({ salesData }) => {
                                     className="hover:cursor-pointer"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        // onPay(item);
+                                        onPay(item);
                                     }}
                                 >
                                     <DollarSign size={20} />

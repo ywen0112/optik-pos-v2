@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import DatePicker from "react-datepicker";
 import DropDownBox from "devextreme-react/drop-down-box";
 import CustomerDataGrid from "../../Components/DataGrid/CustomerDataGrid";
@@ -17,6 +17,10 @@ import { GetDebtor } from "../../api/maintenanceapi";
 import SalesInquiryMasterDetailGrid from "../../Components/SalesInquiry";
 import { GetSalesInquiry } from "../../api/inquiryapi";
 import CustomInput from "../../Components/input/dateInput";
+import CashSalesPaymentModal from "../../modals/Transactions/CashSalesPaymentModal";
+import SalesOrderPaymentModal from "../../modals/Transactions/SalesOrderPaymentModal";
+import ErrorModal from "../../modals/ErrorModal";
+import NotificationModal from "../../modals/NotificationModal";
 
 const CustomerGridBoxDisplayExpr = (item) =>
   item ? `${item.debtorCode}-${item.companyName}` : "";
@@ -34,11 +38,12 @@ const SalesInquiry = () => {
     today.setMonth(today.getMonth() - 1);
     return today;
   });
-  
+
   const [endDate, setEndDate] = useState(new Date());
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isCustomerBoxOpen, setIsCustomerBoxOpen] = useState(false);
   const [data, setData] = useState(null);
+  const gridRef = useRef(null);
   // const [dataStoreKey, setDataStoreKey] = useState(0);
   // const [selectedItemId, setSelectedItemId] = useState(null);
 
@@ -149,12 +154,16 @@ const SalesInquiry = () => {
 
         const res = await GetSalesInquiry(params);
         const enrichedSalesData = res.data?.map(sale => {
-          if (!sale.payments) return { ...sale, outstanding: sale.total }; // handle cases where payments are missing
-          const paymentsTotal = sale.payments.reduce((sum, p) => sum + (p.total || 0), 0);
+          if (!sale.payments) return { ...sale, outstanding: sale.total };
+
+          const paymentsTotal = sale.payments.reduce((sum, p) =>
+            sum + (p.cashAmount || 0) + (p.creditCardAmount || 0) + (p.eWalletAmount || 0), 0);
+
           const outstanding = sale.total - paymentsTotal;
-          return { ...sale, outstanding: outstanding };
+          return { ...sale, outstanding };
         });
-        
+
+
         return {
           data: enrichedSalesData,
           totalCount: res.totalRecords,
@@ -166,54 +175,73 @@ const SalesInquiry = () => {
     // setDataStoreKey(prev => prev + 1); // force re-binding
   };
 
+  const [salesPayment, setSalesPayment] = useState(false);
+  const [paymentItem, setPaymentItem] = useState({});
+  const [errorModal, setErrorModal] = useState({ title: "", message: "" });
+
+  const handleAddPaymentForSales = (item) => {
+    setPaymentItem(item);
+    setSalesPayment(true);
+  }
+
+  const handleProcessAfterSavePayment = async ({ action }) => {
+    if (gridRef.current) {
+      gridRef.current.instance.refresh();
+    }
+    if (action === "save-print") {
+      console.log("print acknowledgement");
+    }
+  }
 
   return (
-    <div className="space-y-6 p-6 bg-white rounded shadow">
-      <div className="grid grid-cols-1 gap-2 w-1/2">
-        <div className="w-full">
-          <label className="block text-secondary font-medium mb-1">Date Range</label>
-          <div className="grid grid-cols-[1fr_auto_1fr] gap-2">
-            <DatePicker
-              customInput={<CustomInput/>}
-              selected={startDate}
-              onChange={(date) => setStartDate(date)}
-              className="border rounded px-2 py-1 text-secondary w-full"
-              dateFormat="dd/MM/yyyy"
-            />
-            <span className="text-secondary self-center">to</span>
-            <DatePicker
-              customInput={<CustomInput/>}
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-              className="border rounded px-2 py-1 text-secondary w-full"
-              dateFormat="dd/MM/yyyy"
+    <>
+      <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
+      <div className="space-y-6 p-6 bg-white rounded shadow">
+        <div className="grid grid-cols-1 gap-2 w-1/2">
+          <div className="w-full">
+            <label className="block text-secondary font-medium mb-1">Date Range</label>
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-2">
+              <DatePicker
+                customInput={<CustomInput />}
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                className="border rounded px-2 py-1 text-secondary w-full"
+                dateFormat="dd/MM/yyyy"
+              />
+              <span className="text-secondary self-center">to</span>
+              <DatePicker
+                customInput={<CustomInput />}
+                selected={endDate}
+                onChange={(date) => setEndDate(date)}
+                className="border rounded px-2 py-1 text-secondary w-full"
+                dateFormat="dd/MM/yyyy"
+              />
+            </div>
+          </div>
+
+          <div className="w-full">
+            <label className="block text-secondary font-medium mb-1">Customer</label>
+            <DropDownBox
+              id="CustomerSelection"
+              className="border rounded p-1 w-1/2 h-[34px]"
+              value={selectedCustomer?.debtorId || null}
+              opened={isCustomerBoxOpen}
+              openOnFieldClick={true}
+              valueExpr='debtorId'
+              displayExpr={CustomerGridBoxDisplayExpr}
+              placeholder="Select Customer"
+              showClearButton={true}
+              onValueChanged={handleCustomerGridBoxValueChanged}
+              dataSource={customerStore}
+              onOptionChanged={onCustomerGridBoxOpened}
+              contentRender={CustomerDataGridRender}
+              dropDownOptions={{
+                width: 400
+              }}
             />
           </div>
-        </div>
 
-        <div className="w-full">
-          <label className="block text-secondary font-medium mb-1">Customer</label>
-          <DropDownBox
-            id="CustomerSelection"
-            className="border rounded p-1 w-1/2 h-[34px]"
-            value={selectedCustomer?.debtorId || null}
-            opened={isCustomerBoxOpen}
-            openOnFieldClick={true}
-            valueExpr='debtorId'
-            displayExpr={CustomerGridBoxDisplayExpr}
-            placeholder="Select Customer"
-            showClearButton={true}
-            onValueChanged={handleCustomerGridBoxValueChanged}
-            dataSource={customerStore}
-            onOptionChanged={onCustomerGridBoxOpened}
-            contentRender={CustomerDataGridRender}
-            dropDownOptions={{
-              width: 400
-            }}
-          />
-        </div>
-
-        {/* <div className="w-full">
+          {/* <div className="w-full">
           <label className="block text-secondary font-medium mb-1">Product</label>
           <ItemDropDownBoxComponent
             data={itemData}
@@ -221,21 +249,50 @@ const SalesInquiry = () => {
             onValueChanged={setSelectedItemId}
           />
         </div> */}
-      </div>
+        </div>
 
-      <div className="pt-6 flex space-x-4">
-        <button onClick={handleGetInquiry} className="bg-primary text-white px-6 py-2 rounded">Search</button>
-        {/* <button className="bg-primary text-white px-6 py-2 rounded">Preview</button>
+        <div className="pt-6 flex space-x-4">
+          <button onClick={handleGetInquiry} className="bg-primary text-white px-6 py-2 rounded">Search</button>
+          {/* <button className="bg-primary text-white px-6 py-2 rounded">Preview</button>
         <button className="bg-primary text-white px-6 py-2 rounded">Export</button> */}
-      </div>
+        </div>
 
-      <div className="mt-6">
-        <SalesInquiryMasterDetailGrid
-          // key={dataStoreKey}
-          salesData={data}
-        />
+        <div className="mt-6">
+          <SalesInquiryMasterDetailGrid
+            ref={gridRef}
+            // key={dataStoreKey}
+            salesData={data}
+            onPay={handleAddPaymentForSales}
+          />
+        </div>
+        {paymentItem && paymentItem?.docType === "Cash Sales" && (
+          <CashSalesPaymentModal
+            isOpen={salesPayment}
+            onClose={() => setSalesPayment(false)}
+            total={paymentItem?.outstanding}
+            companyId={companyId}
+            userId={userId}
+            cashSalesId={paymentItem?.documentId}
+            onError={setErrorModal}
+            onSave={handleProcessAfterSavePayment}
+          />
+        )}
+
+        {paymentItem && paymentItem?.docType === "Sales Order" && (
+          <SalesOrderPaymentModal
+            isOpen={salesPayment}
+            onClose={() => setSalesPayment(false)}
+            total={paymentItem?.outstanding}
+            companyId={companyId}
+            userId={userId}
+            salesOrderId={paymentItem?.documentId}
+            onError={setErrorModal}
+            onSave={handleProcessAfterSavePayment}
+          />
+        )}
+
       </div>
-    </div>
+    </>
   );
 };
 
