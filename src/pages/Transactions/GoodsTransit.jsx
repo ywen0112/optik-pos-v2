@@ -133,6 +133,7 @@ const GoodsTransit = () => {
   const GoodsTransitDataGridRender = useCallback(
     () => (
       <DataGrid
+        key={selectedGoodsTransit?.goodsTransitId}
         dataSource={goodsTransitStore}
         columns={goodsTransitGridColumns}
         hoverStateEnabled={true}

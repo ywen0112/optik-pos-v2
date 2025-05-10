@@ -1260,6 +1260,7 @@ const SalesOrder = () => {
     const SalesOrderDataGridRender = useCallback(
         () => (
             <DataGrid
+                // key={selectedSalesOrder?.salesOrderId}
                 dataSource={salesOrderStore}
                 columns={SalesOrderGridColumns}
                 hoverStateEnabled={true}

@@ -78,8 +78,8 @@ const StockAdjustment = () => {
       );
       setMasterData(recordRes.data);
       setStockAdjustmentItems(enrichedItems);
-      setIsStockAdjustmentGridBoxOpened(false);
     }
+    setIsStockAdjustmentGridBoxOpened(false);
   }, []);
 
   const onStockAdjustmentGridBoxOpened = useCallback((e) => {
@@ -129,10 +129,12 @@ const StockAdjustment = () => {
       }
     }
   ];
+  
 
   const StockAdjustmentDataGridRender = useCallback(
     () => (
       <DataGrid
+        key={selectedStockAdjustment?.stockAdjustmentId || ""}
         dataSource={stockAdjustmentStore}
         columns={stockAdjustmentGridColumns}
         hoverStateEnabled={true}
@@ -241,10 +243,10 @@ const StockAdjustment = () => {
   const confirmAction = async () => {
     if (confirmModal.action === "clear") {
       setConfirmModal({ isOpen: false, action: "", data: null });
+      setSelectedStockAdjustment({ stockAdjustmentId: "", description: "" })
       await newStockAdjustmentRecords()
       setStockAdjustmentItems([]);
       setCurrentTotal(0);
-      setSelectedStockAdjustment({ stockAdjustmentId: "", description: "" })
       return;
     }
     try {

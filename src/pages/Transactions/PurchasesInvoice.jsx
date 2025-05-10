@@ -654,6 +654,7 @@ const PurchaseInvoice = () => {
     const PurchaseInvoiceDataGridRender = useCallback(
         () => (
             <DataGrid
+                key={selectedPurchaseInvoice?.purchaseInvoiceId}
                 dataSource={purchaseInvoiceStore}
                 columns={PurchaseInvoiceGridColumns}
                 hoverStateEnabled={true}

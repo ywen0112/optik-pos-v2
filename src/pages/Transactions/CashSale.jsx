@@ -667,6 +667,7 @@ const CashSales = () => {
     const CashSalesDataGridRender = useCallback(
         () => (
             <DataGrid
+                key={selectedCashSales?.cashSalesId}
                 dataSource={cashSalesStore}
                 columns={CashSalesGridColumns}
                 hoverStateEnabled={true}
