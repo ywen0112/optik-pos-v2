@@ -241,34 +241,40 @@ const GoodsTransit = () => {
   }
 
   const confirmAction = async () => {
-    if(confirmModal.action === "clear"){
+    if (confirmModal.action === "clear") {
       setConfirmModal({ isOpen: false, action: "", data: null });
-      await newGoodsTransitRecords()
+      await newGoodsTransitRecords();
       setGoodsTransitItems([]);
       setCurrentTotalCost(0);
-      setSelectedGoodsTransit({ goodsTransitId: "", description: "" })
-      return;
+      setSelectedGoodsTransit({ goodsTransitId: "", description: "" });
+      return; // ✅ prevent the rest of the function from running
     }
+
     try {
       const res = await SaveGoodsTransit({ ...confirmModal.data });
       if (res.success) {
         setNotifyModal({ isOpen: true, message: "Goods Transit added successfully!" });
-      } else throw new Error(res.errorMessage || "Failed to Add Goods Transit");
+      } else {
+        throw new Error(res.errorMessage || "Failed to Add Goods Transit");
+      }
     } catch (error) {
       setErrorModal({ title: "Error", message: error.message });
-      await newGoodsTransitRecords()
+      await newGoodsTransitRecords(); // Optional: maybe remove this too depending on your needs
     }
+
     if (confirmModal.action === "addPrint") {
       console.log("print acknowledgement");
     }
+
     setConfirmModal({ isOpen: false, action: "", data: null });
-    await newGoodsTransitRecords()
+
+    await newGoodsTransitRecords();
     setGoodsTransitItems([]);
     setCurrentTotalCost(0);
-    return;
-  }
+  };
 
-  const handleClear = () =>{
+
+  const handleClear = () => {
     setConfirmModal({
       isOpen: true,
       action: "clear",
@@ -427,13 +433,13 @@ const GoodsTransit = () => {
           <div className="flex flex-col gap-1 w-1/2 ">
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
-              customInput={<CustomInput/>}
+              customInput={<CustomInput />}
               selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
               id="docDate"
               name="docDate"
               dateFormat="dd-MM-yyyy"
               className="border rounded p-1 w-full bg-white h-[34px]"
-              onChange={e => setMasterData(prev => ({ ...prev, docDate:e}))}
+              onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
             />
 
           </div>
@@ -515,7 +521,7 @@ const GoodsTransit = () => {
       </div>
       <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
         <div className="flex flex-row">
-        <DropDownBox
+          <DropDownBox
             id="GoodsTransitSelection"
             className="border rounded w-full"
             value={selectedGoodsTransit?.goodsTransitId}

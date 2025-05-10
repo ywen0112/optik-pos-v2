@@ -350,6 +350,7 @@ const PurchaseInvoice = () => {
       await createNewPruchaseInvoice()
       setSupplierGridBoxValue({creditorId: "", creditorCode: "", companyName: ""})
       setPurchasePersonGridBoxValue({id: "", Name: ""})
+      setSelectedPurchaseInvoice({purchaseInvoiceId: "", docNo: ""})
       setPurchaseItem([]);
       setCurrentTotal(0);
       return;
@@ -376,7 +377,6 @@ const PurchaseInvoice = () => {
     setPurchasePersonGridBoxValue({ id: "", Name: "" })
     setPurchaseItem([]);
     setCurrentTotal(0);
-    return;
   }
 
   const handleClear = () => {

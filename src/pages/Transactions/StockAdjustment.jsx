@@ -263,7 +263,6 @@ const StockAdjustment = () => {
     await newStockAdjustmentRecords()
     setStockAdjustmentItems([]);
     setCurrentTotal(0);
-    return;
   }
 
   const handleClear = () => {

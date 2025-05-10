@@ -926,7 +926,6 @@ const SalesOrder = () => {
             opticalHeight: 0,
             segmentHeight: 0,
         })
-        return;
     }
 
     const handleSavePrint = () => {

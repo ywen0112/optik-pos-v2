@@ -343,38 +343,41 @@ const CashSales = () => {
     const confirmAction = async () => {
         if (confirmModal.action === "clear") {
             setConfirmModal({ isOpen: false, action: "", data: null });
-            await createNewCashSales()
+            await createNewCashSales();
             setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
             setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+            setSelectedCashSales({cashSalesId: "", docNo: ""})
             setCashSalesItem([]);
             setCurrentSalesTotal(0);
-            return;
+            return; 
         }
+
         try {
             const res = await SaveCashSale({ ...confirmModal.data });
             if (res.success) {
-
                 setNotifyModal({ isOpen: true, message: "Cash Sales added successfully!" });
             } else throw new Error(res.errorMessage || "Failed to Add Cash Sales");
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
-            await createNewCashSales()
+            await createNewCashSales();
             setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
             setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
             setCashSalesItem([]);
             setCurrentSalesTotal(0);
         }
+
         if (confirmModal.action === "save-print") {
             console.log("print acknowledgement");
         }
+
         setConfirmModal({ isOpen: false, action: "", data: null });
-        await createNewCashSales()
+
+        await createNewCashSales();
         setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
         setCashSalesItem([]);
         setCurrentSalesTotal(0);
-        return;
-    }
+    };
 
     const handleSavePrint = () => {
         if (cashSalesItem.length <= 0) {
