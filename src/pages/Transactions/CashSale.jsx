@@ -179,8 +179,7 @@ const CashSales = () => {
                 />
             </DataGrid>
         ),
-        [],
-    );
+        []);
 
     const handleCustomerGridBoxValueChanged = (e) => {
         if (!e.value) {
@@ -230,9 +229,7 @@ const CashSales = () => {
                     highlightSearchText={true}
                 />
             </DataGrid>
-        ),
-        [],
-    );
+        ),[]);
 
     const handleSalesPersonGridBoxValueChanged = (e) => {
         if (!e.value) {
@@ -364,7 +361,6 @@ const CashSales = () => {
             await createNewCashSales()
             setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
             setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-
             setCashSalesItem([]);
             setCurrentSalesTotal(0);
         }
@@ -375,7 +371,6 @@ const CashSales = () => {
         await createNewCashSales()
         setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-
         setCashSalesItem([]);
         setCurrentSalesTotal(0);
         return;
@@ -664,7 +659,7 @@ const CashSales = () => {
             setCashSalesItem(enrichedItems);
         }
         setIsCashSalesGridBoxOpened(false);
-    })
+    },[])
 
     const CashSalesDataGridRender = useCallback(
         () => (

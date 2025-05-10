@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import DatePicker from "react-datepicker";
-
 import CustomStore from 'devextreme/data/custom_store';
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
@@ -16,6 +15,7 @@ import DataGrid, {
   SearchPanel
 } from 'devextreme-react/data-grid';
 import { GetItem } from "../../api/maintenanceapi";
+
 const StockAdjustment = () => {
   const companyId = sessionStorage.getItem("companyId");
   const userId = sessionStorage.getItem("userId");
@@ -34,7 +34,7 @@ const StockAdjustment = () => {
 
   useEffect(() => {
     newStockAdjustmentRecords()
-  }, [])
+  }, []);
 
   const handleStockAdjustmentGridBoxValueChanged = (e) => {
     if (!e.value) {
@@ -45,8 +45,6 @@ const StockAdjustment = () => {
   const StockAdjustmentDataGridOnSelectionChanged = useCallback(async (e) => {
     const selected = e.selectedRowKeys?.[0];
     if (selected) {
-
-
       const recordRes = await GetStockAdjustment({
         companyId,
         userId,
@@ -163,8 +161,6 @@ const StockAdjustment = () => {
     ), []
   );
 
-
-
   const newStockAdjustmentRecords = async () => {
     try {
       const res = await NewStockAdjustment({ companyId: companyId, userId: userId, id: userId });
@@ -258,7 +254,7 @@ const StockAdjustment = () => {
       } else throw new Error(res.errorMessage || "Failed to Add Stock Adjustment");
     } catch (error) {
       setErrorModal({ title: "Error", message: error.message });
-      await newGoodsTransitRecords()
+      await newStockAdjustmentRecords()
     }
     if (confirmModal.action === "addPrint") {
       console.log("print acknowledgement");
@@ -459,12 +455,8 @@ const StockAdjustment = () => {
 
       <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4">
         <div className="w-full grid grid-cols-2 gap-6 items-start text-sm text-secondary font-medium">
-
-
           <div className="flex flex-col">
-
           </div>
-
           <div className="flex flex-col space-y-1">
             {[
 

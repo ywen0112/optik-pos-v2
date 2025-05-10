@@ -1,13 +1,20 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import DatePicker from "react-datepicker";
 import CustomStore from 'devextreme/data/custom_store';
 import ErrorModal from "../../modals/ErrorModal";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import NotificationModal from "../../modals/NotificationModal";
-import { NewGoodsTransit, NewGoodsTransitDetail, SaveGoodsTransit } from "../../api/transactionapi";
+import { GetGoodsTransitRecords, GetGoodsTransit, NewGoodsTransit, NewGoodsTransitDetail, SaveGoodsTransit } from "../../api/transactionapi";
 import TransactionItemDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGrid";
 import CustomInput from "../../Components/input/dateInput";
-
+import { DropDownBox } from "devextreme-react";
+import DataGrid, {
+  Paging,
+  Selection,
+  Scrolling,
+  SearchPanel
+} from 'devextreme-react/data-grid';
+import { GetItem } from "../../api/maintenanceapi";
 
 const GoodsTransit = () => {
   const companyId = sessionStorage.getItem("companyId");
@@ -20,9 +27,139 @@ const GoodsTransit = () => {
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: "", targetData: null });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
 
+  const [selectedGoodsTransit, setSelectedGoodsTransit] = useState({ goodsTransitId: "", description: "" })
+  const [isGoodsTransitGridBoxOpened, setIsGoodsTransitGridBoxOpened] = useState(false)
+
+  const gridRef = useRef(null)
+
   useEffect(() => {
     newGoodsTransitRecords()
-  }, [])
+  }, []);
+
+  const handleGoodsTransitGridBoxValueChanged = (e) => {
+    if (!e.value) {
+      setSelectedGoodsTransit({ goodsTransitId: "", description: "" })
+    }
+  }
+
+  const GoodsTransitDataGridOnSelectionChanged = useCallback(async (e) => {
+    const selected = e.selectedRowKeys?.[0];
+    if (selected) {
+      const recordRes = await GetGoodsTransit({
+        companyId,
+        userId,
+        id: selected
+      });
+
+      setSelectedGoodsTransit({ goodsTransitId: selected, description: recordRes.data?.description });
+
+      const details = recordRes?.data?.details ?? [];
+
+      const enrichedItems = await Promise.all(
+        details.map(async (item) => {
+          if (!item.itemCode && !item.uom) {
+            try {
+              const res = await GetItem({
+                companyId,
+                userId,
+                id: item.itemId
+              });
+              return {
+                ...item,
+                itemCode: res.data.itemCode,
+                uom: res.data.itemUOM?.uom
+              };
+            } catch (error) {
+              console.error("Failed to fetch item info:", error);
+            }
+          }
+          return item;
+        })
+      );
+      setMasterData(recordRes.data);
+      setGoodsTransitItems(enrichedItems);
+      setIsGoodsTransitGridBoxOpened(false);
+    }
+  }, []);
+
+  const onGoodsTransitGridBoxOpened = useCallback((e) => {
+    if (e.name === 'opened') {
+      setIsGoodsTransitGridBoxOpened(e.value);
+    }
+  }, []);
+
+  const goodsTransitStore = new CustomStore({
+    key: "goodsTransitId",
+    load: async (loadOptions) => {
+      const filter = loadOptions.filter;
+      let keyword = filter?.[2] || "";
+
+      const res = await GetGoodsTransitRecords({
+        keyword: keyword || "",
+        offset: loadOptions.skip,
+        limit: loadOptions.take,
+        companyId,
+        fromDate: "1970-01-01T00:00:00",
+        toDate: new Date()
+      });
+      return {
+        data: res.data,
+        totalCount: res.totalRecords
+      }
+    },
+    byKey: async (key) => {
+      const res = await GetGoodsTransit({
+        companyId,
+        userId,
+        id: key
+      });
+      return res.data
+    }
+  })
+
+  const goodsTransitGridColumns = [
+    { dataField: "docNo", caption: "Doc No" },
+    {
+      dataField: "docDate", caption: "Doc Date", calculateDisplayValue: (rowData) => {
+        const date = new Date(rowData.docDate);
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      }
+    }
+  ];
+
+  const GoodsTransitDataGridRender = useCallback(
+    () => (
+      <DataGrid
+        dataSource={goodsTransitStore}
+        columns={goodsTransitGridColumns}
+        hoverStateEnabled={true}
+        showBorders={true}
+        selectedRowKey={selectedGoodsTransit?.goodsTransitId}
+        onSelectionChanged={GoodsTransitDataGridOnSelectionChanged}
+        height="300px"
+        remoteOperations={{
+          paging: true,
+          filtering: true,
+        }}
+      >
+        <Selection mode="single" />
+        <Paging
+          enabled={true}
+          pageSize={10}
+        />
+        <Scrolling mode="infinite" />
+
+        <SearchPanel
+          visible={true}
+          width="100%"
+          highlightSearchText={true}
+        />
+      </DataGrid>
+    ), []
+  );
 
   const newGoodsTransitRecords = async () => {
     try {
@@ -90,7 +227,6 @@ const GoodsTransit = () => {
     });
   };
 
-
   useEffect(() => {
     const total = goodsTransitItems?.reduce((sum, item) => {
       return sum + (Number(item.subTotal) || 0);
@@ -110,6 +246,7 @@ const GoodsTransit = () => {
       await newGoodsTransitRecords()
       setGoodsTransitItems([]);
       setCurrentTotalCost(0);
+      setSelectedGoodsTransit({ goodsTransitId: "", description: "" })
       return;
     }
     try {
@@ -200,8 +337,6 @@ const GoodsTransit = () => {
     });
   }
 
-  const gridRef = useRef(null);
-
   const goodsTransitItemStore = new CustomStore({
     key: "goodsTransitDetailId",
     load: async () => {
@@ -253,15 +388,15 @@ const GoodsTransit = () => {
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
           <div className="items-center gap-1">
-            <label htmlFor="StockAdjustmentDesc" className="font-medium text-secondary" >
+            <label htmlFor="goodsTransitDesc" className="font-medium text-secondary" >
               Description
             </label>
             <div className="justify-self-start w-full">
 
               <div className="flex justify-end gap-2">
                 <textarea
-                  id="description"
-                  name="description"
+                  id="goodsTransitDesc"
+                  name="goodsTransitDesc"
                   rows={1}
                   className="border rounded p-2 w-full resize-none bg-white text-secondary"
                   placeholder="Goods Transit Description"
@@ -304,7 +439,7 @@ const GoodsTransit = () => {
           </div>
 
           <div className="items-center gap-1 w-1/2">
-            <label htmlFor="StockAdjustmentDesc" className="font-medium text-secondary" >
+            <label htmlFor="fromLocation" className="font-medium text-secondary" >
               From
             </label>
             <div className="justify-self-start w-full">
@@ -325,15 +460,15 @@ const GoodsTransit = () => {
           </div>
 
           <div className="items-center gap-1 w-1/2">
-            <label htmlFor="StockAdjustmentDesc" className="font-medium text-secondary" >
+            <label htmlFor="toLocation" className="font-medium text-secondary" >
               To
             </label>
             <div className="justify-self-start w-full">
 
               <div className="flex justify-end gap-2">
                 <textarea
-                  id="CustomerName"
-                  name="CustomerName"
+                  id="toLocation"
+                  name="toLocation"
                   rows={1}
                   className="border rounded p-2 w-full resize-none bg-white text-secondary"
                   placeholder="To"
@@ -362,14 +497,9 @@ const GoodsTransit = () => {
 
       <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4">
         <div className="w-full grid grid-cols-2 gap-6 items-start text-sm text-secondary font-medium">
-
-
           <div className="flex flex-col">
-
           </div>
-
           <div className="flex flex-col space-y-1">
-
             <div className="grid grid-cols-[auto,30%] gap-1">
               <label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >Total</label>
 
@@ -385,10 +515,24 @@ const GoodsTransit = () => {
       </div>
       <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
         <div className="flex flex-row">
-          <input
-            type="text"
-            placeholder="search"
-            className="p-2 w-44 m-[2px]"
+        <DropDownBox
+            id="GoodsTransitSelection"
+            className="border rounded w-full"
+            value={selectedGoodsTransit?.goodsTransitId}
+            opened={isGoodsTransitGridBoxOpened}
+            openOnFieldClick={true}
+            valueExpr="goodsTransitId"
+            displayExpr={(item) => item && `${item.description}`}
+            placeholder="Search"
+            showClearButton={false}
+            showDropDownButton={true}
+            onValueChanged={handleGoodsTransitGridBoxValueChanged}
+            dataSource={goodsTransitStore}
+            onOptionChanged={onGoodsTransitGridBoxOpened}
+            contentRender={GoodsTransitDataGridRender}
+            dropDownOptions={{
+              width: 400
+            }}
           />
           <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
             Clear

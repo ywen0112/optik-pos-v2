@@ -14,11 +14,11 @@ import NotificationModal from "../../modals/NotificationModal";
 import { getInfoLookUp } from "../../api/infolookupapi";
 import { GetSpecificUser } from "../../api/userapi";
 import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGridWithDisc";
-import { SaveCreditor, NewCreditor, GetCreditor } from "../../api/maintenanceapi";
+import { SaveCreditor, NewCreditor, GetCreditor, GetItem } from "../../api/maintenanceapi";
 import AddSupplierModal from "../../modals/MasterData/Supplier/AddSupplierModal";
 
 import PurchaseInvoicePaymentModal from "../../modals/Transactions/PurcaseInvoicePaymentModal";
-import { NewPurchaseInvoice, NewPurchaseInvoiceDetail, SavePurchaseInvoice } from "../../api/transactionapi";
+import { GetPurchaseInvoice, GetPurchaseInvoiceRecords, NewPurchaseInvoice, NewPurchaseInvoiceDetail, SavePurchaseInvoice } from "../../api/transactionapi";
 import CustomInput from "../../Components/input/dateInput";
 import { UserPlus } from "lucide-react";
 
@@ -30,6 +30,11 @@ const SupplierGridColumns = [
 ];
 const PurchasePersonGridColumns = [
   { dataField: "userName", caption: "Name", width: "100%" }
+];
+const PurchaseInvoiceGridColumns = [
+  { dataField: "docNo", caption: "Doc No", width: "40%" },
+  { dataField: "creditorCode", caption: "Code", width: "30%" },
+  { dataField: "creditorName", caption: "Name", width: "50%" }
 ];
 
 const PurchaseInvoice = () => {
@@ -43,12 +48,14 @@ const PurchaseInvoice = () => {
   const [paidAmount, setPaidAmount] = useState(0);
   const [balance, setBalance] = useState(0);
 
-  const [SupplierGridBoxValue, setSupplierGridBoxValue] = useState({ id: "", Code: "", Name: "" });
+  const [SupplierGridBoxValue, setSupplierGridBoxValue] = useState({ creditorId: "", creditorCode: "", companyName: "" });
   const [isSupplierGridBoxOpened, setIsSupplierGridBoxOpened] = useState(false);
   const [isPurchasePersonGridBoxOpened, setIsPurchasePersonGridBoxOpened] = useState(false);
-  const [PurchasePersonGridBoxValue, setPurchasePersonGridBoxValue] = useState({ id: "", Code: "", Name: "" });
+  const [PurchasePersonGridBoxValue, setPurchasePersonGridBoxValue] = useState({ id: "", Name: "" });
   const [newSupplier, setNewSupplier] = useState(null);
   const [showSupplierModal, setShowSupplierModal] = useState(false);
+  const [selectedPurchaseInvoice, setSelectedPurchaseInvoice] = useState({ purchaseInvoiceId: "", docNo: "" });
+  const [isPurchaseInvoiceGridBoxOpened, setIsPurchaseInvoiceGridBoxOpened] = useState(false);
 
   const [purchaseInvoicePayment, setPurchaseInvoicePayment] = useState(false);
   const [errorModal, setErrorModal] = useState({ title: "", message: "" });
@@ -70,7 +77,7 @@ const PurchaseInvoice = () => {
         setMasterData(res.data);
       } else throw new Error(res.errorMessage || "Failed to add new Purchase Records");
     } catch (error) {
-      setErrorModal({ title: "Fetch Error", message: error.message });
+      setErrorModal({ title: "Failed to Add", message: error.message });
     }
   };
 
@@ -138,7 +145,7 @@ const PurchaseInvoice = () => {
   const SupplierDataGridOnSelectionChanged = useCallback((e) => {
     const selected = e.selectedRowsData?.[0];
     if (selected) {
-      setSupplierGridBoxValue({ id: selected.creditorId, Code: selected.creditorCode, Name: selected.companyName });
+      setSupplierGridBoxValue({ creditorId: selected.creditorId, creditorCode: selected.creditorCode, companyName: selected.companyName });
       setIsSupplierGridBoxOpened(false);
     }
   }, []);
@@ -177,7 +184,7 @@ const PurchaseInvoice = () => {
 
   const handleSupplierGridBoxValueChanged = (e) => {
     if (!e.value) {
-      setSupplierGridBoxValue({ id: "", Code: "", Name: "" });
+      setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" });
     }
   };
 
@@ -229,7 +236,7 @@ const PurchaseInvoice = () => {
 
   const handlePurchasePersonGridBoxValueChanged = (e) => {
     if (!e.value) {
-      setPurchasePersonGridBoxValue({ id: "", Code: "", Name: "" });
+      setPurchasePersonGridBoxValue({ id: "", Name: "" });
     }
   };
 
@@ -341,8 +348,8 @@ const PurchaseInvoice = () => {
     if (confirmModal?.action === "clear") {
       setConfirmModal({ isOpen: false, action: "", data: null });
       await createNewPruchaseInvoice()
-      setSupplierGridBoxValue(null)
-      setPurchasePersonGridBoxValue(null)
+      setSupplierGridBoxValue({creditorId: "", creditorCode: "", companyName: ""})
+      setPurchasePersonGridBoxValue({id: "", Name: ""})
       setPurchaseItem([]);
       setCurrentTotal(0);
       return;
@@ -355,8 +362,8 @@ const PurchaseInvoice = () => {
     } catch (error) {
       setErrorModal({ title: "Error", message: error.message });
       await createNewPruchaseInvoice()
-      setSupplierGridBoxValue(null)
-      setPurchasePersonGridBoxValue(null)
+      setSupplierGridBoxValue({creditorId: "", creditorCode: "", companyName: ""})
+      setPurchasePersonGridBoxValue({ id: "", Name: "" })
       setPurchaseItem([]);
       setCurrentTotal(0);
     }
@@ -365,8 +372,8 @@ const PurchaseInvoice = () => {
     }
     setConfirmModal({ isOpen: false, action: "", data: null });
     await createNewPruchaseInvoice()
-    setSupplierGridBoxValue(null)
-    setPurchasePersonGridBoxValue(null)
+    setSupplierGridBoxValue({creditorId: "", creditorCode: "", companyName: ""})
+    setPurchasePersonGridBoxValue({ id: "", Name: "" })
     setPurchaseItem([]);
     setCurrentTotal(0);
     return;
@@ -428,8 +435,8 @@ const PurchaseInvoice = () => {
     const formData = {
       ...masterData,
       isVoid: false,
-      creditorId: SupplierGridBoxValue?.id,
-      creditorName: SupplierGridBoxValue?.Name,
+      creditorId: SupplierGridBoxValue?.creditorId,
+      creditorName: SupplierGridBoxValue?.companyName,
       purchasePersonUserID: PurchasePersonGridBoxValue.id,
       details: purchaseItem.map((item) => ({
         purchaseInvoiceDetailId: item.purchaseInvoiceDetailId ?? "",
@@ -460,8 +467,8 @@ const PurchaseInvoice = () => {
     const formData = {
       ...masterData,
       isVoid: false,
-      creditorId: SupplierGridBoxValue?.id,
-      creditorName: SupplierGridBoxValue?.Name,
+      creditorId: SupplierGridBoxValue?.creditorId,
+      creditorName: SupplierGridBoxValue?.companyName,
       purchasePersonUserID: PurchasePersonGridBoxValue.id,
       details: purchaseItem.map((item) => ({
         purchaseInvoiceDetailId: item.purchaseInvoiceDetailId ?? "",
@@ -486,8 +493,8 @@ const PurchaseInvoice = () => {
       console.log("print acknowledgement");
     }
     await createNewPruchaseInvoice()
-    setSupplierGridBoxValue(null)
-    setPurchasePersonGridBoxValue(null)
+    setSupplierGridBoxValue({creditorId: "", creditorCode: "", companyName: ""})
+    setPurchasePersonGridBoxValue({ id: "", Name: "" })
     setPurchaseItem([]);
     setCurrentTotal(0);
     return;
@@ -555,6 +562,127 @@ const PurchaseInvoice = () => {
       }
     }
   })
+
+  const handlePurchaseInvoiceGridBoxValueChanged = (e) => {
+        if (!e.value) {
+            setSelectedPurchaseInvoice({ purchaseInvoiceId: "", docNo: "" });
+        }
+    }
+
+    const purchaseInvoiceStore = new CustomStore({
+        key: "purchaseInvoiceId",
+        load: async (loadOptions) => {
+            const filter = loadOptions.filter;
+            let keyword = filter?.[2] || "";
+
+            const res = await GetPurchaseInvoiceRecords({
+                keyword: keyword || "",
+                offset: loadOptions.skip,
+                limit: loadOptions.take,
+                companyId,
+                fromDate: "1970-01-01T00:00:00",
+                toDate: new Date()
+            });
+            return {
+                data: res.data,
+                totalCount: res.totalRecords
+            }
+        },
+        byKey: async (key) => {
+            const res = await GetPurchaseInvoice({
+                companyId,
+                userId,
+                id: key
+            });
+            return res.data
+        }
+    })
+
+    const onPurchaseInvoiceGridBoxOpened = useCallback((e) => {
+        if (e.name === 'opened') {
+            setIsPurchaseInvoiceGridBoxOpened(e.value);
+        }
+    }, [])
+
+    const PurchaseInvoiceDataGridOnSelectionChanged = useCallback(async (e) => {
+        const selected = e.selectedRowKeys?.[0];
+        if (selected) {
+            const recordRes = await GetPurchaseInvoice({
+                companyId,
+                userId,
+                id: selected
+            })
+            setSelectedPurchaseInvoice({ purchaseInvoiceId: selected, docNo: recordRes.data?.docNo })
+            setSupplierGridBoxValue({ creditorId: recordRes.data?.creditorId, creditorCode: recordRes.data?.creditorCode, companyName: recordRes.data?.creditorName })
+            setPurchasePersonGridBoxValue({ id: recordRes.data?.purchasePersonUserID })
+            setMasterData(recordRes.data)
+            const details = recordRes?.data?.details ?? [];
+            const paidAmount = (recordRes.data?.payments ?? []).reduce((sum, payment) => {
+                const detailSum = (payment.details ?? []).reduce((dSum, item) => {
+                    return dSum + (Number(item.amount) || 0);
+                }, 0);
+                return sum + detailSum;
+            }, 0);
+            setPaidAmount(paidAmount);
+            const enrichedItems = await Promise.all(
+                details.map(async (item) => {
+                    if (!item.itemCode && !item.uom) {
+                        try {
+                            const res = await GetItem({
+                                companyId,
+                                userId,
+                                id: item.itemId
+                            });
+                            return {
+                                ...item,
+                                itemCode: res.data.itemCode,
+                                uom: res.data.itemUOM?.uom,
+
+                            };
+                        } catch (error) {
+                            console.error("Failed to fetch item info:", error);
+                        }
+                    }
+                    return item;
+                })
+            )
+            setPurchaseItem(enrichedItems);
+        }
+        setIsPurchaseInvoiceGridBoxOpened(false);
+    }, []);
+
+    const PurchaseInvoiceDataGridRender = useCallback(
+        () => (
+            <DataGrid
+                dataSource={purchaseInvoiceStore}
+                columns={PurchaseInvoiceGridColumns}
+                hoverStateEnabled={true}
+                showBorders={true}
+                selectedRowKeys={selectedPurchaseInvoice?.purchaseInvoiceId}
+                onSelectionChanged={PurchaseInvoiceDataGridOnSelectionChanged}
+                height="300px"
+                remoteOperations={{
+                    paging: true,
+                    filtering: true,
+                }}
+            >
+                <Selection mode="single" />
+                <Paging
+                    enabled={true}
+                    pageSize={10}
+                />
+                <Scrolling mode="infinite" />
+
+                <SearchPanel
+                    visible={true}
+                    width="100%"
+                    highlightSearchText={true}
+                />
+            </DataGrid>
+        ), []
+    )
+
+
   return (
     <>
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
@@ -573,7 +701,7 @@ const PurchaseInvoice = () => {
                 <DropDownBox
                   id="SupplierSelection"
                   className="border rounded p-1 w-1/2 h-[34px]"
-                  value={SupplierGridBoxValue?.id ?? ""}
+                  value={SupplierGridBoxValue?.creditorId ?? ""}
                   opened={isSupplierGridBoxOpened}
                   openOnFieldClick={true}
                   valueExpr='creditorId'
@@ -594,8 +722,8 @@ const PurchaseInvoice = () => {
                   rows={1}
                   className="border rounded p-2 w-full resize-none bg-white text-secondary"
                   placeholder="Name"
-                  onChange={(e) => { setSupplierGridBoxValue(prev => ({ ...prev, Name: e.target.value })) }}
-                  value={SupplierGridBoxValue?.Name}
+                  onChange={(e) => { setSupplierGridBoxValue(prev => ({ ...prev, companyName: e.target.value })) }}
+                  value={SupplierGridBoxValue?.companyName}
                 />
                 <div className="relative group">
                   <button
@@ -760,7 +888,7 @@ const PurchaseInvoice = () => {
                     onChange={(e) => setTax(e.target.value)}
                     onBlur={() => {
                       const parsed = parseFloat(tax);
-                      setRounding(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
+                      setTax(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
                     }}
                     className=" border rounded px-5 py-2 bg-white w-full min-h-5 text-right "
                   />
@@ -780,10 +908,24 @@ const PurchaseInvoice = () => {
       </div>
       <div className="bg-white border-t p-4 sticky bottom-0 flex flex-row place-content-between z-10">
         <div className="flex flex-row">
-          <input
-            type="text"
-            placeholder="search"
-            className="p-2 w-44 m-[2px]"
+          <DropDownBox
+            id="PurchaseInvoiceSelection"
+            className="border rounded w-full"
+            value={selectedPurchaseInvoice?.purchaseInvoiceId}
+            opened={isPurchaseInvoiceGridBoxOpened}
+            openOnFieldClick={true}
+            valueExpr={"purchaseInvoiceId"}
+            displayExpr={(item) => item && `${item.docNo ?? ""}`}
+            placeholder="Search"
+            showClearButton={false}
+            showDropDownButton={true}
+            onValueChanged={handlePurchaseInvoiceGridBoxValueChanged}
+            dataSource={purchaseInvoiceStore}
+            onOptionChanged={onPurchaseInvoiceGridBoxOpened}
+            contentRender={PurchaseInvoiceDataGridRender}
+            dropDownOptions={{
+                width: 400
+            }}
           />
           <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
             Clear

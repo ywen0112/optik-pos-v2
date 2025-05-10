@@ -355,8 +355,7 @@ const SalesOrder = () => {
                 />
             </DataGrid>
         ),
-        [],
-    );
+        []);
 
     const SalesPersonDataGridOnSelectionChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
@@ -1258,7 +1257,7 @@ const SalesOrder = () => {
             setSalesItem(enrichedItems)
         }
         setIsSalesOrderGridBoxOpened(false)
-    })
+    },[])
 
     const SalesOrderDataGridRender = useCallback(
         () => (
