@@ -495,7 +495,7 @@ const StockAdjustment = () => {
             onOptionChanged={onStockAdjustmentGridBoxOpened}
             contentRender={StockAdjustmentDataGridRender}
             dropDownOptions={{
-              width: 400
+              width: 500
             }}
           />
           <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">

@@ -33,8 +33,19 @@ const SalesPersonGridColumns = [
 ];
 const CashSalesGridColumns = [
     { dataField: "docNo", caption: "Doc No", width: "40%" },
+    {
+      dataField: "docDate", caption: "Doc Date", calculateDisplayValue: (rowData) => {
+        const date = new Date(rowData.docDate);
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      },
+      width: "30%"
+    },
     { dataField: "debtorCode", caption: "Code", width: "30%" },
     { dataField: "debtorName", caption: "Name", width: "50%" }
+    
 ];
 
 const CashSales = () => {
@@ -921,7 +932,7 @@ const CashSales = () => {
                         onOptionChanged={onCashSalesGridBoxOpened}
                         contentRender={CashSalesDataGridRender}
                         dropDownOptions={{
-                            width: 400
+                            width: 500
                         }}
                     />
                     <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">

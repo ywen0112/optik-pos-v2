@@ -33,6 +33,16 @@ const PurchasePersonGridColumns = [
 ];
 const PurchaseInvoiceGridColumns = [
   { dataField: "docNo", caption: "Doc No", width: "40%" },
+  {
+    dataField: "docDate", caption: "Doc Date", calculateDisplayValue: (rowData) => {
+      const date = new Date(rowData.docDate);
+      const dd = String(date.getDate()).padStart(2, '0');
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const yyyy = date.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    },
+    width: "40%"
+  },
   { dataField: "creditorCode", caption: "Code", width: "30%" },
   { dataField: "creditorName", caption: "Name", width: "50%" }
 ];
@@ -348,9 +358,9 @@ const PurchaseInvoice = () => {
     if (confirmModal?.action === "clear") {
       setConfirmModal({ isOpen: false, action: "", data: null });
       await createNewPruchaseInvoice()
-      setSupplierGridBoxValue({creditorId: "", creditorCode: "", companyName: ""})
-      setPurchasePersonGridBoxValue({id: "", Name: ""})
-      setSelectedPurchaseInvoice({purchaseInvoiceId: "", docNo: ""})
+      setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" })
+      setPurchasePersonGridBoxValue({ id: "", Name: "" })
+      setSelectedPurchaseInvoice({ purchaseInvoiceId: "", docNo: "" })
       setPurchaseItem([]);
       setCurrentTotal(0);
       return;
@@ -363,7 +373,7 @@ const PurchaseInvoice = () => {
     } catch (error) {
       setErrorModal({ title: "Error", message: error.message });
       await createNewPruchaseInvoice()
-      setSupplierGridBoxValue({creditorId: "", creditorCode: "", companyName: ""})
+      setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" })
       setPurchasePersonGridBoxValue({ id: "", Name: "" })
       setPurchaseItem([]);
       setCurrentTotal(0);
@@ -373,7 +383,7 @@ const PurchaseInvoice = () => {
     }
     setConfirmModal({ isOpen: false, action: "", data: null });
     await createNewPruchaseInvoice()
-    setSupplierGridBoxValue({creditorId: "", creditorCode: "", companyName: ""})
+    setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" })
     setPurchasePersonGridBoxValue({ id: "", Name: "" })
     setPurchaseItem([]);
     setCurrentTotal(0);
@@ -493,7 +503,7 @@ const PurchaseInvoice = () => {
       console.log("print acknowledgement");
     }
     await createNewPruchaseInvoice()
-    setSupplierGridBoxValue({creditorId: "", creditorCode: "", companyName: ""})
+    setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" })
     setPurchasePersonGridBoxValue({ id: "", Name: "" })
     setPurchaseItem([]);
     setCurrentTotal(0);
@@ -564,124 +574,124 @@ const PurchaseInvoice = () => {
   })
 
   const handlePurchaseInvoiceGridBoxValueChanged = (e) => {
-        if (!e.value) {
-            setSelectedPurchaseInvoice({ purchaseInvoiceId: "", docNo: "" });
-        }
+    if (!e.value) {
+      setSelectedPurchaseInvoice({ purchaseInvoiceId: "", docNo: "" });
     }
+  }
 
-    const purchaseInvoiceStore = new CustomStore({
-        key: "purchaseInvoiceId",
-        load: async (loadOptions) => {
-            const filter = loadOptions.filter;
-            let keyword = filter?.[2] || "";
+  const purchaseInvoiceStore = new CustomStore({
+    key: "purchaseInvoiceId",
+    load: async (loadOptions) => {
+      const filter = loadOptions.filter;
+      let keyword = filter?.[2] || "";
 
-            const res = await GetPurchaseInvoiceRecords({
-                keyword: keyword || "",
-                offset: loadOptions.skip,
-                limit: loadOptions.take,
+      const res = await GetPurchaseInvoiceRecords({
+        keyword: keyword || "",
+        offset: loadOptions.skip,
+        limit: loadOptions.take,
+        companyId,
+        fromDate: "1970-01-01T00:00:00",
+        toDate: new Date()
+      });
+      return {
+        data: res.data,
+        totalCount: res.totalRecords
+      }
+    },
+    byKey: async (key) => {
+      const res = await GetPurchaseInvoice({
+        companyId,
+        userId,
+        id: key
+      });
+      return res.data
+    }
+  })
+
+  const onPurchaseInvoiceGridBoxOpened = useCallback((e) => {
+    if (e.name === 'opened') {
+      setIsPurchaseInvoiceGridBoxOpened(e.value);
+    }
+  }, [])
+
+  const PurchaseInvoiceDataGridOnSelectionChanged = useCallback(async (e) => {
+    const selected = e.selectedRowKeys?.[0];
+    if (selected) {
+      const recordRes = await GetPurchaseInvoice({
+        companyId,
+        userId,
+        id: selected
+      })
+      setSelectedPurchaseInvoice({ purchaseInvoiceId: selected, docNo: recordRes.data?.docNo })
+      setSupplierGridBoxValue({ creditorId: recordRes.data?.creditorId, creditorCode: recordRes.data?.creditorCode, companyName: recordRes.data?.creditorName })
+      setPurchasePersonGridBoxValue({ id: recordRes.data?.purchasePersonUserID })
+      setMasterData(recordRes.data)
+      const details = recordRes?.data?.details ?? [];
+      const paidAmount = (recordRes.data?.payments ?? []).reduce((sum, payment) => {
+        const detailSum = (payment.details ?? []).reduce((dSum, item) => {
+          return dSum + (Number(item.amount) || 0);
+        }, 0);
+        return sum + detailSum;
+      }, 0);
+      setPaidAmount(paidAmount);
+      const enrichedItems = await Promise.all(
+        details.map(async (item) => {
+          if (!item.itemCode && !item.uom) {
+            try {
+              const res = await GetItem({
                 companyId,
-                fromDate: "1970-01-01T00:00:00",
-                toDate: new Date()
-            });
-            return {
-                data: res.data,
-                totalCount: res.totalRecords
+                userId,
+                id: item.itemId
+              });
+              return {
+                ...item,
+                itemCode: res.data.itemCode,
+                uom: res.data.itemUOM?.uom,
+
+              };
+            } catch (error) {
+              console.error("Failed to fetch item info:", error);
             }
-        },
-        byKey: async (key) => {
-            const res = await GetPurchaseInvoice({
-                companyId,
-                userId,
-                id: key
-            });
-            return res.data
-        }
-    })
+          }
+          return item;
+        })
+      )
+      setPurchaseItem(enrichedItems);
+    }
+    setIsPurchaseInvoiceGridBoxOpened(false);
+  }, []);
 
-    const onPurchaseInvoiceGridBoxOpened = useCallback((e) => {
-        if (e.name === 'opened') {
-            setIsPurchaseInvoiceGridBoxOpened(e.value);
-        }
-    }, [])
+  const PurchaseInvoiceDataGridRender = useCallback(
+    () => (
+      <DataGrid
+        key={selectedPurchaseInvoice?.purchaseInvoiceId}
+        dataSource={purchaseInvoiceStore}
+        columns={PurchaseInvoiceGridColumns}
+        hoverStateEnabled={true}
+        showBorders={true}
+        selectedRowKeys={selectedPurchaseInvoice?.purchaseInvoiceId}
+        onSelectionChanged={PurchaseInvoiceDataGridOnSelectionChanged}
+        height="300px"
+        remoteOperations={{
+          paging: true,
+          filtering: true,
+        }}
+      >
+        <Selection mode="single" />
+        <Paging
+          enabled={true}
+          pageSize={10}
+        />
+        <Scrolling mode="infinite" />
 
-    const PurchaseInvoiceDataGridOnSelectionChanged = useCallback(async (e) => {
-        const selected = e.selectedRowKeys?.[0];
-        if (selected) {
-            const recordRes = await GetPurchaseInvoice({
-                companyId,
-                userId,
-                id: selected
-            })
-            setSelectedPurchaseInvoice({ purchaseInvoiceId: selected, docNo: recordRes.data?.docNo })
-            setSupplierGridBoxValue({ creditorId: recordRes.data?.creditorId, creditorCode: recordRes.data?.creditorCode, companyName: recordRes.data?.creditorName })
-            setPurchasePersonGridBoxValue({ id: recordRes.data?.purchasePersonUserID })
-            setMasterData(recordRes.data)
-            const details = recordRes?.data?.details ?? [];
-            const paidAmount = (recordRes.data?.payments ?? []).reduce((sum, payment) => {
-                const detailSum = (payment.details ?? []).reduce((dSum, item) => {
-                    return dSum + (Number(item.amount) || 0);
-                }, 0);
-                return sum + detailSum;
-            }, 0);
-            setPaidAmount(paidAmount);
-            const enrichedItems = await Promise.all(
-                details.map(async (item) => {
-                    if (!item.itemCode && !item.uom) {
-                        try {
-                            const res = await GetItem({
-                                companyId,
-                                userId,
-                                id: item.itemId
-                            });
-                            return {
-                                ...item,
-                                itemCode: res.data.itemCode,
-                                uom: res.data.itemUOM?.uom,
-
-                            };
-                        } catch (error) {
-                            console.error("Failed to fetch item info:", error);
-                        }
-                    }
-                    return item;
-                })
-            )
-            setPurchaseItem(enrichedItems);
-        }
-        setIsPurchaseInvoiceGridBoxOpened(false);
-    }, []);
-
-    const PurchaseInvoiceDataGridRender = useCallback(
-        () => (
-            <DataGrid
-                key={selectedPurchaseInvoice?.purchaseInvoiceId}
-                dataSource={purchaseInvoiceStore}
-                columns={PurchaseInvoiceGridColumns}
-                hoverStateEnabled={true}
-                showBorders={true}
-                selectedRowKeys={selectedPurchaseInvoice?.purchaseInvoiceId}
-                onSelectionChanged={PurchaseInvoiceDataGridOnSelectionChanged}
-                height="300px"
-                remoteOperations={{
-                    paging: true,
-                    filtering: true,
-                }}
-            >
-                <Selection mode="single" />
-                <Paging
-                    enabled={true}
-                    pageSize={10}
-                />
-                <Scrolling mode="infinite" />
-
-                <SearchPanel
-                    visible={true}
-                    width="100%"
-                    highlightSearchText={true}
-                />
-            </DataGrid>
-        ), [selectedPurchaseInvoice, PurchaseInvoiceDataGridOnSelectionChanged]
-    )
+        <SearchPanel
+          visible={true}
+          width="100%"
+          highlightSearchText={true}
+        />
+      </DataGrid>
+    ), [selectedPurchaseInvoice, PurchaseInvoiceDataGridOnSelectionChanged]
+  )
 
 
   return (
@@ -862,7 +872,7 @@ const PurchaseInvoice = () => {
               { label: "Outstanding", value: balance },
             ].map(({ label, value }) => (
               <div key={label} className="grid grid-cols-[auto,30%] gap-1">
-                {label === "Outstanding" 
+                {label === "Outstanding"
                   ? (<label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{value >= 0 ? label : "Change"}</label>)
                   : (<label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{label}</label>)
                 }
@@ -925,7 +935,7 @@ const PurchaseInvoice = () => {
             onOptionChanged={onPurchaseInvoiceGridBoxOpened}
             contentRender={PurchaseInvoiceDataGridRender}
             dropDownOptions={{
-                width: 400
+              width: 500
             }}
           />
           <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
@@ -935,10 +945,10 @@ const PurchaseInvoice = () => {
         </div>
 
         <div className="w-ful flex flex-row justify-end">
-          <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
+          {/* <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
             onClick={() => setPurchaseInvoicePayment(true)}>
             Payment
-          </button>
+          </button> */}
           <button onClick={handleSavePrint} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
             Save & Print
           </button>

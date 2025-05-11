@@ -5,7 +5,7 @@ import NotificationModal from "../../NotificationModal";
 import ConfirmationModal from "../../ConfirmationModal";
 import CustomerHistoryRXDataGrid from "../../../Components/DataGrid/CustomerHistoryRXDataGrid";
 import AddHistoryRXModal from "./AddHistoryRXModal";
-import { NewSpectacles, NewContactLens, SaveSpectacles, SaveContactLensProfile } from "../../../api/eyepowerapi";
+import { NewSpectacles, NewContactLens, SaveSpectacles, SaveContactLensProfile, DeleteContactLen, DeleteSpectacles } from "../../../api/eyepowerapi";
 import { GetDebtorRXHistorys } from "../../../api/maintenanceapi";
 
 const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
@@ -56,6 +56,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
           fromDate,
           toDate
         });
+        console.log(response.data)
         return {
           data: response?.data || [],
           totalCount: response?.totalRecords || 0
@@ -105,7 +106,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
 
   const confirmAction = async () => {
     setSaving(true)
-    setConfirmModal({ isOpen: false, action: null });
+    setConfirmModal({ isOpen: false, action: null, data: null });
     try {
       if (confirmModal.action === "add") {
         if (confirmModal.type === "Specs") {
@@ -119,6 +120,28 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
             setNotifyModal({ isOpen: true, message: "Contact Lens Eye Power Records saved successfully!" });
           } else throw new Error(res.errorMessage || "Failed to save Contact Lens Eye Power Records");
         }
+      }else if(confirmModal.action === "delete"){
+        console.log(confirmModal.data)
+        const item = confirmModal.data;
+        if(item.type === "ContactLens"){
+          const res = await DeleteContactLen({
+            companyId, 
+            userId,
+            id: item.actualRXContactLens?.contactLensId
+          })
+          if (res.success) {
+            setNotifyModal({ isOpen: true, message: "Contact Lens Eye Power Records removed successfully!" });
+          } else throw new Error(res.errorMessage || "Failed to remove Contact Lens Eye Power Records");
+        }else if(item.type === "Spectacles"){
+            const res = await DeleteSpectacles({
+              companyId, 
+              userId,
+              id: item.prescribedRXSpectacles?.spectaclesId
+            })
+            if (res.success) {
+            setNotifyModal({ isOpen: true, message: "Spectacles Eye Power Records removed successfully!" });
+          } else throw new Error(res.errorMessage || "Failed to remove Spectacles Eye Power Records");
+        }
       }
     } catch (error) {
       onError({ title: "Add Error", message: error.message });
@@ -130,11 +153,22 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
 
   const confirmationTitleMap = {
     add: "Confirm New",
+    delete: "Confirm Delete"
   };
 
   const confirmationMessageMap = {
     add: "Are you sure you want to add this eye power record?",
+    delete: "Are you sure you want to delete this eye power record?"
   };
+
+  const handleDelete = (item) =>{
+    setConfirmModal({
+      isOpen: true,
+      action: "delete",
+      data: item
+
+    })
+  }
 
   return (
     <>
@@ -177,6 +211,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
               toDate={toDate}
               setFromDate={setFromDate}
               setToDate={setToDate}
+              onDelete={handleDelete}
             />
           </div>
 

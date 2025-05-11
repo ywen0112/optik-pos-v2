@@ -5,8 +5,9 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import StandardDataGridComponent from "../BaseDataGrid";
 import CustomInput from "../input/dateInput";
+import { Trash } from "lucide-react";
 
-const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick, fromDate, toDate, setFromDate, setToDate }) => {
+const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick, fromDate, toDate, setFromDate, setToDate, onDelete }) => {
   const historyRXDataGridRef = useRef(null);
   const [loading, setLoading] = useState(false);
 
@@ -83,6 +84,28 @@ const CustomerHistoryRXDataGrid = ({ rxHistoryStore, className, onRowClick, from
         <Column dataField="type" caption="Type" width={"20%"} />
         <Column dataField="itemCode" caption="Item Code" width={"20%"} />
         <Column dataField="uom" caption="UOM" width={"20%"} />
+        <Column
+                caption="Action"
+                cellRender={(data) => {
+                    const item = data.data;
+                    return (
+                        <div className="flex justify-center gap-2 text-red-400">
+                            {!item.docNo && (
+                                <div
+                                    className="hover:cursor-pointer"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDelete(item);
+                                    }}
+                                >
+                                    <Trash size={20} />
+                                </div>
+                            )}
+                        </div>
+                    );
+                }}
+
+            />
       </StandardDataGridComponent>
     </div>
   );
