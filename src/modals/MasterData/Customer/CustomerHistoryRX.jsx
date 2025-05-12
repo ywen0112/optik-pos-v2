@@ -56,7 +56,6 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
           fromDate,
           toDate
         });
-        console.log(response.data)
         return {
           data: response?.data || [],
           totalCount: response?.totalRecords || 0
@@ -88,7 +87,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
           data = res.data;
         } else throw new Error(res.errorMessage || "Failed to create new Spectacles Eye Power");
       } else if (type === "Lens") {
-        const res = await NewContactLens({ companyId: companyId, userId: userId, id: userId });
+        const res = await NewContactLens({ companyId: companyId, userId: userId, id: customerId });
         if (res.success) {
           data = res.data;
         } else throw new Error(res.errorMessage || "Failed to create new Contact Lens Eye Power");

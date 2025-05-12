@@ -1,4 +1,5 @@
 const CustomerGeneral = ({ debtorFormData, setDebtorFormData, isView }) => {
+    console.log(debtorFormData)
     return (
         <div className="w-full h-full overflow-y-auto border-2 rounded p-4 ">
             <div className="grid grid-cols-4 gap-1">
@@ -64,7 +65,7 @@ const CustomerGeneral = ({ debtorFormData, setDebtorFormData, isView }) => {
                         readOnly={isView}
                         type="date"
                         className="mr-2 border-2 w-full h-[40px] px-2"
-                        value={debtorFormData.dob}
+                        value={debtorFormData.dob?.split('T')[0] || ''}
                         onChange={(e) =>
                             setDebtorFormData({ ...debtorFormData, dob: e.target.value })
                         }
