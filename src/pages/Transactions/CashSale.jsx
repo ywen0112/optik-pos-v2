@@ -536,7 +536,7 @@ const CashSales = () => {
         await createNewCashSales()
         setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-
+        setSelectedCashSales({cashSalesId: "", docNo: ""})
         setCashSalesItem([]);
         setCurrentSalesTotal(0);
         return;
@@ -870,8 +870,11 @@ const CashSales = () => {
                             { label: "Paid", value: paidAmount },
                             { label: "Outstanding", value: balance },
                         ].map(({ label, value }) => (
-                            <div key={label} className="grid grid-cols-[auto,30%] gap-1">
-                                <label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{value>0 ? label : "Change"}</label>
+                             <div key={label} className="grid grid-cols-[auto,30%] gap-1">
+                                {label === "Outstanding"
+                                    ? (<label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{value >= 0 ? label : "Change"}</label>)
+                                    : (<label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{label}</label>)
+                                }
                                 <div className="border rounded px-5 py-2 bg-gray-100 w-full min-h-5 text-right">
                                     {Math.abs(value)?.toFixed(2)}
                                 </div>

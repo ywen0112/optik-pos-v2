@@ -1,8 +1,23 @@
 const ErrorModal = ({ title, message, onClose }) => {
-  if (!message) return null; 
+  if (!message) return null;
+
+  const handleOverlayClick = () => {
+    onClose();
+  };
+
+  const stopPropagation = (e) => {
+    e.stopPropagation();
+  };
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 z-50">
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+      onClick={handleOverlayClick}
+    >
+      <div
+        className="bg-white p-6 rounded-lg shadow-lg w-1/3 z-60"
+        onClick={stopPropagation}
+      >
         <h2 className="text-2xl font-bold text-gray-900 text-center">{title || "Error"}</h2>
         <p className="mt-2 text-gray-700 text-center text-lg">{message}</p>
         <div className="mt-4 flex justify-center">

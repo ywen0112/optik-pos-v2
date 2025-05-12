@@ -183,7 +183,7 @@ const UpdateProductModal = ({
             <Column dataField="code" caption="Code" />
             <Column dataField="description" caption="Desc" />
         </DataGrid>
-    ), [formData?.classification, classificationOnSelectionChanged]);
+    ), []);
 
     const handleProductClassificationGridBoxValueChanges = (e) => {
         if (!e.value) {
@@ -200,7 +200,7 @@ const UpdateProductModal = ({
 
     const productGroupDataGridOnSelectionChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
-        if (selected && selected.itemGroupId !== productGroup.itemGroupId) {
+        if (selected) {
             setFormData(prev => ({ ...prev, itemGroupId: selected.itemGroupId }));
             setProductGroup({ itemGroupId: selected.itemGroupId, itemGroupCode: selected.itemGroupCode, description: selected.description })
             setIsGroupBoxOpened(false);
@@ -235,7 +235,7 @@ const UpdateProductModal = ({
             <Column dataField="itemGroupCode" caption="Code" />
             <Column dataField="description" caption="Desc" />
         </DataGrid>
-    ), [productGroup, productGroupDataGridOnSelectionChanged]);
+    ), []);
 
     const handleProductGroupGridBoxValueChanges = (e) => {
         if (!e.value) {
@@ -287,7 +287,7 @@ const UpdateProductModal = ({
             <Column dataField="itemTypeCode" caption="Code" />
             <Column dataField="description" caption="Desc" />
         </DataGrid>
-    ), [productType, handleTypeSelection]);
+    ), []);
 
     const handleProductTypeChanged = (e) => {
         if (!e.value) {
@@ -437,11 +437,11 @@ const UpdateProductModal = ({
                                 type="number"
                                 placeholder="Min Price"
                                 step="0.01"
-                                value={productMinPrice}
+                                value={formData?.itemUOM?.minSalePrice}
                                 onChange={(e) => {
                                     const val = e.target.value;
                                     if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
-                                        setProductMinPrice(val);
+                                        setFormData({ ...formData, itemUOM: { ...formData.itemUOM, minSalePrice: val } });
                                     }
                                 }}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
@@ -456,10 +456,10 @@ const UpdateProductModal = ({
                                 onChange={(e) => {
                                     const val = e.target.value;
                                     if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
-                                        setProductCost(val);
+                                        setFormData({ ...formData, itemUOM: { ...formData.itemUOM, cost: val } })
                                     }
                                 }}
-                                value={productCost}
+                                value={formData?.itemUOM?.cost}
                                 className="mr-2 mt-2 border w-full h-[40px] px-2"
                             />
                         </div>
@@ -585,7 +585,7 @@ const UpdateProductModal = ({
 
                     <div className="absolute bottom-0 right-0 bg-white py-4 pr-6 flex justify-end w-full border-t">
                         <div className="flex gap-1">
-                            <button onClick={() => { setProductMinPrice(null); setProductCost(null); handleClose}} className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700">
+                            <button onClick={handleClose} className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700">
                                 Cancel
                             </button>
                             <button className="bg-primary text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
