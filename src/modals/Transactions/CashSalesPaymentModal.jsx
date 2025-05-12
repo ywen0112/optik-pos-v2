@@ -150,6 +150,12 @@ const CashSalesPaymentModal = ({ isOpen, onClose, total, companyId, userId, cash
     if (selectedIndex !== -1) {
       const updated = [...selectedPayments];
       updated[selectedIndex] = { ...updated[selectedIndex], ...paymentDetails };
+       const totalPaid = updated.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+      const hasCashPayment = updated.some(item => item.paymentType === "Cash");
+      if(!hasCashPayment && totalPaid > total){
+        onError({title: 'Payment Error', message: "Amount entered is more than total value"});
+        return;
+      }
       setSelectedPayments(updated);
       setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
       setRawAmountDigits('');
@@ -176,6 +182,12 @@ const CashSalesPaymentModal = ({ isOpen, onClose, total, companyId, userId, cash
   };
 
   const handleAmountKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handlePlusClick();
+      return;
+    }
+
     if (e.key === 'Backspace') {
       e.preventDefault();
       const updated = rawAmountDigits.slice(0, -1);
@@ -197,11 +209,6 @@ const CashSalesPaymentModal = ({ isOpen, onClose, total, companyId, userId, cash
           autoFocus={focusedField === 'amount'}
           className="border-2 p-1 h-[40px] flex-1 text-right"
         />
-      </div>
-      <div className='text-right'>
-        <button onClick={handlePlusClick} className="px-3 p-2 bg-primary text-white rounded hover:bg-primary/90">
-          <Plus size={20} />
-        </button>
       </div>
     </div>
   );
@@ -239,11 +246,6 @@ const CashSalesPaymentModal = ({ isOpen, onClose, total, companyId, userId, cash
           autoFocus={focusedField === 'amount'}
           className="border-2 p-1 h-[40px] flex-1 text-right"
         />
-      </div>
-      <div className='text-right'>
-        <button onClick={handlePlusClick} className="px-3 p-2 bg-primary text-white rounded hover:bg-primary/90">
-          <Plus size={20} />
-        </button>
       </div>
     </div>
   );
@@ -392,17 +394,22 @@ const CashSalesPaymentModal = ({ isOpen, onClose, total, companyId, userId, cash
             </div>
 
             <div className="flex-1 border-2 mt-4 p-4 flex flex-col justify-center items-center">
-              <div className="grid grid-cols-3 gap-4 w-full max-w-[300px]">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'backspace', 0, 'clear'].map((value, index) => (
-                  <button
-                    key={index}
-                    className={`h-18 text-2xl font-semibold border-black border rounded flex items-center justify-center transition
-                      ${value === 'clear' ? 'bg-primary text-white hover:bg-primary/90' : 'hover:bg-gray-100'}`}
-                    onClick={() => handleNumberPadInput(value)}
-                  >
-                    {value === 'backspace' ? '⌫' : value === 'clear' ? 'C' : value}
-                  </button>
-                ))}
+              <div className="grid grid-cols-[auto_80px] gap-4">
+                <div className="grid grid-cols-3 gap-4 w-full max-w-[300px]">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'backspace', 0, 'clear'].map((value, index) => (
+                    <button
+                      key={index}
+                      className={`h-18 text-2xl font-semibold border border-black rounded flex items-center justify-center transition
+            ${value === 'clear' ? 'bg-primary text-white hover:bg-primary/90' : 'hover:bg-gray-100'}`}
+                      onClick={() => handleNumberPadInput(value)}
+                    >
+                      {value === 'backspace' ? '⌫' : value === 'clear' ? 'C' : value}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={handlePlusClick} className="bg-green-500 text-white text-xl font-bold rounded p-4 flex items-center justify-center">
+                  Enter
+                </button>
               </div>
             </div>
           </div>

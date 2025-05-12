@@ -119,25 +119,25 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
             setNotifyModal({ isOpen: true, message: "Contact Lens Eye Power Records saved successfully!" });
           } else throw new Error(res.errorMessage || "Failed to save Contact Lens Eye Power Records");
         }
-      }else if(confirmModal.action === "delete"){
+      } else if (confirmModal.action === "delete") {
         console.log(confirmModal.data)
         const item = confirmModal.data;
-        if(item.type === "ContactLens"){
+        if (item.type === "ContactLens") {
           const res = await DeleteContactLen({
-            companyId, 
+            companyId,
             userId,
             id: item.actualRXContactLens?.contactLensId
           })
           if (res.success) {
             setNotifyModal({ isOpen: true, message: "Contact Lens Eye Power Records removed successfully!" });
           } else throw new Error(res.errorMessage || "Failed to remove Contact Lens Eye Power Records");
-        }else if(item.type === "Spectacles"){
-            const res = await DeleteSpectacles({
-              companyId, 
-              userId,
-              id: item.prescribedRXSpectacles?.spectaclesId
-            })
-            if (res.success) {
+        } else if (item.type === "Spectacles") {
+          const res = await DeleteSpectacles({
+            companyId,
+            userId,
+            id: item.prescribedRXSpectacles?.spectaclesId
+          })
+          if (res.success) {
             setNotifyModal({ isOpen: true, message: "Spectacles Eye Power Records removed successfully!" });
           } else throw new Error(res.errorMessage || "Failed to remove Spectacles Eye Power Records");
         }
@@ -160,7 +160,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
     delete: "Are you sure you want to delete this eye power record?"
   };
 
-  const handleDelete = (item) =>{
+  const handleDelete = (item) => {
     setConfirmModal({
       isOpen: true,
       action: "delete",
@@ -265,7 +265,16 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                   <label key={`spec-header-${field}`}>{field}</label>
                 ))}
 
-
+                <label>Right</label>
+                {specFields.map((field) => (
+                  <input
+                    key={`spec-right-${field}`}
+                    type="text"
+                    readOnly
+                    className="border-2 px-2 h-[40px]"
+                    value={renderSpecValue("r_D", field)}
+                  />
+                ))}
 
                 <label>Left</label>
                 {specFields.map((field) => (
@@ -278,16 +287,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                   />
                 ))}
 
-                <label>Right</label>
-                {specFields.map((field) => (
-                  <input
-                    key={`spec-right-${field}`}
-                    type="text"
-                    readOnly
-                    className="border-2 px-2 h-[40px]"
-                    value={renderSpecValue("r_D", field)}
-                  />
-                ))}
+
               </div>
             </div>
             )}
@@ -307,7 +307,16 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                 <div></div>
 
 
-
+                <label>Right</label>
+                {lensFields.map((field) => (
+                  <input
+                    key={`lens-right-${field}`}
+                    type="text"
+                    readOnly
+                    className="border-2 px-2 h-[40px]"
+                    value={renderLensValue("r_D", field)}
+                  />
+                ))}
 
                 <label>Left</label>
                 {lensFields.map((field) => (
@@ -321,16 +330,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                 ))}
                 <div></div>
 
-                <label>Right</label>
-                {lensFields.map((field) => (
-                  <input
-                    key={`lens-right-${field}`}
-                    type="text"
-                    readOnly
-                    className="border-2 px-2 h-[40px]"
-                    value={renderLensValue("r_D", field)}
-                  />
-                ))}
+
               </div>
             </div>)}
           </div>
