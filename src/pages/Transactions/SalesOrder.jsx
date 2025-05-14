@@ -21,6 +21,7 @@ import { SaveDebtor, NewDebtor, GetDebtor, GetItem, GetItemGroup } from "../../a
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
 import { NewSpectacles, NewContactLens, SaveContactLensProfile, SaveSpectacles } from "../../api/eyepowerapi";
 import CustomInput from "../../Components/input/dateInput";
+import { GetJobSheetForm } from "../../api/reportapi";
 
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
@@ -39,14 +40,14 @@ const PractitionerGridColumns = [
 const SalesOrderGridColumns = [
     { dataField: "docNo", caption: "Doc No", width: "40%" },
     {
-      dataField: "docDate", caption: "Doc Date", calculateDisplayValue: (rowData) => {
-        const date = new Date(rowData.docDate);
-        const dd = String(date.getDate()).padStart(2, '0');
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const yyyy = date.getFullYear();
-        return `${dd}/${mm}/${yyyy}`;
-      },
-      width: "40%"
+        dataField: "docDate", caption: "Doc Date", calculateDisplayValue: (rowData) => {
+            const date = new Date(rowData.docDate);
+            const dd = String(date.getDate()).padStart(2, '0');
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const yyyy = date.getFullYear();
+            return `${dd}/${mm}/${yyyy}`;
+        },
+        width: "40%"
     },
     { dataField: "debtorCode", caption: "Code", width: "30%" },
     { dataField: "debtorName", caption: "Name", width: "50%" }
@@ -756,6 +757,36 @@ const SalesOrder = () => {
                     eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({ ...eyePower }));
                 }
                 setNotifyModal({ isOpen: true, message: "Sales Order added successfully!" });
+                if (confirmModal.action === "addPrint") {
+                    const res = await GetJobSheetForm({ companyId: companyId, userId: userId, id: confirmModal.data.salesOrderId, name: "Job Sheet Form" });
+                    if (res.success) {
+                        try {
+                            const reportName = "Job Sheet Form";
+                            const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
+                                method: 'GET',
+                                headers: {
+                                    'Accept': 'application/pdf'
+                                }
+                            });
+
+                            if (!fileResponse.ok) {
+                                throw new Error('File download failed');
+                            }
+
+                            const blob = await fileResponse.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `${reportName}.pdf`;
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                            window.URL.revokeObjectURL(url);
+                        } catch (error) {
+                            setErrorModal({ title: "Download error", message: error.message })
+                        }
+                    }
+                }
             } else throw new Error(res.errorMessage || "Failed to Add Sales Order");
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
@@ -846,9 +877,7 @@ const SalesOrder = () => {
                 segmentHeight: 0,
             })
         }
-        if (confirmModal.action === "addPrint") {
-            console.log("print acknowledgement");
-        }
+
         setConfirmModal({ isOpen: false, action: "", data: null });
         await createNewSalesOrder()
         setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
@@ -1038,8 +1067,41 @@ const SalesOrder = () => {
         if (!res.success) {
             setErrorModal({ title: "Failed to Save", message: res?.errorMessage });
         };
+        if (eyePowerContactLensFormData.length > 0) {
+            eyePowerContactLensFormData.forEach(async eyePower => await SaveContactLensProfile({ ...eyePower }));
+        }
+        if (eyePowerSpectaclesFormData.length > 0) {
+            eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({ ...eyePower }));
+        }
         if (action === "save-print") {
-            console.log("print acknowledgement");
+            const res = await GetJobSheetForm({ companyId: companyId, userId: userId, id: masterData.salesOrderId, name: "Job Sheet Form" });
+            if (res.success) {
+                try {
+                    const reportName = "Job Sheet Form";
+                    const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/pdf'
+                        }
+                    });
+
+                    if (!fileResponse.ok) {
+                        throw new Error('File download failed');
+                    }
+
+                    const blob = await fileResponse.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `${reportName}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    window.URL.revokeObjectURL(url);
+                } catch (error) {
+                    setErrorModal({ title: "Download error", message: error.message })
+                }
+            }
         }
         await createNewSalesOrder()
         setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
@@ -1049,6 +1111,8 @@ const SalesOrder = () => {
         setEyePowerSpectaclesFormData([]);
         setSalesItem([]);
         setCurrentTotal(0);
+        setBalance(0);
+        setPaidAmount(0);
         setActualDistanceData({
             l_D_ADD: null,
             l_D_AXIS: null,
@@ -1265,7 +1329,7 @@ const SalesOrder = () => {
             setSalesItem(enrichedItems)
         }
         setIsSalesOrderGridBoxOpened(false)
-    },[])
+    }, [])
 
     const SalesOrderDataGridRender = useCallback(
         () => (
@@ -1614,12 +1678,14 @@ const SalesOrder = () => {
 
     const confirmationTitleMap = {
         add: "Confirm New",
-        clear: "Confirm Clear"
+        clear: "Confirm Clear",
+        addPrint: "Confirm New"
     };
 
     const confirmationMessageMap = {
         add: "Are you sure you want to add Sales Order?",
-        clear: "Are you sure you want to clear this page input?"
+        clear: "Are you sure you want to clear this page input?",
+        addPrint: "Are you sure you want to add Sales Order?",
     };
 
     return (
