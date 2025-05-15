@@ -653,7 +653,7 @@ const SalesOrder = () => {
             return sum + (Number(item.subTotal) || 0);
         }, 0);
 
-        const bal = total - paidAmount;
+        const bal = total - paidAmount + parseFloat(rounding);
         setBalance(bal);
         setCurrentTotal(total);
     }, [handleEditRow, salesItem, paidAmount])

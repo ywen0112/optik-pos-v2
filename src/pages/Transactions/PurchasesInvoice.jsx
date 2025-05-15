@@ -350,7 +350,7 @@ const PurchaseInvoice = () => {
     const total = purchaseItem?.reduce((sum, item) => {
       return sum + (Number(item.subTotal) || 0);
     }, 0);
-    const bal = total - paidAmount;
+    const bal = total - paidAmount + parseFloat(tax);
     setBalance(bal);
     setCurrentTotal(total);
   }, [handleEditRow, purchaseItem, paidAmount])
