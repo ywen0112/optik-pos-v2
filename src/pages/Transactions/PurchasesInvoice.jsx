@@ -74,7 +74,12 @@ const PurchaseInvoice = () => {
 
   const gridRef = useRef(null);
 
-  const total = currentTotal + parseFloat(tax);
+  const [total, setTotal] = useState(0);
+
+    useEffect(() => {
+        const total = currentTotal + parseFloat(tax);
+        setTotal(total);
+    }, [currentTotal, tax]);
 
   useEffect(() => {
     createNewPruchaseInvoice();

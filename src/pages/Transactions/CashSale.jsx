@@ -75,7 +75,12 @@ const CashSales = () => {
 
     const gridRef = useRef(null);
 
-    const total = currentSalesTotal + parseFloat(rounding);
+   const [total, setTotal] = useState(0);
+
+    useEffect(() => {
+        const total = currentTotal + parseFloat(rounding);
+        setTotal(total);
+    }, [currentTotal, rounding]);
 
     useEffect(() => {
         createNewCashSales();

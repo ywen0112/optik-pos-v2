@@ -92,7 +92,12 @@ const SalesOrder = () => {
 
     const gridRef = useRef(null);
 
-    const total = currentTotal + parseFloat(rounding)
+    const [total, setTotal] = useState(0);
+
+    useEffect(() => {
+        const total = currentTotal + parseFloat(rounding);
+        setTotal(total);
+    }, [currentTotal, rounding]);
 
     const [actualRX, setActualRX] = useState({
         dominantEye: "",
@@ -2151,7 +2156,7 @@ const SalesOrder = () => {
                                         type="number"
                                         step="0.01"
                                         value={rounding}
-                                        onChange={(e) => setRounding(e.target.value)}
+                                        onChange={(e) => {setRounding(e.target.value)}}
                                         onBlur={() => {
                                             const parsed = parseFloat(rounding);
                                             setRounding(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
