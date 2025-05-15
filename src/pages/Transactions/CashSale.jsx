@@ -78,9 +78,9 @@ const CashSales = () => {
    const [total, setTotal] = useState(0);
 
     useEffect(() => {
-        const total = currentTotal + parseFloat(rounding);
+        const total = currentSalesTotal + parseFloat(rounding);
         setTotal(total);
-    }, [currentTotal, rounding]);
+    }, [currentSalesTotal, rounding]);
 
     useEffect(() => {
         createNewCashSales();
@@ -602,7 +602,7 @@ const CashSales = () => {
         key: "cashSalesId",
         load: async (loadOptions) => {
             const filter = loadOptions.filter;
-            let keyword = filter?.[2] || "";
+            let keyword = filter?.[2][2] || "";
 
             const res = await GetCashSalesRecords({
                 keyword: keyword || "",

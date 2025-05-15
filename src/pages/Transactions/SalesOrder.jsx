@@ -1244,7 +1244,8 @@ const SalesOrder = () => {
         key: "salesOrderId",
         load: async (loadOptions) => {
             const filter = loadOptions.filter;
-            let keyword = filter?.[2] || "";
+            console.log(filter)
+            let keyword = filter?.[2][2] || "";
 
             const res = await GetSalesOrderRecords({
                 keyword: keyword || "",

@@ -588,7 +588,7 @@ const PurchaseInvoice = () => {
     key: "purchaseInvoiceId",
     load: async (loadOptions) => {
       const filter = loadOptions.filter;
-      let keyword = filter?.[2] || "";
+      let keyword = filter?.[2][2] || "";
 
       const res = await GetPurchaseInvoiceRecords({
         keyword: keyword || "",
