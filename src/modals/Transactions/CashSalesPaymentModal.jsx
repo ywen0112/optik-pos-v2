@@ -133,8 +133,13 @@ const CashSalesPaymentModal = ({ isOpen, onClose, total, companyId, userId, cash
       await SaveCashSalePayment(payload);
       setFocusedField(null);
       setRawAmountDigits('');
-      await onSave({ action: action });
-      setNotifyModal({ isOpen: true, message: 'Payment made successfully!' });
+      if(action === "save-print"){
+        await onSave({ action: action })
+        onClose()
+      }else{
+        await onSave({ action: action })
+        setNotifyModal({ isOpen: true, message: 'Payment made successfully!' });
+      }
     } catch (error) {
       onError({ title: 'Save Error', message: error.message || "Failed to save new Cash Sales Payment." });
     }

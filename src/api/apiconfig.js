@@ -150,21 +150,24 @@ export const getRequest = async (url) => {
     }
 };
 
-export const postRequest = async(url, body) =>{
-    try{
-        const response = await fetch(`${url}`, {
+export const postRequest = async (url, body, queryParams = {}) => {
+    try {
+        const queryString = new URLSearchParams(queryParams).toString();
+        const fullUrl = queryString ? `${url}?${queryString}` : url;
+
+        const response = await fetch(fullUrl, {
             method: 'POST',
-            headers:{
+            headers: {
                 'Content-Type': 'application/json',
             },
             body: body,
         });
 
-        if(!response.ok) throw new Error(`POST Error: ${response.statusText}`);
-        
+        if (!response.ok) throw new Error(`POST Error: ${response.statusText}`);
+
         const data = await response.json();
         return data;
-    } catch(error){
+    } catch (error) {
         console.error('POST request failed: ', error);
         throw error;
     }

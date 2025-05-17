@@ -21,7 +21,8 @@ import { SaveDebtor, NewDebtor, GetDebtor, GetItem, GetItemGroup } from "../../a
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
 import { NewSpectacles, NewContactLens, SaveContactLensProfile, SaveSpectacles } from "../../api/eyepowerapi";
 import CustomInput from "../../Components/input/dateInput";
-import { GetJobSheetForm } from "../../api/reportapi";
+import { GetJobSheetForm, GetSalesDocPaymentReport, GetSalesDocReport } from "../../api/reportapi";
+import ReportSelectionModal from "../../modals/ReportSelectionModel";
 
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
@@ -648,19 +649,7 @@ const SalesOrder = () => {
         });
     };
 
-    useEffect(() => {
-        const total = salesItem?.reduce((sum, item) => {
-            return sum + (Number(item.subTotal) || 0);
-        }, 0);
-
-        const bal = total - paidAmount + parseFloat(rounding);
-        setBalance(bal);
-        setCurrentTotal(total);
-    }, [handleEditRow, salesItem, paidAmount])
-
-    const confirmAction = async () => {
-        if (confirmModal.action === "clear") {
-            setConfirmModal({ isOpen: false, action: "", data: null });
+    const clearData = async () =>{
             await createNewSalesOrder()
             setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
             setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
@@ -750,6 +739,22 @@ const SalesOrder = () => {
                 opticalHeight: 0,
                 segmentHeight: 0,
             })
+    }
+
+    useEffect(() => {
+        const total = salesItem?.reduce((sum, item) => {
+            return sum + (Number(item.subTotal) || 0);
+        }, 0);
+
+        const bal = total - paidAmount + parseFloat(rounding);
+        setBalance(bal);
+        setCurrentTotal(total);
+    }, [handleEditRow, salesItem, paidAmount])
+
+    const confirmAction = async () => {
+        if (confirmModal.action === "clear") {
+            setConfirmModal({ isOpen: false, action: "", data: null });
+            await clearData();
             return;
         }
         try {
@@ -763,213 +768,19 @@ const SalesOrder = () => {
                 }
                 setNotifyModal({ isOpen: true, message: "Sales Order added successfully!" });
                 if (confirmModal.action === "addPrint") {
-                    const res = await GetJobSheetForm({ companyId: companyId, userId: userId, id: confirmModal.data.salesOrderId, name: "Job Sheet Form" });
-                    if (res.success) {
-                        try {
-                            const reportName = "Job Sheet Form";
-                            const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
-                                method: 'GET',
-                                headers: {
-                                    'Accept': 'application/pdf'
-                                }
-                            });
-
-                            if (!fileResponse.ok) {
-                                throw new Error('File download failed');
-                            }
-
-                            const blob = await fileResponse.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = `${reportName}.pdf`;
-                            document.body.appendChild(link);
-                            link.click();
-                            link.remove();
-                            window.URL.revokeObjectURL(url);
-                        } catch (error) {
-                            setErrorModal({ title: "Download error", message: error.message })
-                        }
-                    }
+                    setReportSelectionOpenModal({isOpen: true, docId: confirmModal.data.salesOrderId});
                 }
             } else throw new Error(res.errorMessage || "Failed to Add Sales Order");
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
             await createNewSalesOrder()
-            setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
-            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-            setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
-            setSalesItem([]);
-            setEyePowerContactLensFormData([]);
-            setEyePowerSpectaclesFormData([]);
-            setCurrentTotal(0);
-            setActualDistanceData({
-                l_D_ADD: null,
-                l_D_AXIS: null,
-                l_D_CYL: null,
-                l_D_PD: null,
-                l_D_PRISM: null,
-                l_D_Remark: "",
-                l_D_SPH: null,
-                l_D_VA: null,
-                r_D_ADD: null,
-                r_D_AXIS: null,
-                r_D_CYL: null,
-                r_D_PRISM: null,
-                r_D_Remark: "",
-                r_D_SPH: null,
-                r_D_VA: null,
-            })
-            setPrescribedDistanceData({
-                l_D_ADD: null,
-                l_D_AXIS: null,
-                l_D_CYL: null,
-                l_D_PD: null,
-                l_D_PRISM: null,
-                l_D_Remark: "",
-                l_D_SPH: null,
-                l_D_VA: null,
-                r_D_ADD: null,
-                r_D_AXIS: null,
-                r_D_CYL: null,
-                r_D_PRISM: null,
-                r_D_Remark: "",
-                r_D_SPH: null,
-                r_D_VA: null,
-            })
-            setActualReadingData({
-                l_R_ADD: null,
-                l_R_AXIS: null,
-                l_R_CYL: null,
-                l_R_PD: null,
-                l_R_PRISM: null,
-                l_R_Remark: "",
-                l_R_SPH: null,
-                l_R_VA: null,
-                r_R_ADD: null,
-                r_R_AXIS: null,
-                r_R_CYL: null,
-                r_R_PRISM: null,
-                r_R_Remark: "",
-                r_R_SPH: null,
-                r_R_VA: null,
-            })
-            setPrescribedReadingData({
-                l_R_ADD: null,
-                l_R_AXIS: null,
-                l_R_CYL: null,
-                l_R_PD: null,
-                l_R_PRISM: null,
-                l_R_Remark: "",
-                l_R_SPH: null,
-                l_R_VA: null,
-                r_R_ADD: null,
-                r_R_AXIS: null,
-                r_R_CYL: null,
-                r_R_PRISM: null,
-                r_R_Remark: "",
-                r_R_SPH: null,
-                r_R_VA: null,
-            })
-            setActualRX({
-                dominantEye: "",
-                opticalHeight: 0,
-                segmentHeight: 0,
-            })
-            setPrescribedRX({
-                dominantEye: "",
-                opticalHeight: 0,
-                segmentHeight: 0,
-            })
+            await clearData()
+            return;
         }
 
         setConfirmModal({ isOpen: false, action: "", data: null });
-        await createNewSalesOrder()
-        setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
-        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-        setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
-        setEyePowerContactLensFormData([]);
-        setEyePowerSpectaclesFormData([]);
-        setSalesItem([]);
-        setCurrentTotal(0);
-        setActualDistanceData({
-            l_D_ADD: null,
-            l_D_AXIS: null,
-            l_D_CYL: null,
-            l_D_PD: null,
-            l_D_PRISM: null,
-            l_D_Remark: "",
-            l_D_SPH: null,
-            l_D_VA: null,
-            r_D_ADD: null,
-            r_D_AXIS: null,
-            r_D_CYL: null,
-            r_D_PRISM: null,
-            r_D_Remark: "",
-            r_D_SPH: null,
-            r_D_VA: null,
-        })
-        setPrescribedDistanceData({
-            l_D_ADD: null,
-            l_D_AXIS: null,
-            l_D_CYL: null,
-            l_D_PD: null,
-            l_D_PRISM: null,
-            l_D_Remark: "",
-            l_D_SPH: null,
-            l_D_VA: null,
-            r_D_ADD: null,
-            r_D_AXIS: null,
-            r_D_CYL: null,
-            r_D_PRISM: null,
-            r_D_Remark: "",
-            r_D_SPH: null,
-            r_D_VA: null,
-        })
-        setActualReadingData({
-            l_R_ADD: null,
-            l_R_AXIS: null,
-            l_R_CYL: null,
-            l_R_PD: null,
-            l_R_PRISM: null,
-            l_R_Remark: "",
-            l_R_SPH: null,
-            l_R_VA: null,
-            r_R_ADD: null,
-            r_R_AXIS: null,
-            r_R_CYL: null,
-            r_R_PRISM: null,
-            r_R_Remark: "",
-            r_R_SPH: null,
-            r_R_VA: null,
-        })
-        setPrescribedReadingData({
-            l_R_ADD: null,
-            l_R_AXIS: null,
-            l_R_CYL: null,
-            l_R_PD: null,
-            l_R_PRISM: null,
-            l_R_Remark: "",
-            l_R_SPH: null,
-            l_R_VA: null,
-            r_R_ADD: null,
-            r_R_AXIS: null,
-            r_R_CYL: null,
-            r_R_PRISM: null,
-            r_R_Remark: "",
-            r_R_SPH: null,
-            r_R_VA: null,
-        })
-        setActualRX({
-            dominantEye: "",
-            opticalHeight: 0,
-            segmentHeight: 0,
-        })
-        setPrescribedRX({
-            dominantEye: "",
-            opticalHeight: 0,
-            segmentHeight: 0,
-        })
+        await clearData();
+        return;
     }
 
     const handleSavePrint = () => {
@@ -997,7 +808,7 @@ const SalesOrder = () => {
                 classification: item.classification ?? ""
             })),
             roundingAdjustment: rounding ?? 0,
-            total: total,
+            total: currentTotal,
         }
         setConfirmModal({
             isOpen: true,
@@ -1031,7 +842,7 @@ const SalesOrder = () => {
                 classification: item.classification ?? ""
             })),
             roundingAdjustment: rounding ?? 0,
-            total: total,
+            total: currentTotal,
         }
         setConfirmModal({
             isOpen: true,
@@ -1065,7 +876,7 @@ const SalesOrder = () => {
                 classification: item.classification ?? ""
             })),
             roundingAdjustment: rounding ?? 0,
-            total: total,
+            total: currentTotal,
         }
 
         const res = await SaveSalesOrder(formData);
@@ -1079,124 +890,9 @@ const SalesOrder = () => {
             eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({ ...eyePower }));
         }
         if (action === "save-print") {
-            const res = await GetJobSheetForm({ companyId: companyId, userId: userId, id: masterData.salesOrderId, name: "Job Sheet Form" });
-            if (res.success) {
-                try {
-                    const reportName = "Job Sheet Form";
-                    const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/pdf'
-                        }
-                    });
-
-                    if (!fileResponse.ok) {
-                        throw new Error('File download failed');
-                    }
-
-                    const blob = await fileResponse.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `${reportName}.pdf`;
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                    window.URL.revokeObjectURL(url);
-                } catch (error) {
-                    setErrorModal({ title: "Download error", message: error.message })
-                }
-            }
+            setReportSelectionOpenModal({isOpen: true, docId: masterData.salesOrderId});
         }
-        await createNewSalesOrder()
-        setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
-        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-        setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
-        setEyePowerContactLensFormData([]);
-        setEyePowerSpectaclesFormData([]);
-        setSalesItem([]);
-        setCurrentTotal(0);
-        setBalance(0);
-        setPaidAmount(0);
-        setActualDistanceData({
-            l_D_ADD: null,
-            l_D_AXIS: null,
-            l_D_CYL: null,
-            l_D_PD: null,
-            l_D_PRISM: null,
-            l_D_Remark: "",
-            l_D_SPH: null,
-            l_D_VA: null,
-            r_D_ADD: null,
-            r_D_AXIS: null,
-            r_D_CYL: null,
-            r_D_PRISM: null,
-            r_D_Remark: "",
-            r_D_SPH: null,
-            r_D_VA: null,
-        })
-        setPrescribedDistanceData({
-            l_D_ADD: null,
-            l_D_AXIS: null,
-            l_D_CYL: null,
-            l_D_PD: null,
-            l_D_PRISM: null,
-            l_D_Remark: "",
-            l_D_SPH: null,
-            l_D_VA: null,
-            r_D_ADD: null,
-            r_D_AXIS: null,
-            r_D_CYL: null,
-            r_D_PRISM: null,
-            r_D_Remark: "",
-            r_D_SPH: null,
-            r_D_VA: null,
-        })
-        setActualReadingData({
-            l_R_ADD: null,
-            l_R_AXIS: null,
-            l_R_CYL: null,
-            l_R_PD: null,
-            l_R_PRISM: null,
-            l_R_Remark: "",
-            l_R_SPH: null,
-            l_R_VA: null,
-            r_R_ADD: null,
-            r_R_AXIS: null,
-            r_R_CYL: null,
-            r_R_PRISM: null,
-            r_R_Remark: "",
-            r_R_SPH: null,
-            r_R_VA: null,
-        })
-        setPrescribedReadingData({
-            l_R_ADD: null,
-            l_R_AXIS: null,
-            l_R_CYL: null,
-            l_R_PD: null,
-            l_R_PRISM: null,
-            l_R_Remark: "",
-            l_R_SPH: null,
-            l_R_VA: null,
-            r_R_ADD: null,
-            r_R_AXIS: null,
-            r_R_CYL: null,
-            r_R_PRISM: null,
-            r_R_Remark: "",
-            r_R_SPH: null,
-            r_R_VA: null,
-        })
-        setActualRX({
-            dominantEye: "",
-            opticalHeight: 0,
-            segmentHeight: 0,
-        })
-        setPrescribedRX({
-            dominantEye: "",
-            opticalHeight: 0,
-            segmentHeight: 0,
-        })
-        return;
+        await clearData();
     }
 
     const salesItemStore = new CustomStore({
@@ -1694,8 +1390,58 @@ const SalesOrder = () => {
         addPrint: "Are you sure you want to add Sales Order?",
     };
 
+    const [reportSelectionModal, setReportSelectionOpenModal] = useState({isOpen: false, docId: ""});
+    
+    const handleSelectedReport = async (report) => {
+        setReportSelectionOpenModal({isOpen: false});
+        let res;
+        if(report.reportType === "JobSheetForm") {
+            res = await GetJobSheetForm({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName });
+        }else if(report.reportType === "SalesOrder"){
+            res = await GetSalesDocReport({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName, isCashSales: false});
+        }else if(report.reportType === "SalesOrderPayment"){
+            res = await GetSalesDocPaymentReport({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName, isCashSales: false});
+        }
+        
+        if (res.success) {
+            try {
+                const reportName = report.reportName;
+                const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/pdf'
+                    }
+                });
+
+                if (!fileResponse.ok) {
+                    throw new Error('File download failed');
+                }
+
+                const blob = await fileResponse.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${reportName}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                setErrorModal({ title: "Download error", message: error.message })
+            }
+        }
+        setReportSelectionOpenModal({docId: ""});
+    }
+
     return (
         <>
+            <ReportSelectionModal
+                isOpen={reportSelectionModal.isOpen}
+                onCancel={() => setReportSelectionOpen(false)}
+                onSelect={handleSelectedReport}
+                companyId={companyId}
+                isCashSales={false}
+            />
             <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.action]} message={confirmationMessageMap[confirmModal.action]} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
             <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
@@ -2157,7 +1903,7 @@ const SalesOrder = () => {
                                         type="number"
                                         step="0.01"
                                         value={rounding}
-                                        onChange={(e) => {setRounding(e.target.value)}}
+                                        onChange={(e) => { setRounding(e.target.value) }}
                                         onBlur={() => {
                                             const parsed = parseFloat(rounding);
                                             setRounding(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
