@@ -997,7 +997,7 @@ const SalesOrder = () => {
                 classification: item.classification ?? ""
             })),
             roundingAdjustment: rounding ?? 0,
-            total: total,
+            total: currentTotal,
         }
         setConfirmModal({
             isOpen: true,
@@ -1031,7 +1031,7 @@ const SalesOrder = () => {
                 classification: item.classification ?? ""
             })),
             roundingAdjustment: rounding ?? 0,
-            total: total,
+            total: currentTotal,
         }
         setConfirmModal({
             isOpen: true,
@@ -1065,7 +1065,7 @@ const SalesOrder = () => {
                 classification: item.classification ?? ""
             })),
             roundingAdjustment: rounding ?? 0,
-            total: total,
+            total: currentTotal,
         }
 
         const res = await SaveSalesOrder(formData);
