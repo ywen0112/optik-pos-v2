@@ -21,6 +21,8 @@ import CashSalesPaymentModal from "../../modals/Transactions/CashSalesPaymentMod
 import { GetCashSale, GetCashSalesRecords, NewCashSales, NewCashSalesDetail, SaveCashSale } from "../../api/transactionapi";
 import CustomInput from "../../Components/input/dateInput";
 import { UserPlus } from "lucide-react";
+import ReportSelectionModal from "../../modals/ReportSelectionModel";
+import { GetSalesDocPaymentReport, GetSalesDocReport } from "../../api/reportapi";
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
 const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
@@ -34,18 +36,18 @@ const SalesPersonGridColumns = [
 const CashSalesGridColumns = [
     { dataField: "docNo", caption: "Doc No", width: "40%" },
     {
-      dataField: "docDate", caption: "Doc Date", calculateDisplayValue: (rowData) => {
-        const date = new Date(rowData.docDate);
-        const dd = String(date.getDate()).padStart(2, '0');
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const yyyy = date.getFullYear();
-        return `${dd}/${mm}/${yyyy}`;
-      },
-      width: "30%"
+        dataField: "docDate", caption: "Doc Date", calculateDisplayValue: (rowData) => {
+            const date = new Date(rowData.docDate);
+            const dd = String(date.getDate()).padStart(2, '0');
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const yyyy = date.getFullYear();
+            return `${dd}/${mm}/${yyyy}`;
+        },
+        width: "30%"
     },
     { dataField: "debtorCode", caption: "Code", width: "30%" },
     { dataField: "debtorName", caption: "Name", width: "50%" }
-    
+
 ];
 
 const CashSales = () => {
@@ -75,7 +77,7 @@ const CashSales = () => {
 
     const gridRef = useRef(null);
 
-   const [total, setTotal] = useState(0);
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
         const total = currentSalesTotal + parseFloat(rounding);
@@ -245,7 +247,7 @@ const CashSales = () => {
                     highlightSearchText={true}
                 />
             </DataGrid>
-        ),[]);
+        ), []);
 
     const handleSalesPersonGridBoxValueChanged = (e) => {
         if (!e.value) {
@@ -356,16 +358,21 @@ const CashSales = () => {
         setCashSalesItem(prev => prev.filter(record => record.cashSalesDetailId !== key));
     }
 
+    const clearData = async () => {
+        await createNewCashSales();
+        setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
+        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+        setSelectedCashSales({ cashSalesId: "", docNo: "" })
+        setCashSalesItem([]);
+        setCurrentSalesTotal(0);
+        return;
+    }
+
     const confirmAction = async () => {
         if (confirmModal.action === "clear") {
             setConfirmModal({ isOpen: false, action: "", data: null });
-            await createNewCashSales();
-            setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
-            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-            setSelectedCashSales({cashSalesId: "", docNo: ""})
-            setCashSalesItem([]);
-            setCurrentSalesTotal(0);
-            return; 
+            await clearData();
+            return;
         }
 
         try {
@@ -375,24 +382,18 @@ const CashSales = () => {
             } else throw new Error(res.errorMessage || "Failed to Add Cash Sales");
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
-            await createNewCashSales();
-            setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
-            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-            setCashSalesItem([]);
-            setCurrentSalesTotal(0);
+            await clearData();
+            return;
         }
 
-        if (confirmModal.action === "save-print") {
-            console.log("print acknowledgement");
+        if (confirmModal.action === "addPrint") {
+            setReportSelectionOpenModal({ isOpen: true, docId: confirmModal.data.cashSalesId });
         }
 
         setConfirmModal({ isOpen: false, action: "", data: null });
 
-        await createNewCashSales();
-        setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
-        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-        setCashSalesItem([]);
-        setCurrentSalesTotal(0);
+        await clearData();
+        return;
     };
 
     const handleSavePrint = () => {
@@ -536,15 +537,9 @@ const CashSales = () => {
             setErrorModal({ title: "Failed to Save", message: res?.errorMessage });
         };
         if (action === "save-print") {
-            console.log("print acknowledgement");
+            setReportSelectionOpenModal({isOpen: true, docId: masterData.cashSalesId});
         }
-        await createNewCashSales()
-        setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
-        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-        setSelectedCashSales({cashSalesId: "", docNo: ""})
-        setCashSalesItem([]);
-        setCurrentSalesTotal(0);
-        return;
+        await clearData();
     }
 
 
@@ -584,12 +579,14 @@ const CashSales = () => {
 
     const confirmationTitleMap = {
         add: "Confirm New",
-        clear: "Confirm Clear"
+        clear: "Confirm Clear",
+        addPrint: "Confirm New"
     };
 
     const confirmationMessageMap = {
         add: "Are you sure you want to add Cash Sales?",
-        clear: "Are you sure you want to clear this page input?"
+        clear: "Are you sure you want to clear this page input?",
+        addPrint: "Are you sure you want to add Cash Sales?",
     };
 
     const handleCashSalesGridBoxValueChanged = (e) => {
@@ -678,7 +675,7 @@ const CashSales = () => {
             setCashSalesItem(enrichedItems);
         }
         setIsCashSalesGridBoxOpened(false);
-    },[])
+    }, [])
 
     const CashSalesDataGridRender = useCallback(
         () => (
@@ -712,8 +709,56 @@ const CashSales = () => {
         ), [selectedCashSales, CashSalesDataGridOnSelectionChanged]
     )
 
+    const [reportSelectionModal, setReportSelectionOpenModal] = useState({ isOpen: false, docId: "" });
+
+    const handleSelectedReport = async (report) => {
+        setReportSelectionOpenModal({ isOpen: false });
+        let res;
+        if (report.reportType === "SalesOrder") {
+            res = await GetSalesDocReport({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName, isCashSales: true });
+        } else if (report.reportType === "SalesOrderPayment") {
+            res = await GetSalesDocPaymentReport({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName, isCashSales: true });
+        }
+
+        if (res.success) {
+            try {
+                const reportName = report.reportName;
+                const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/pdf'
+                    }
+                });
+
+                if (!fileResponse.ok) {
+                    throw new Error('File download failed');
+                }
+
+                const blob = await fileResponse.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${reportName}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                setErrorModal({ title: "Download error", message: error.message })
+            }
+        }
+        setReportSelectionOpenModal({ docId: "" });
+    }
+
     return (
         <>
+            <ReportSelectionModal
+                isOpen={reportSelectionModal.isOpen}
+                onCancel={() => setReportSelectionOpenModal(false)}
+                onSelect={handleSelectedReport}
+                companyId={companyId}
+                isCashSales={true}
+            />
             <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.action]} message={confirmationMessageMap[confirmModal.action]} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
             <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
@@ -875,7 +920,7 @@ const CashSales = () => {
                             { label: "Paid", value: paidAmount },
                             { label: "Outstanding", value: balance },
                         ].map(({ label, value }) => (
-                             <div key={label} className="grid grid-cols-[auto,30%] gap-1">
+                            <div key={label} className="grid grid-cols-[auto,30%] gap-1">
                                 {label === "Outstanding"
                                     ? (<label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{value >= 0 ? label : "Change"}</label>)
                                     : (<label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{label}</label>)

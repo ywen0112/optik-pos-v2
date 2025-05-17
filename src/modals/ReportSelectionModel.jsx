@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { GetSalesReportType } from "../api/reportapi";
 
-const ReportSelectionModal = ({ isOpen, onCancel, onSelect, companyId }) => {
+const ReportSelectionModal = ({ isOpen, onCancel, onSelect, companyId, isCashSales }) => {
     const [reports, setReports] = useState([]);
     const [selectedReport, setSelectedReport] = useState(null);
 
@@ -14,7 +14,7 @@ const ReportSelectionModal = ({ isOpen, onCancel, onSelect, companyId }) => {
 
     const fetchReports = async () => {
         try {
-            const response = await GetSalesReportType({ companyId });
+            const response = await GetSalesReportType({ companyId, isCashSales });
             
             setReports(response.data);
         } catch (error) {
@@ -26,7 +26,6 @@ const ReportSelectionModal = ({ isOpen, onCancel, onSelect, companyId }) => {
         if (selectedReport) {
             const report = reports.find(r => r.reportType === selectedReport);
             if (report) {
-                console.log(report)
                 onSelect(report)
             }
         }
