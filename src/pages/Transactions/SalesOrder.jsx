@@ -21,7 +21,8 @@ import { SaveDebtor, NewDebtor, GetDebtor, GetItem, GetItemGroup } from "../../a
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
 import { NewSpectacles, NewContactLens, SaveContactLensProfile, SaveSpectacles } from "../../api/eyepowerapi";
 import CustomInput from "../../Components/input/dateInput";
-import { GetJobSheetForm } from "../../api/reportapi";
+import { GetJobSheetForm, GetSalesDocPaymentReport, GetSalesDocReport } from "../../api/reportapi";
+import ReportSelectionModal from "../../modals/ReportSelectionModel";
 
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
@@ -763,34 +764,7 @@ const SalesOrder = () => {
                 }
                 setNotifyModal({ isOpen: true, message: "Sales Order added successfully!" });
                 if (confirmModal.action === "addPrint") {
-                    const res = await GetJobSheetForm({ companyId: companyId, userId: userId, id: confirmModal.data.salesOrderId, name: "Job Sheet Form" });
-                    if (res.success) {
-                        try {
-                            const reportName = "Job Sheet Form";
-                            const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
-                                method: 'GET',
-                                headers: {
-                                    'Accept': 'application/pdf'
-                                }
-                            });
-
-                            if (!fileResponse.ok) {
-                                throw new Error('File download failed');
-                            }
-
-                            const blob = await fileResponse.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = `${reportName}.pdf`;
-                            document.body.appendChild(link);
-                            link.click();
-                            link.remove();
-                            window.URL.revokeObjectURL(url);
-                        } catch (error) {
-                            setErrorModal({ title: "Download error", message: error.message })
-                        }
-                    }
+                    setReportSelectionOpenModal({isOpen: true, docId: confirmModal.data.salesOrderId});
                 }
             } else throw new Error(res.errorMessage || "Failed to Add Sales Order");
         } catch (error) {
@@ -1079,34 +1053,7 @@ const SalesOrder = () => {
             eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({ ...eyePower }));
         }
         if (action === "save-print") {
-            const res = await GetJobSheetForm({ companyId: companyId, userId: userId, id: masterData.salesOrderId, name: "Job Sheet Form" });
-            if (res.success) {
-                try {
-                    const reportName = "Job Sheet Form";
-                    const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/pdf'
-                        }
-                    });
-
-                    if (!fileResponse.ok) {
-                        throw new Error('File download failed');
-                    }
-
-                    const blob = await fileResponse.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `${reportName}.pdf`;
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                    window.URL.revokeObjectURL(url);
-                } catch (error) {
-                    setErrorModal({ title: "Download error", message: error.message })
-                }
-            }
+            setReportSelectionOpenModal({isOpen: true, docId: masterData.salesOrderId});
         }
         await createNewSalesOrder()
         setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
@@ -1694,8 +1641,57 @@ const SalesOrder = () => {
         addPrint: "Are you sure you want to add Sales Order?",
     };
 
+    const [reportSelectionModal, setReportSelectionOpenModal] = useState({isOpen: false, docId: ""});
+    
+    const handleSelectedReport = async (report) => {
+        setReportSelectionOpenModal({isOpen: false});
+        let res;
+        if(report.reportType === "JobSheetForm") {
+            res = await GetJobSheetForm({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName });
+        }else if(report.reportType === "SalesOrder"){
+            res = await GetSalesDocReport({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName});
+        }else if(report.reportType === "SalesOrderPayment"){
+            res = await GetSalesDocPaymentReport({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName});
+        }
+        
+        if (res.success) {
+            try {
+                const reportName = report.reportName;
+                const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/pdf'
+                    }
+                });
+
+                if (!fileResponse.ok) {
+                    throw new Error('File download failed');
+                }
+
+                const blob = await fileResponse.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${reportName}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                setErrorModal({ title: "Download error", message: error.message })
+            }
+        }
+        setReportSelectionOpenModal({docId: ""});
+    }
+
     return (
         <>
+            <ReportSelectionModal
+                isOpen={reportSelectionModal.isOpen}
+                onCancel={() => setReportSelectionOpen(false)}
+                onSelect={handleSelectedReport}
+                companyId={companyId}
+            />
             <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.action]} message={confirmationMessageMap[confirmModal.action]} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
             <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
@@ -2157,7 +2153,7 @@ const SalesOrder = () => {
                                         type="number"
                                         step="0.01"
                                         value={rounding}
-                                        onChange={(e) => {setRounding(e.target.value)}}
+                                        onChange={(e) => { setRounding(e.target.value) }}
                                         onBlur={() => {
                                             const parsed = parseFloat(rounding);
                                             setRounding(isNaN(parsed) ? "0.00" : parsed.toFixed(2));
