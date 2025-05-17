@@ -8,7 +8,7 @@ import DataGrid, {
 } from 'devextreme-react/data-grid';
 import TabPanel from 'devextreme-react/tab-panel';
 import 'devextreme/dist/css/dx.light.css';
-import StandardDataGridComponent from './BaseDataGrid';
+import StandardDataGridComponent from '../../BaseDataGrid';
 import { DollarSign, PackageOpen } from 'lucide-react';
 
 const DetailTabs = ({ data }) => {
@@ -69,10 +69,11 @@ const DetailTabs = ({ data }) => {
 
 
 const SalesInquiryMasterDetailGrid = ({ ref, salesData, onPay }) => {
+        console.log("salesData received in grid:", salesData);
     return (
         <StandardDataGridComponent
             ref={ref}
-            height={480}
+            height={380}
             dataSource={salesData}
             // className={className}
             searchPanel={true}

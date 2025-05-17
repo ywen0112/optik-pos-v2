@@ -45,7 +45,7 @@ const DashboardPage = () => {
   );
 
   const DonutChart = ({ title, data, labelKey }) => (
-    <div className="bg-white rounded-2xl shadow-md p-4 w-full">
+    <div className="bg-white rounded-2xl shadow-md p-2 w-full">
       <h3 className="text-xl font-medium text-center mb-2">{title}</h3>
       <ResponsiveContainer width="100%" height={400}>
         <PieChart>
@@ -90,8 +90,8 @@ const DashboardPage = () => {
   );
 
   return (
-    <>
-      <div className="p-4 grid gap-4 grid-cols-1 md:grid-cols-3 xl:grid-cols-3">
+    <div className="h-full overflow-y-auto">
+      <div className="p-2 grid gap-4 grid-cols-1 md:grid-cols-3 xl:grid-cols-3">
         <Box
           icon={DollarSign}
           label="Today Total Sales"
@@ -123,7 +123,7 @@ const DashboardPage = () => {
         />
       </div>
 
-      <div className="p-4 grid gap-10 grid-cols-1 md:grid-cols-2 xl:grid-cols-2">
+      <div className="p-2 grid gap-10 grid-cols-1 md:grid-cols-2 xl:grid-cols-2">
         {dashboardData.top5SellingItemTypes?.length > 0 && (
           <DonutChart
             title="Top 5 Selling Item Types"
@@ -139,7 +139,7 @@ const DashboardPage = () => {
           />
         )}
       </div>
-    </>
+    </div>
   );
 };
 

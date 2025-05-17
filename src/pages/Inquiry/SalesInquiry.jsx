@@ -14,7 +14,7 @@ import DataGrid, {
 import "react-datepicker/dist/react-datepicker.css";
 import { getInfoLookUp } from "../../api/infolookupapi";
 import { GetDebtor } from "../../api/maintenanceapi";
-import SalesInquiryMasterDetailGrid from "../../Components/SalesInquiry";
+import SalesInquiryMasterDetailGrid from "../../Components/DataGrid/Inquiry/SalesInquiryMasterDetailGrid";
 import { GetSalesInquiry } from "../../api/inquiryapi";
 import CustomInput from "../../Components/input/dateInput";
 import CashSalesPaymentModal from "../../modals/Transactions/CashSalesPaymentModal";
@@ -92,7 +92,6 @@ const SalesInquiry = () => {
       setSelectedCustomer(selected);
       setIsCustomerBoxOpen(false);
     }
-
   }, []);
 
   const onCustomerGridBoxOpened = useCallback((e) => {
@@ -129,11 +128,9 @@ const SalesInquiry = () => {
           highlightSearchText={true}
         />
       </DataGrid>
-    ),
-    [],
-  );
+    ),[]);
 
-  const handleGetInquiry = async () => {
+    const handleGetInquiry = async () => {
     const store = new CustomStore({
       key: "docNo",
       load: async (loadOptions) => {
@@ -152,28 +149,40 @@ const SalesInquiry = () => {
           params.debtorId = selectedCustomer.debtorId;
         }
 
-        const res = await GetSalesInquiry(params);
-        const enrichedSalesData = res.data?.map(sale => {
-          if (!sale.payments) return { ...sale, outstanding: sale.total };
+        try {
+          const res = await GetSalesInquiry(params);
 
-          const paymentsTotal = sale.payments.reduce((sum, p) =>
-            sum + (p.cashAmount || 0) + (p.creditCardAmount || 0) + (p.eWalletAmount || 0), 0);
+          if (!res.success) {
+            throw new Error(res.errorMessage || "Failed to retrieve sales inquiry data.");
+          }
 
-          const outstanding = sale.total - paymentsTotal;
-          return { ...sale, outstanding };
+          const enrichedSalesData = res.data?.map(sale => {
+            if (!sale.payments) return { ...sale, outstanding: sale.total };
+
+            const paymentsTotal = sale.payments.reduce((sum, p) =>
+              sum + (p.cashAmount || 0) + (p.creditCardAmount || 0) + (p.eWalletAmount || 0), 0);
+
+            const outstanding = sale.total - paymentsTotal;
+            return { ...sale, outstanding };
+          });
+
+          return {
+            data: enrichedSalesData,
+            totalCount: res.totalRecords,
+          };
+        } catch (error) {
+          setErrorModal({
+          title: "Inquiry Error",
+          message: error.errorMessage || "An unexpected error occurred.",
         });
-
-
-        return {
-          data: enrichedSalesData,
-          totalCount: res.totalRecords,
-        };
+        }
       }
     });
 
     setData(() => store);
-    // setDataStoreKey(prev => prev + 1); // force re-binding
+  // setDataStoreKey(prev => prev + 1); // force re-binding
   };
+
 
   const [salesPayment, setSalesPayment] = useState(false);
   const [paymentItem, setPaymentItem] = useState({});

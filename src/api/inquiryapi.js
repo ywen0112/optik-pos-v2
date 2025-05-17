@@ -2,6 +2,8 @@ import { ApiBaseUrl, CompanyApi, postRequest } from "./apiconfig";
 
 //creditor
 const getSalesInquiry = `${ApiBaseUrl}SalesInquiry/GetResults`;
+const getItemInquiry = `${ApiBaseUrl}ItemInquiry/GetResults`;
+const getItemHistory = `${ApiBaseUrl}ItemInquiry/GetItemHistorys`;
 
 export const GetSalesInquiry = ({companyId, fromDate, toDate, id, offset, limit}) =>{
     const body = JSON.stringify({
@@ -13,4 +15,28 @@ export const GetSalesInquiry = ({companyId, fromDate, toDate, id, offset, limit}
         limit
     });
     return postRequest(getSalesInquiry, body);
+}
+
+export const GetItemInquiry = ({companyId, fromDate, toDate, id, offset, limit}) =>{
+    const body = JSON.stringify({
+        companyId,
+        fromDate,
+        toDate,
+        id,
+        offset,
+        limit
+    });
+    return postRequest(getItemInquiry, body);
+}
+
+export const GetItemHistorys = ({companyId, fromDate, toDate, id, offset, limit}) =>{
+    const body = JSON.stringify({
+        companyId,
+        fromDate,
+        toDate,
+        id,
+        offset,
+        limit
+    });
+    return postRequest(getItemHistory, body);
 }
