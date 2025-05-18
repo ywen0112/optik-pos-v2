@@ -209,7 +209,7 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
                 width={"80px"}
                 
             />
-            <Column
+            {/* <Column
                 value={false}
                 dataField="discount"
                 caption="Discount %"
@@ -217,7 +217,7 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
                 width={"90px"}
 
             />
-            <Column dataField="discountAmount" caption="Disc Amnt" dataType="number" value={0} width={"80px"} />
+            <Column dataField="discountAmount" caption="Disc Amnt" dataType="number" value={0} width={"80px"} /> */}
             <Column allowEditing={false} dataField="subTotal" caption="Amount" dataType="number" width={"80px"} />
             <Column
                 caption="Action"
