@@ -367,6 +367,8 @@ const CashSales = () => {
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
         setSelectedCashSales({ cashSalesId: "", docNo: "" })
         setCashSalesItem([]);
+        setRounding("0.00");
+        setTotal(0);
         setCurrentSalesTotal(0);
         return;
     }

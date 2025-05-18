@@ -367,6 +367,7 @@ const PurchaseInvoice = () => {
     setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" })
     setPurchasePersonGridBoxValue({ id: "", Name: "" })
     setSelectedPurchaseInvoice({ purchaseInvoiceId: "", docNo: "" })
+    setTax("0.00");
     setPurchaseItem([]);
     setCurrentTotal(0);
   }

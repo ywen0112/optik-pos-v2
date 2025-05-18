@@ -661,6 +661,7 @@ const SalesOrder = () => {
         setEyePowerSpectaclesFormData([]);
         setSalesItem([]);
         setCurrentTotal(0);
+        setRounding("0.00")
         setBalance(0);
         setPaidAmount(0);
         setSelectedSalesOrder({ salesOrderId: "", docNo: "" })
