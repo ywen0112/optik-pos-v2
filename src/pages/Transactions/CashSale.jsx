@@ -537,7 +537,7 @@ const CashSales = () => {
             setErrorModal({ title: "Failed to Save", message: res?.errorMessage });
         };
         if (action === "save-print") {
-            setReportSelectionOpenModal({isOpen: true, docId: masterData.cashSalesId});
+            setReportSelectionOpenModal({ isOpen: true, docId: masterData.cashSalesId });
         }
         await clearData();
     }
@@ -736,13 +736,22 @@ const CashSales = () => {
 
                 const blob = await fileResponse.blob();
                 const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `${reportName}.pdf`;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                window.URL.revokeObjectURL(url);
+
+                const popup = window.open('', '_blank', 'width=800,height=600');
+                if (!popup) {
+                    throw new Error("Popup blocked. Please allow popups for this site.");
+                }
+
+                // Write an iframe to the popup that loads the blob URL
+                popup.document.write(`
+                    <html>
+                        <head><title>${reportName}</title></head>
+                        <body style="margin:0">
+                            <iframe src="${url}" frameborder="0" style="width:100%; height:100%;"></iframe>
+                        </body>
+                    </html>
+                `);
+                popup.document.close();
             } catch (error) {
                 setErrorModal({ title: "Download error", message: error.message })
             }

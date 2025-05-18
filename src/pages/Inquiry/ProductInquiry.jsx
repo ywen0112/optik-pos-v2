@@ -123,6 +123,13 @@ const ProductInquiry = () => {
   ),[]);
 
 const handleGetInquiry = useCallback(() => {
+  if(selectedItem === null){
+    setErrorModal({
+          title: "Inquiry Error",
+          message: "Please select an item to continue",
+        });
+        return;
+  }
   const store = new CustomStore({
     key: "itemCode",
     load: async (loadOptions) => {
@@ -137,23 +144,28 @@ const handleGetInquiry = useCallback(() => {
         limit: take || 10,
       };
 
-      const historyParams = {
-        companyId,
-        id: selectedItem?.itemId,
-        fromDate: startDate,
-        toDate: endDate,
-        offset: loadOptions.skip,
-        limit: loadOptions.take,
-      };
+      // const historyParams = {
+      //   companyId,
+      //   id: selectedItem?.itemId,
+      //   fromDate: startDate,
+      //   toDate: endDate,
+      //   offset: loadOptions.skip,
+      //   limit: loadOptions.take,
+      // };
 
       try {
         const inquiryRes = await GetItemInquiry(params);
-        const historyRes = await GetItemHistorys(historyParams);
+        // const historyRes = await GetItemHistorys(historyParams);
+        
 
         const item = inquiryRes.data;
         const enrichedData = [{
           ...item,
-          history: historyRes.data?.filter(h => h.itemCode === item.itemCode) || [],
+          itemId: selectedItem.itemId,
+          itemCode: selectedItem.itemCode,
+          fromDate: startDate,
+          toDate: endDate,
+          // history: historyRes.data?.filter(h => h.itemCode === item.itemCode) || [],
         }];
 
         return {

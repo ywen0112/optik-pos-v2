@@ -69,11 +69,10 @@ const DetailTabs = ({ data }) => {
 
 
 const SalesInquiryMasterDetailGrid = ({ ref, salesData, onPay }) => {
-        console.log("salesData received in grid:", salesData);
     return (
         <StandardDataGridComponent
             ref={ref}
-            height={380}
+            height={490}
             dataSource={salesData}
             // className={className}
             searchPanel={true}
