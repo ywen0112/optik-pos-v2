@@ -75,6 +75,8 @@ const CashSales = () => {
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: "", targetData: null });
     const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
 
+    const [isEdit, setIsEdit] = useState(false);
+
     const gridRef = useRef(null);
 
     const [total, setTotal] = useState(0);
@@ -359,6 +361,7 @@ const CashSales = () => {
     }
 
     const clearData = async () => {
+        setIsEdit(false);
         await createNewCashSales();
         setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
@@ -386,7 +389,7 @@ const CashSales = () => {
             return;
         }
 
-        if (confirmModal.action === "addPrint") {
+        if (confirmModal.action === "addPrint" || confirmModal.action === "editPrint") {
             setReportSelectionOpenModal({ isOpen: true, docId: confirmModal.data.cashSalesId });
         }
 
@@ -419,12 +422,14 @@ const CashSales = () => {
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
             })),
+            subTotal: currentSalesTotal,
             roundingAdjustment: rounding ?? 0,
             total: total,
         }
+        const action = isEdit ? "editPrint" : "addPrint";
         setConfirmModal({
             isOpen: true,
-            action: "addPrint",
+            action: action,
             data: formData,
         })
     }
@@ -459,12 +464,14 @@ const CashSales = () => {
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
             })),
+            subTotal: currentSalesTotal,
             roundingAdjustment: rounding ?? 0,
             total: total,
         }
+        const action = isEdit ? "edit" : "add";
         setConfirmModal({
             isOpen: true,
-            action: "add",
+            action: action,
             data: formData,
         })
     }
@@ -529,6 +536,7 @@ const CashSales = () => {
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
             })),
+            subTotal: currentSalesTotal,
             roundingAdjustment: rounding ?? 0,
             total: total,
         }
@@ -580,13 +588,17 @@ const CashSales = () => {
     const confirmationTitleMap = {
         add: "Confirm New",
         clear: "Confirm Clear",
-        addPrint: "Confirm New"
+        addPrint: "Confirm New",
+        edit: "Confirm Edit",
+        editPrint: "Confirm Edit"
     };
 
     const confirmationMessageMap = {
         add: "Are you sure you want to add Cash Sales?",
         clear: "Are you sure you want to clear this page input?",
         addPrint: "Are you sure you want to add Cash Sales?",
+        edit: "Are you sure you want to edit Cash Sales?",
+        editPrint: "Are you sure you want to edit Cash Sales?"
     };
 
     const handleCashSalesGridBoxValueChanged = (e) => {
@@ -631,6 +643,7 @@ const CashSales = () => {
     }, [])
 
     const CashSalesDataGridOnSelectionChanged = useCallback(async (e) => {
+        setIsEdit(true);
         const selected = e.selectedRowKeys?.[0];
         if (selected) {
             const recordRes = await GetCashSale({
@@ -711,39 +724,53 @@ const CashSales = () => {
 
     const [reportSelectionModal, setReportSelectionOpenModal] = useState({ isOpen: false, docId: "" });
 
-    const handleSelectedReport = async (report) => {
+    const handleSelectedReport = async (selectedReports) => {
         setReportSelectionOpenModal({ isOpen: false });
-        let res;
-        if (report.reportType === "SalesOrder") {
-            res = await GetSalesDocReport({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName, isCashSales: true });
-        } else if (report.reportType === "SalesOrderPayment") {
-            res = await GetSalesDocPaymentReport({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName, isCashSales: true });
-        }
 
-        if (res.success) {
+        for (const report of selectedReports) {
+            let res;
+
             try {
-                const reportName = report.reportName;
-                const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/pdf'
+                if (report.reportType === "SalesOrder") {
+                    res = await GetSalesDocReport({
+                        companyId: companyId,
+                        userId: userId,
+                        id: reportSelectionModal.docId,
+                        name: report.reportName,
+                        isCashSales: true,
+                    });
+                } else if (report.reportType === "SalesOrderPayment") {
+                    res = await GetSalesDocPaymentReport({
+                        companyId: companyId,
+                        userId: userId,
+                        id: reportSelectionModal.docId,
+                        name: report.reportName,
+                        isCashSales: true,
+                    });
+                }
+
+                if (res?.success) {
+                    const reportName = report.reportName;
+                    const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/pdf'
+                        }
+                    });
+
+                    if (!fileResponse.ok) {
+                        throw new Error('File download failed');
                     }
-                });
 
-                if (!fileResponse.ok) {
-                    throw new Error('File download failed');
-                }
+                    const blob = await fileResponse.blob();
+                    const url = window.URL.createObjectURL(blob);
 
-                const blob = await fileResponse.blob();
-                const url = window.URL.createObjectURL(blob);
+                    const popup = window.open('', '_blank', 'width=800,height=600');
+                    if (!popup) {
+                        throw new Error("Popup blocked. Please allow popups for this site.");
+                    }
 
-                const popup = window.open('', '_blank', 'width=800,height=600');
-                if (!popup) {
-                    throw new Error("Popup blocked. Please allow popups for this site.");
-                }
-
-                // Write an iframe to the popup that loads the blob URL
-                popup.document.write(`
+                    popup.document.write(`
                     <html>
                         <head><title>${reportName}</title></head>
                         <body style="margin:0">
@@ -751,13 +778,17 @@ const CashSales = () => {
                         </body>
                     </html>
                 `);
-                popup.document.close();
+                    popup.document.close();
+                }
+
             } catch (error) {
-                setErrorModal({ title: "Download error", message: error.message })
+                setErrorModal({ title: "Download error", message: error.message });
             }
         }
+
         setReportSelectionOpenModal({ docId: "" });
-    }
+    };
+
 
     return (
         <>
@@ -783,6 +814,7 @@ const CashSales = () => {
                             <div className="flex justify-end gap-2">
                                 <DropDownBox
                                     id="CustomerSelection"
+                                    disabled={isEdit}
                                     className="border rounded p-1 w-1/2 h-[34px]"
                                     value={CustomerGridBoxValue?.debtorId ?? ""}
                                     opened={isCustomerGridBoxOpened}
@@ -800,6 +832,7 @@ const CashSales = () => {
                                     }}
                                 />
                                 <textarea
+                                    disabled={isEdit}
                                     id="CustomerName"
                                     name="CustomerName"
                                     rows={1}
@@ -810,6 +843,7 @@ const CashSales = () => {
                                 />
                                 <div className="relative group">
                                     <button
+                                        disabled={isEdit}
                                         className="items-center h-[34px] text-secondary hover:bg-grey-500 hover:text-primary flex"
                                         onClick={handleNewCustomerModel}
                                     >
@@ -858,6 +892,7 @@ const CashSales = () => {
                     <div className="flex flex-col gap-1 w-1/2">
                         <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
                         <input
+                            disabled={isEdit}
                             type="text"
                             id="refNo"
                             name="refNo"
@@ -870,7 +905,8 @@ const CashSales = () => {
                     <div className="flex flex-col gap-1 w-1/2">
                         <label htmlFor="date" className="font-medium text-secondary">Date</label>
                         <DatePicker
-                            customInput={<CustomInput />}
+                            disabled={isEdit}
+                            customInput={<CustomInput disabled={isEdit} />}
                             selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
                             id="SalesDate"
                             name="SalesDate"
@@ -882,6 +918,7 @@ const CashSales = () => {
                     <div className="flex flex-col gap-1 w-1/2">
                         <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
                         <DropDownBox
+                            disabled={isEdit}
                             id="SalesPersonSelection"
                             className="border rounded w-full"
                             value={SalesPersonGridBoxValue?.id ?? null}
@@ -906,6 +943,7 @@ const CashSales = () => {
 
             <div className="mt-3 p-3 bg-white shadow rounded">
                 <TransactionItemWithDiscountDataGrid
+                    disabled={isEdit}
                     height={400}
                     className={"p-2"}
                     customStore={cashSalesItemStore}
@@ -951,6 +989,7 @@ const CashSales = () => {
                                 <label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{label}</label>
                                 {label === "Rounding Adj" ? (
                                     <input
+                                        disabled={isEdit}
                                         type="number"
                                         step="0.01"
                                         value={rounding}

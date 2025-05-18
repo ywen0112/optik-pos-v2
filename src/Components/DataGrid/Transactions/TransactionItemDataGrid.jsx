@@ -14,7 +14,7 @@ const ItemGridColumns = [
     { dataField: "balQty", caption: "Bal Qty", width: "10%" }
 ];
 
-const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSelect, onNew, loading, selectedItem, setSelectedItem }) => {
+const TransactionItemDataGrid = ({ disabled, height, className, customStore, gridRef, onSelect, onNew, loading, selectedItem, setSelectedItem }) => {
     const companyId = sessionStorage.getItem("companyId");
 
     const [currentRow, setCurrentRow] = useState(null);
@@ -108,11 +108,15 @@ const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSe
     const handleOnCellClick = useCallback((e) => {
         const grid = gridRef.current?.instance;
         if (e.rowType === "data" && grid) {
+            if (disabled) {
+                grid.cancelEditData();
+                return;
+            }
             setCurrentRow(e.data);
             grid.editCell(e.rowIndex, e.column.dataField); // Start editing cell directly
             setDropDownBoxOpen(true)
         }
-    }, [])
+    }, [disabled])
 
     return (
         <StandardDataGridComponent
@@ -163,8 +167,8 @@ const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSe
         >
             <Editing
                 mode="cell"
-                allowAdding
-                allowUpdating
+                allowAdding={!disabled}
+                allowUpdating={!disabled}
                 newRowPosition='last'
                 confirmDelete={false}
             />
@@ -173,9 +177,11 @@ const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSe
                 caption="Product Code"
                 width={"150px"}
                 editCellRender={() => {
+                    if(disabled) return;
                     return (
                         <DropDownBox
                             id="itemOpeningItemLookup"
+                            disabled={disabled}
                             value={selectedItem?.itemId}
                             opened={dropDownBoxOpen}
                             openOnFieldClick={true}
@@ -195,15 +201,17 @@ const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSe
                 }
                 }
             />
-            <Column dataField="description" caption="Description" />
-            <Column dataField="uom" caption="UOM" width={"80px"} />
+            <Column allowEditing={!disabled} dataField="description" caption="Description" />
+            <Column allowEditing={!disabled} dataField="uom" caption="UOM" width={"80px"} />
             <Column
+                allowEditing={!disabled}
                 dataField="qty"
                 caption="QTY"
                 width={"80px"}
 
             />
             <Column
+                allowEditing={!disabled}
                 dataField="unitCost"
                 caption="Unit Cost"
                 width={"80px"}
@@ -214,6 +222,7 @@ const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSe
                 caption="Action"
                 width={"150px"}
                 cellRender={(cellData) => {
+                    if (disabled) return null;
                     return (
                         <div className="flex flex-row justify-center space-x-2">
                             <div className=" text-red-600 hover:cursor-pointer flex justify-center "

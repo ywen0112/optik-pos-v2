@@ -72,14 +72,16 @@ const PurchaseInvoice = () => {
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: "", targetData: null });
   const [notifyModal, setNotifyModal] = useState({ isOpen: false, message: "" });
 
+  const [isEdit, setIsEdit] = useState(false);
+
   const gridRef = useRef(null);
 
   const [total, setTotal] = useState(0);
 
-    useEffect(() => {
-        const total = currentTotal + parseFloat(tax);
-        setTotal(total);
-    }, [currentTotal, tax]);
+  useEffect(() => {
+    const total = currentTotal + parseFloat(tax);
+    setTotal(total);
+  }, [currentTotal, tax]);
 
   useEffect(() => {
     createNewPruchaseInvoice();
@@ -359,15 +361,20 @@ const PurchaseInvoice = () => {
     setPurchaseItem(prev => prev.filter(record => record.purchaseInvoiceDetailId !== key));
   }
 
+  const clearData = async () => {
+    setIsEdit(false);
+    await createNewPruchaseInvoice()
+    setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" })
+    setPurchasePersonGridBoxValue({ id: "", Name: "" })
+    setSelectedPurchaseInvoice({ purchaseInvoiceId: "", docNo: "" })
+    setPurchaseItem([]);
+    setCurrentTotal(0);
+  }
+
   const confirmAction = async () => {
     if (confirmModal?.action === "clear") {
       setConfirmModal({ isOpen: false, action: "", data: null });
-      await createNewPruchaseInvoice()
-      setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" })
-      setPurchasePersonGridBoxValue({ id: "", Name: "" })
-      setSelectedPurchaseInvoice({ purchaseInvoiceId: "", docNo: "" })
-      setPurchaseItem([]);
-      setCurrentTotal(0);
+      await clearData();
       return;
     }
     try {
@@ -377,21 +384,13 @@ const PurchaseInvoice = () => {
       } else throw new Error(res.errorMessage || "Failed to Add Purchase Invoice");
     } catch (error) {
       setErrorModal({ title: "Error", message: error.message });
-      await createNewPruchaseInvoice()
-      setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" })
-      setPurchasePersonGridBoxValue({ id: "", Name: "" })
-      setPurchaseItem([]);
-      setCurrentTotal(0);
+      await clearData();
     }
     if (confirmModal.action === "addPrint") {
       console.log("print acknowledgement");
     }
     setConfirmModal({ isOpen: false, action: "", data: null });
-    await createNewPruchaseInvoice()
-    setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" })
-    setPurchasePersonGridBoxValue({ id: "", Name: "" })
-    setPurchaseItem([]);
-    setCurrentTotal(0);
+    await clearData();
   }
 
   const handleClear = () => {
@@ -403,12 +402,18 @@ const PurchaseInvoice = () => {
 
   const confirmationTitleMap = {
     add: "Confirm New",
-    clear: "Confirm Clear"
+    addPrint: "Confirm New",
+    clear: "Confirm Clear",
+    edit: "Confirm Edit",
+    editPrint: "Confirm Edit"
   };
 
   const confirmationMessageMap = {
     add: "Are you sure you want to add Purchase Invoice?",
-    clear: "Are you sure you want to clear this page input?"
+    clear: "Are you sure you want to clear this page input?",
+    addPrint: "Are you sure you want to add Purchase Invoice?",
+    edit: "Are you sure you want to edit Purchase Invoice?",
+    editPrint: "Are you sure you want to edit Purchase Invoice?"
   };
 
   const handleSavePrint = () => {
@@ -433,12 +438,14 @@ const PurchaseInvoice = () => {
         discountAmount: item.discountAmount ?? 0,
         subTotal: item.subTotal ?? 0
       })),
+      subTotal: currentTotal,
       tax: tax ?? 0,
       total: total,
     }
+    const action = isEdit ? "editPrint" : "addPrint"
     setConfirmModal({
       isOpen: true,
-      action: "addPrint",
+      action: action,
       data: formData,
     })
   }
@@ -465,12 +472,14 @@ const PurchaseInvoice = () => {
         discountAmount: item.discountAmount ?? 0,
         subTotal: item.subTotal ?? 0
       })),
+      subTotal: currentTotal,
       tax: tax ?? 0,
       total: total,
     }
+    const action = isEdit ? "edit" : "add";
     setConfirmModal({
       isOpen: true,
-      action: "add",
+      action: action,
       data: formData,
     })
   }
@@ -497,6 +506,7 @@ const PurchaseInvoice = () => {
         discountAmount: item.discountAmount ?? 0,
         subTotal: item.subTotal ?? 0
       })),
+      subTotal: currentTotal,
       tax: tax ?? 0,
       total: total,
     }
@@ -507,11 +517,7 @@ const PurchaseInvoice = () => {
     if (action === "save-print") {
       console.log("print acknowledgement");
     }
-    await createNewPruchaseInvoice()
-    setSupplierGridBoxValue({ creditorId: "", creditorCode: "", companyName: "" })
-    setPurchasePersonGridBoxValue({ id: "", Name: "" })
-    setPurchaseItem([]);
-    setCurrentTotal(0);
+    await clearData();
     return;
   }
 
@@ -620,6 +626,7 @@ const PurchaseInvoice = () => {
   }, [])
 
   const PurchaseInvoiceDataGridOnSelectionChanged = useCallback(async (e) => {
+    setIsEdit(true);
     const selected = e.selectedRowKeys?.[0];
     if (selected) {
       const recordRes = await GetPurchaseInvoice({
@@ -716,6 +723,7 @@ const PurchaseInvoice = () => {
               <div className="flex justify-end gap-2">
                 <DropDownBox
                   id="SupplierSelection"
+                  disabled={isEdit}
                   className="border rounded p-1 w-1/2 h-[34px]"
                   value={SupplierGridBoxValue?.creditorId ?? ""}
                   opened={isSupplierGridBoxOpened}
@@ -735,6 +743,7 @@ const PurchaseInvoice = () => {
                 <textarea
                   id="SupplierName"
                   name="SupplierName"
+                  disabled={isEdit}
                   rows={1}
                   className="border rounded p-2 w-full resize-none bg-white text-secondary"
                   placeholder="Name"
@@ -743,6 +752,7 @@ const PurchaseInvoice = () => {
                 />
                 <div className="relative group">
                   <button
+                    disabled={isEdit}
                     className="items-center h-[34px] text-secondary hover:bg-grey-500 hover:text-primary flex"
                     onClick={handleNewSupplierModal}
                   >
@@ -786,6 +796,7 @@ const PurchaseInvoice = () => {
           <div className="flex flex-col gap-1">
             <label htmlFor="refNo" className="font-medium text-secondary">Supplier Ref</label>
             <input
+              disabled={isEdit}
               type="text"
               id="supplierRef"
               name="supplierRef"
@@ -798,6 +809,7 @@ const PurchaseInvoice = () => {
           <div className="flex flex-col gap-1">
             <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
             <input
+              disabled={isEdit}
               type="text"
               id="refNo"
               name="refNo"
@@ -810,6 +822,7 @@ const PurchaseInvoice = () => {
           <div className="flex flex-col gap-1">
             <label htmlFor="purchasePerson" className="font-medium text-secondary">Purchase Person</label>
             <DropDownBox
+              disabled={isEdit}
               id="PurchasePersonSelection"
               className="border rounded w-full"
               value={PurchasePersonGridBoxValue?.id}
@@ -828,7 +841,8 @@ const PurchaseInvoice = () => {
           <div className="flex flex-col gap-1">
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
-              customInput={<CustomInput />}
+              disabled={isEdit}
+              customInput={<CustomInput disabled={isEdit}/>}
               selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
               id="PurchaseDate"
               name="PurchaseDate"
@@ -852,6 +866,7 @@ const PurchaseInvoice = () => {
 
       <div className="mt-3 p-3 bg-white shadow rounded">
         <TransactionItemWithDiscountDataGrid
+          disabled={isEdit}
           height={400}
           className={"p-2"}
           customStore={purchaseItemStore}
@@ -898,6 +913,7 @@ const PurchaseInvoice = () => {
                 <label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{label}</label>
                 {label === "Tax" ? (
                   <input
+                    disabled={isEdit}
                     type="number"
                     step="0.01"
                     value={value}

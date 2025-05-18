@@ -14,7 +14,7 @@ const ItemGridColumns = [
     { dataField: "balQty", caption: "Bal Qty", width: "10%" }
 ];
 
-const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, gridRef, onSelect, onNew, loading, selectedItem, setSelectedItem, setItemGroup, setActiveItem }) => {
+const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, customStore, gridRef, onSelect, onNew, loading, selectedItem, setSelectedItem, setItemGroup, setActiveItem }) => {
     const companyId = sessionStorage.getItem("companyId");
 
     const [currentRow, setCurrentRow] = useState(null);
@@ -50,17 +50,18 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
     });
 
     const handleItemLookupValueChanged = useCallback((e) => {
+        if (disabled) return;
         const selected = e.selectedRowsData?.[0];
         if (selected && currentRow) {
             setSelectedItem(selected);
             onSelect(selected, currentRow);
         }
         const grid = gridRef.current?.instance;
-                if (grid) {
-                    grid.cancelEditData();
-                }
+        if (grid) {
+            grid.cancelEditData();
+        }
         setDropDownBoxOpen(false);
-    }, [currentRow]);
+    }, [currentRow, disabled]);
 
     const handleItemLookupChanged = (e) => {
         if (!e.value) {
@@ -77,6 +78,7 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
     const onItemLookupRender = useCallback(() => {
         return (
             <DataGrid
+                disabled={disabled}
                 dataSource={itemStore}
                 columns={ItemGridColumns}
                 hoverStateEnabled={true}
@@ -105,27 +107,28 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
     }, [selectedItem, handleItemLookupValueChanged])
 
     const handleOnCellClick = useCallback((e) => {
+
         const grid = gridRef.current?.instance;
         if (e.rowType === "data" && grid) {
-            if(setItemGroup){setItemGroup(e.data.isNormalItem ?? true)}
-            if(setActiveItem){setActiveItem(e.data)};
+            if (disabled) {
+                grid.cancelEditData();
+                return;
+            }
+            if (setItemGroup) { setItemGroup(e.data.isNormalItem ?? true) }
+            if (setActiveItem) { setActiveItem(e.data) };
             setCurrentRow(e.data);
             grid.editCell(e.rowIndex, e.column.dataField);
             setDropDownBoxOpen(true)
         }
-    }, [])
+    }, [disabled])
 
     return (
         <StandardDataGridComponent
             ref={gridRef}
             onToolbarPreparing={(e) => {
                 const items = e.toolbarOptions.items;
-
-                // Find the index of the addRowButton
                 const addButtonIndex = items.findIndex(item => item.name === 'addRowButton');
-
                 if (addButtonIndex !== -1) {
-                    // Change its location to 'before'
                     items[addButtonIndex].location = 'before';
                 }
             }}
@@ -163,8 +166,8 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
         >
             <Editing
                 mode="cell"
-                allowAdding
-                allowUpdating
+                allowAdding={!disabled}
+                allowUpdating={!disabled}
                 newRowPosition='last'
                 confirmDelete={false}
             />
@@ -173,9 +176,11 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
                 caption="Product Code"
                 width={"150px"}
                 editCellRender={() => {
+                    if(disabled) return;
                     return (
                         <DropDownBox
                             id="itemOpeningItemLookup"
+                            disabled={disabled}
                             value={selectedItem?.itemId}
                             opened={dropDownBoxOpen}
                             openOnFieldClick={true}
@@ -195,19 +200,21 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
                 }
                 }
             />
-            <Column dataField="description" caption="Description"/>
-            <Column dataField="uom" caption="UOM" width={"80px"} />
+            <Column allowEditing={!disabled} dataField="description" caption="Description" />
+            <Column dataField="uom" allowEditing={!disabled} caption="UOM" width={"80px"} />
             <Column
+                allowEditing={!disabled}
                 dataField="qty"
                 caption="QTY"
                 width={"80px"}
-                
+
             />
             <Column
+                allowEditing={!disabled}
                 dataField="price"
                 caption="Unit Price"
                 width={"80px"}
-                
+
             />
             {/* <Column
                 value={false}
@@ -223,7 +230,9 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
                 caption="Action"
                 width={"150px"}
                 cellRender={(cellData) => {
+                    if (disabled) return null;
                     return (
+
                         <div className="flex flex-row justify-center space-x-2">
                             <div className=" text-red-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {

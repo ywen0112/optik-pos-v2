@@ -45,7 +45,7 @@ export const GetCashSale = ({companyId, userId, id}) =>{
     return postRequest(getCashSale, body);
 };
 
-export const SaveCashSale = ({actionData, cashSalesId, docDate, debtorId, debtorName, remark, refNo, salesPersonUserID, roundingAdjustment, total, isVoid, submitEInvoice, details}) =>{
+export const SaveCashSale = ({actionData, cashSalesId, docDate, debtorId, debtorName, remark, refNo, salesPersonUserID, roundingAdjustment, subTotal, total, isVoid, submitEInvoice, details}) =>{
     const body = JSON.stringify({
         actionData,
         cashSalesId,
@@ -56,6 +56,7 @@ export const SaveCashSale = ({actionData, cashSalesId, docDate, debtorId, debtor
         refNo,
         salesPersonUserID,
         roundingAdjustment,
+        subTotal,
         total,
         isVoid,
         submitEInvoice,
@@ -190,7 +191,7 @@ export const GetPurchaseInvoice = ({companyId, userId, id}) =>{
     return postRequest(getPurchaseInvoice, body);
 };
 
-export const SavePurchaseInvoice = ({actionData, purchaseInvoiceId, docDate, creditorId, creditorName, remark, refNo, supplierRef, purchasePersonUserID, total, tax, isVoid, details}) =>{
+export const SavePurchaseInvoice = ({actionData, purchaseInvoiceId, docDate, creditorId, creditorName, remark, refNo, supplierRef, purchasePersonUserID, subTotal, total, tax, isVoid, details}) =>{
     const body = JSON.stringify({
         actionData,
         purchaseInvoiceId,
@@ -201,6 +202,7 @@ export const SavePurchaseInvoice = ({actionData, purchaseInvoiceId, docDate, cre
         refNo,
         supplierRef,
         purchasePersonUserID,
+        subTotal,
         tax,
         total,
         isVoid,
@@ -337,7 +339,7 @@ export const GetSalesOrder = ({companyId, userId, id}) =>{
     return postRequest(getSalesOrder, body);
 };
 
-export const SaveSalesOrder = ({actionData, salesOrderId, docDate, debtorId, debtorName, remark, refNo, salesPersonUserID, practitionerUserId, nextVisitDate, roundingAdjustment, total, isReady, isCollected, isVoid, submitEInvoice, details}) =>{
+export const SaveSalesOrder = ({actionData, salesOrderId, docDate, debtorId, debtorName, remark, refNo, salesPersonUserID, practitionerUserId, nextVisitDate, roundingAdjustment, subTotal, total, isReady, isCollected, isVoid, submitEInvoice, details}) =>{
     const body = JSON.stringify({
         actionData,
         salesOrderId,
@@ -350,6 +352,7 @@ export const SaveSalesOrder = ({actionData, salesOrderId, docDate, debtorId, deb
         practitionerUserId,
         nextVisitDate,
         roundingAdjustment,
+        subTotal,
         total,
         isReady,
         isCollected,

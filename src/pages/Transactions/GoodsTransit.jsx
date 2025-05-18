@@ -30,6 +30,8 @@ const GoodsTransit = () => {
   const [selectedGoodsTransit, setSelectedGoodsTransit] = useState({ goodsTransitId: "", description: "" })
   const [isGoodsTransitGridBoxOpened, setIsGoodsTransitGridBoxOpened] = useState(false)
 
+  const [isEdit, setIsEdit] = useState(false);
+
   const gridRef = useRef(null)
 
   useEffect(() => {
@@ -43,6 +45,7 @@ const GoodsTransit = () => {
   }
 
   const GoodsTransitDataGridOnSelectionChanged = useCallback(async (e) => {
+    setIsEdit(true);
     const selected = e.selectedRowKeys?.[0];
     if (selected) {
       const recordRes = await GetGoodsTransit({
@@ -241,13 +244,18 @@ const GoodsTransit = () => {
     setGoodsTransitItems(prev => prev.filter(record => record.goodsTransitDetailId !== key));
   }
 
+  const clearData = async () => {
+    setIsEdit(false);
+    await newGoodsTransitRecords();
+    setGoodsTransitItems([]);
+    setCurrentTotalCost(0);
+    setSelectedGoodsTransit({ goodsTransitId: "", description: "" });
+  }
+
   const confirmAction = async () => {
     if (confirmModal.action === "clear") {
       setConfirmModal({ isOpen: false, action: "", data: null });
-      await newGoodsTransitRecords();
-      setGoodsTransitItems([]);
-      setCurrentTotalCost(0);
-      setSelectedGoodsTransit({ goodsTransitId: "", description: "" });
+      await clearData();
       return; // ✅ prevent the rest of the function from running
     }
 
@@ -260,7 +268,7 @@ const GoodsTransit = () => {
       }
     } catch (error) {
       setErrorModal({ title: "Error", message: error.message });
-      await newGoodsTransitRecords(); // Optional: maybe remove this too depending on your needs
+      await clearData();
     }
 
     if (confirmModal.action === "addPrint") {
@@ -269,9 +277,7 @@ const GoodsTransit = () => {
 
     setConfirmModal({ isOpen: false, action: "", data: null });
 
-    await newGoodsTransitRecords();
-    setGoodsTransitItems([]);
-    setCurrentTotalCost(0);
+    await clearData();
   };
 
 
@@ -305,10 +311,10 @@ const GoodsTransit = () => {
       })),
       total: currentTotalCost
     }
-
+    const action = isEdit ? "editPrint" : "addPrint";
     setConfirmModal({
       isOpen: true,
-      action: "addPrint",
+      action: action,
       data: formData,
     });
   }
@@ -336,10 +342,10 @@ const GoodsTransit = () => {
       })),
       total: currentTotalCost
     }
-
+    const action = isEdit ? "edit" : "add";
     setConfirmModal({
       isOpen: true,
-      action: "add",
+      action: action,
       data: formData,
     });
   }
@@ -379,12 +385,18 @@ const GoodsTransit = () => {
 
   const confirmationTitleMap = {
     add: "Confirm New",
-    clear: "Confirm Clear"
+    clear: "Confirm Clear",
+    addPrint: "Confirm New",
+    edit: "Confirm Edit",
+    editPrint: "Confirm Edit"
   };
 
   const confirmationMessageMap = {
     add: "Are you sure you want to add Good Transit?",
-    clear: "Are you sure you want to clear this page input?"
+    clear: "Are you sure you want to clear this page input?",
+    addPrint: "Are you sure you want to add Good Transit?",
+    edit: "Are you sure you want to edit Good Transit?",
+    editPrint: "Are you sure you want to edit Good Transit?"
   };
 
   return (
@@ -402,6 +414,7 @@ const GoodsTransit = () => {
 
               <div className="flex justify-end gap-2">
                 <textarea
+                  disabled={isEdit}
                   id="goodsTransitDesc"
                   name="goodsTransitDesc"
                   rows={1}
@@ -434,7 +447,8 @@ const GoodsTransit = () => {
           <div className="flex flex-col gap-1 w-1/2 ">
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
-              customInput={<CustomInput />}
+              disabled={isEdit}
+              customInput={<CustomInput disabled={isEdit}/>}
               selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
               id="docDate"
               name="docDate"
@@ -453,6 +467,7 @@ const GoodsTransit = () => {
 
               <div className="flex justify-end gap-2">
                 <textarea
+                  disabled={isEdit}
                   id="fromLocation"
                   name="fromLocation"
                   rows={1}
@@ -474,6 +489,7 @@ const GoodsTransit = () => {
 
               <div className="flex justify-end gap-2">
                 <textarea
+                  disabled={isEdit}
                   id="toLocation"
                   name="toLocation"
                   rows={1}
@@ -491,6 +507,7 @@ const GoodsTransit = () => {
 
       <div className="mt-3 p-3 bg-white shadow rounded">
         <TransactionItemDataGrid
+          disabled={isEdit}
           height={500}
           className={"p-2"}
           customStore={goodsTransitItemStore}

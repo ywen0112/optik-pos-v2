@@ -30,6 +30,8 @@ const StockAdjustment = () => {
   const [selectedStockAdjustment, setSelectedStockAdjustment] = useState({ stockAdjustmentId: "", description: "" })
   const [isStockAdjustmentGridBoxOpened, setIsStockAdjustmentGridBoxOpened] = useState(false)
 
+  const [isEdit, setIsEdit] = useState(false);
+
   const gridRef = useRef(null)
 
   useEffect(() => {
@@ -43,6 +45,7 @@ const StockAdjustment = () => {
   }
 
   const StockAdjustmentDataGridOnSelectionChanged = useCallback(async (e) => {
+    setIsEdit(true);
     const selected = e.selectedRowKeys?.[0];
     if (selected) {
       const recordRes = await GetStockAdjustment({
@@ -129,7 +132,7 @@ const StockAdjustment = () => {
       }
     }
   ];
-  
+
 
   const StockAdjustmentDataGridRender = useCallback(
     () => (
@@ -240,13 +243,18 @@ const StockAdjustment = () => {
     setStockAdjustmentItems(prev => prev.filter(record => record.stockAdjustmentDetailId !== key));
   }
 
+  const clearData = async () => {
+    setIsEdit(false);
+    setSelectedStockAdjustment({ stockAdjustmentId: "", description: "" })
+    await newStockAdjustmentRecords()
+    setStockAdjustmentItems([]);
+    setCurrentTotal(0);
+  }
+
   const confirmAction = async () => {
     if (confirmModal.action === "clear") {
       setConfirmModal({ isOpen: false, action: "", data: null });
-      setSelectedStockAdjustment({ stockAdjustmentId: "", description: "" })
-      await newStockAdjustmentRecords()
-      setStockAdjustmentItems([]);
-      setCurrentTotal(0);
+      await clearData();
       return;
     }
     try {
@@ -256,15 +264,13 @@ const StockAdjustment = () => {
       } else throw new Error(res.errorMessage || "Failed to Add Stock Adjustment");
     } catch (error) {
       setErrorModal({ title: "Error", message: error.message });
-      await newStockAdjustmentRecords()
+      await clearData();
     }
     if (confirmModal.action === "addPrint") {
       console.log("print acknowledgement");
     }
     setConfirmModal({ isOpen: false, action: "", data: null });
-    await newStockAdjustmentRecords()
-    setStockAdjustmentItems([]);
-    setCurrentTotal(0);
+    await clearData();
   }
 
   const handleClear = () => {
@@ -297,10 +303,10 @@ const StockAdjustment = () => {
       })),
       total: currentTotal
     };
-
+    const action = isEdit ? "editPrint" : "addPrint";
     setConfirmModal({
       isOpen: true,
-      action: "addPrint",
+      action: action,
       data: formData,
     })
   }
@@ -328,9 +334,10 @@ const StockAdjustment = () => {
       })),
       total: currentTotal
     };
+    const action = isEdit ? "edit" : "add";
     setConfirmModal({
       isOpen: true,
-      action: "add",
+      action: action,
       data: formData,
     })
   }
@@ -371,12 +378,18 @@ const StockAdjustment = () => {
 
   const confirmationTitleMap = {
     add: "Confirm New",
-    clear: "Confirm Clear"
+    clear: "Confirm Clear",
+    addPrint: "Confirm New",
+    edit: "Confirm Edit",
+    editPrint: "Confirm Edit"
   };
 
   const confirmationMessageMap = {
     add: "Are you sure you want to add Stock Adjustment?",
-    clear: "Are you sure you want to clear this page input?"
+    clear: "Are you sure you want to clear this page input?",
+    addPrint: "Are you sure you want to add Stock Adjustment?",
+    edit: "Are you sure you want to edit Stock Adjustment?",
+    editPrint: "Are you sure you want to edit Stock Adjustment?"
   };
 
 
@@ -396,6 +409,7 @@ const StockAdjustment = () => {
 
               <div className="flex justify-end gap-2">
                 <textarea
+                  disabled={isEdit}
                   id="stockAdjustmentDesc"
                   name="stockAdjustmentDesc"
                   rows={1}
@@ -428,7 +442,8 @@ const StockAdjustment = () => {
           <div className="flex flex-col gap-1 w-1/2 ">
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
-              customInput={<CustomInput />}
+              disabled={isEdit}
+              customInput={<CustomInput disabled={isEdit}/>}
               selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
               id="StockAdjustmentDate"
               name="StockAdjustmentDate"
@@ -443,6 +458,7 @@ const StockAdjustment = () => {
 
       <div className="mt-3 p-3 bg-white shadow rounded">
         <TransactionItemDataGrid
+          disabled={isEdit}
           height={500}
           className={"p-2"}
           customStore={stockAdjustmentItemStore}

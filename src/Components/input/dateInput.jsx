@@ -1,9 +1,10 @@
 import { forwardRef } from "react";
 import { CalendarDays } from "lucide-react";
 
-const CustomInput = forwardRef(({ value, onClick, onChange }, ref) => (
+const CustomInput = forwardRef(({ value, onClick, onChange, disabled }, ref) => (
     <div className="relative w-full">
         <input
+            disabled={disabled}
             ref={ref}
             onClick={onClick}
             onChange={onChange}

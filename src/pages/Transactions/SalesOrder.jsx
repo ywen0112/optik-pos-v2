@@ -88,6 +88,8 @@ const SalesOrder = () => {
 
     const [salesOrderPayment, setSalesOrderPayment] = useState(false);
 
+    const [isEdit, setIsEdit] = useState(false);
+
     const decimalRegex = /^\d*(\.\d{0,2})?$/;
     const roundUpToQuarter = (val) => Math.ceil(val * 4) / 4;
 
@@ -649,96 +651,97 @@ const SalesOrder = () => {
         });
     };
 
-    const clearData = async () =>{
-            await createNewSalesOrder()
-            setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
-            setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
-            setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
-            setEyePowerContactLensFormData([]);
-            setEyePowerSpectaclesFormData([]);
-            setSalesItem([]);
-            setCurrentTotal(0);
-            setBalance(0);
-            setPaidAmount(0);
-            setSelectedSalesOrder({ salesOrderId: "", docNo: "" })
-            setActualDistanceData({
-                l_D_ADD: null,
-                l_D_AXIS: null,
-                l_D_CYL: null,
-                l_D_PD: null,
-                l_D_PRISM: null,
-                l_D_Remark: "",
-                l_D_SPH: null,
-                l_D_VA: null,
-                r_D_ADD: null,
-                r_D_AXIS: null,
-                r_D_CYL: null,
-                r_D_PRISM: null,
-                r_D_Remark: "",
-                r_D_SPH: null,
-                r_D_VA: null,
-            })
-            setPrescribedDistanceData({
-                l_D_ADD: null,
-                l_D_AXIS: null,
-                l_D_CYL: null,
-                l_D_PD: null,
-                l_D_PRISM: null,
-                l_D_Remark: "",
-                l_D_SPH: null,
-                l_D_VA: null,
-                r_D_ADD: null,
-                r_D_AXIS: null,
-                r_D_CYL: null,
-                r_D_PRISM: null,
-                r_D_Remark: "",
-                r_D_SPH: null,
-                r_D_VA: null,
-            })
-            setActualReadingData({
-                l_R_ADD: null,
-                l_R_AXIS: null,
-                l_R_CYL: null,
-                l_R_PD: null,
-                l_R_PRISM: null,
-                l_R_Remark: "",
-                l_R_SPH: null,
-                l_R_VA: null,
-                r_R_ADD: null,
-                r_R_AXIS: null,
-                r_R_CYL: null,
-                r_R_PRISM: null,
-                r_R_Remark: "",
-                r_R_SPH: null,
-                r_R_VA: null,
-            })
-            setPrescribedReadingData({
-                l_R_ADD: null,
-                l_R_AXIS: null,
-                l_R_CYL: null,
-                l_R_PD: null,
-                l_R_PRISM: null,
-                l_R_Remark: "",
-                l_R_SPH: null,
-                l_R_VA: null,
-                r_R_ADD: null,
-                r_R_AXIS: null,
-                r_R_CYL: null,
-                r_R_PRISM: null,
-                r_R_Remark: "",
-                r_R_SPH: null,
-                r_R_VA: null,
-            })
-            setActualRX({
-                dominantEye: "",
-                opticalHeight: 0,
-                segmentHeight: 0,
-            })
-            setPrescribedRX({
-                dominantEye: "",
-                opticalHeight: 0,
-                segmentHeight: 0,
-            })
+    const clearData = async () => {
+        setIsEdit(false);
+        await createNewSalesOrder();
+        setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
+        setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
+        setPractionerGridBoxValue({ id: "", Code: "", Name: "" });
+        setEyePowerContactLensFormData([]);
+        setEyePowerSpectaclesFormData([]);
+        setSalesItem([]);
+        setCurrentTotal(0);
+        setBalance(0);
+        setPaidAmount(0);
+        setSelectedSalesOrder({ salesOrderId: "", docNo: "" })
+        setActualDistanceData({
+            l_D_ADD: null,
+            l_D_AXIS: null,
+            l_D_CYL: null,
+            l_D_PD: null,
+            l_D_PRISM: null,
+            l_D_Remark: "",
+            l_D_SPH: null,
+            l_D_VA: null,
+            r_D_ADD: null,
+            r_D_AXIS: null,
+            r_D_CYL: null,
+            r_D_PRISM: null,
+            r_D_Remark: "",
+            r_D_SPH: null,
+            r_D_VA: null,
+        })
+        setPrescribedDistanceData({
+            l_D_ADD: null,
+            l_D_AXIS: null,
+            l_D_CYL: null,
+            l_D_PD: null,
+            l_D_PRISM: null,
+            l_D_Remark: "",
+            l_D_SPH: null,
+            l_D_VA: null,
+            r_D_ADD: null,
+            r_D_AXIS: null,
+            r_D_CYL: null,
+            r_D_PRISM: null,
+            r_D_Remark: "",
+            r_D_SPH: null,
+            r_D_VA: null,
+        })
+        setActualReadingData({
+            l_R_ADD: null,
+            l_R_AXIS: null,
+            l_R_CYL: null,
+            l_R_PD: null,
+            l_R_PRISM: null,
+            l_R_Remark: "",
+            l_R_SPH: null,
+            l_R_VA: null,
+            r_R_ADD: null,
+            r_R_AXIS: null,
+            r_R_CYL: null,
+            r_R_PRISM: null,
+            r_R_Remark: "",
+            r_R_SPH: null,
+            r_R_VA: null,
+        })
+        setPrescribedReadingData({
+            l_R_ADD: null,
+            l_R_AXIS: null,
+            l_R_CYL: null,
+            l_R_PD: null,
+            l_R_PRISM: null,
+            l_R_Remark: "",
+            l_R_SPH: null,
+            l_R_VA: null,
+            r_R_ADD: null,
+            r_R_AXIS: null,
+            r_R_CYL: null,
+            r_R_PRISM: null,
+            r_R_Remark: "",
+            r_R_SPH: null,
+            r_R_VA: null,
+        })
+        setActualRX({
+            dominantEye: "",
+            opticalHeight: 0,
+            segmentHeight: 0,
+        })
+        setPrescribedRX({
+            dominantEye: "",
+            opticalHeight: 0,
+            segmentHeight: 0,
+        })
     }
 
     useEffect(() => {
@@ -767,8 +770,8 @@ const SalesOrder = () => {
                     eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({ ...eyePower }));
                 }
                 setNotifyModal({ isOpen: true, message: "Sales Order added successfully!" });
-                if (confirmModal.action === "addPrint") {
-                    setReportSelectionOpenModal({isOpen: true, docId: confirmModal.data.salesOrderId});
+                if (confirmModal.action === "addPrint" || confirmModal.action === "editPrint") {
+                    setReportSelectionOpenModal({ isOpen: true, docId: confirmModal.data.salesOrderId });
                 }
             } else throw new Error(res.errorMessage || "Failed to Add Sales Order");
         } catch (error) {
@@ -807,12 +810,14 @@ const SalesOrder = () => {
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
             })),
+            subTotal: currentTotal,
             roundingAdjustment: rounding ?? 0,
             total: total,
         }
+        const action = isEdit ? "editPrint" : "addPrint";
         setConfirmModal({
             isOpen: true,
-            action: "addPrint",
+            action: action,
             data: formData,
         })
     }
@@ -841,12 +846,14 @@ const SalesOrder = () => {
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
             })),
+            subTotal: currentTotal,
             roundingAdjustment: rounding ?? 0,
             total: total,
         }
+        const action = isEdit ? "edit" : "add";
         setConfirmModal({
             isOpen: true,
-            action: "add",
+            action: action,
             data: formData,
         })
     }
@@ -875,6 +882,7 @@ const SalesOrder = () => {
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
             })),
+            subTotal: currentTotal,
             roundingAdjustment: rounding ?? 0,
             total: total,
         }
@@ -890,7 +898,7 @@ const SalesOrder = () => {
             eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({ ...eyePower }));
         }
         if (action === "save-print") {
-            setReportSelectionOpenModal({isOpen: true, docId: masterData.salesOrderId});
+            setReportSelectionOpenModal({ isOpen: true, docId: masterData.salesOrderId });
         }
         await clearData();
     }
@@ -972,6 +980,7 @@ const SalesOrder = () => {
     }, [])
 
     const SalesOrderDataGridOnSelectionChanged = useCallback(async (e) => {
+        setIsEdit(true)
         const selected = e.selectedRowKeys?.[0];
         if (selected) {
             const recordRes = await GetSalesOrder({
@@ -1381,57 +1390,88 @@ const SalesOrder = () => {
     const confirmationTitleMap = {
         add: "Confirm New",
         clear: "Confirm Clear",
-        addPrint: "Confirm New"
+        addPrint: "Confirm New",
+        edit: "Confirm Edit",
+        editPrint: "Confirm Edit"
     };
 
     const confirmationMessageMap = {
         add: "Are you sure you want to add Sales Order?",
         clear: "Are you sure you want to clear this page input?",
         addPrint: "Are you sure you want to add Sales Order?",
+        edit: "Are you sure you want to edit Sales Order?",
+        editPrint: "Are you sure you want to edit Sales Order?"
     };
 
-    const [reportSelectionModal, setReportSelectionOpenModal] = useState({isOpen: false, docId: ""});
-    
-    const handleSelectedReport = async (report) => {
-        setReportSelectionOpenModal({isOpen: false});
-        let res;
-        if(report.reportType === "JobSheetForm") {
-            res = await GetJobSheetForm({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName });
-        }else if(report.reportType === "SalesOrder"){
-            res = await GetSalesDocReport({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName, isCashSales: false});
-        }else if(report.reportType === "SalesOrderPayment"){
-            res = await GetSalesDocPaymentReport({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName, isCashSales: false});
-        }
-        
-        if (res.success) {
-            try {
-                const reportName = report.reportName;
-                const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/pdf'
-                    }
-                });
+    const [reportSelectionModal, setReportSelectionOpenModal] = useState({ isOpen: false, docId: "" });
 
-                if (!fileResponse.ok) {
-                    throw new Error('File download failed');
+    const handleSelectedReport = async (selectedReports) => {
+        setReportSelectionOpenModal({ isOpen: false });
+
+        for (const report of selectedReports) {
+            let res;
+
+            try {
+                if (report.reportType === "SalesOrder") {
+                    res = await GetSalesDocReport({
+                        companyId: companyId,
+                        userId: userId,
+                        id: reportSelectionModal.docId,
+                        name: report.reportName,
+                        isCashSales: false,
+                    });
+                } else if (report.reportType === "SalesOrderPayment") {
+                    res = await GetSalesDocPaymentReport({
+                        companyId: companyId,
+                        userId: userId,
+                        id: reportSelectionModal.docId,
+                        name: report.reportName,
+                        isCashSales: false,
+                    });
+                } else if (report.reportType === "JobSheetForm") {
+                    res = await GetJobSheetForm({ companyId: companyId, userId: userId, id: reportSelectionModal.docId, name: report.reportName });
                 }
 
-                const blob = await fileResponse.blob();
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `${reportName}.pdf`;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                window.URL.revokeObjectURL(url);
+                if (res?.success) {
+                    const reportName = report.reportName;
+                    const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/pdf'
+                        }
+                    });
+
+                    if (!fileResponse.ok) {
+                        throw new Error('File download failed');
+                    }
+
+                    const blob = await fileResponse.blob();
+                    const url = window.URL.createObjectURL(blob);
+
+                    const popup = window.open('', '_blank', 'width=800,height=600');
+                    if (!popup) {
+                        throw new Error("Popup blocked. Please allow popups for this site.");
+                    }
+
+                    popup.document.write(`
+                    <html>
+                        <head><title>${reportName}</title></head>
+                        <body style="margin:0">
+                            <iframe src="${url}" frameborder="0" style="width:100%; height:100%;"></iframe>
+                        </body>
+                    </html>
+                `);
+                    popup.document.close();
+                }
+
             } catch (error) {
-                setErrorModal({ title: "Download error", message: error.message })
+                setErrorModal({ title: "Download error", message: error.message });
             }
         }
-        setReportSelectionOpenModal({docId: ""});
-    }
+
+        setReportSelectionOpenModal({ docId: "" });
+    };
+
 
     return (
         <>
@@ -1476,6 +1516,7 @@ const SalesOrder = () => {
 
                             <div className="flex justify-end gap-2">
                                 <DropDownBox
+                                    disabled={isEdit}
                                     id="CustomerSelection"
                                     className="border rounded p-1 w-1/2 h-[34px]"
                                     value={CustomerGridBoxValue?.debtorId}
@@ -1496,6 +1537,7 @@ const SalesOrder = () => {
                                 <textarea
                                     id="CustomerName"
                                     name="CustomerName"
+                                    disabled={isEdit}
                                     rows={1}
                                     className="border rounded p-2 w-full resize-none bg-white text-secondary"
                                     placeholder="Name"
@@ -1504,6 +1546,7 @@ const SalesOrder = () => {
                                 />
                                 <div className="relative group">
                                     <button
+                                        disabled={isEdit}
                                         className="items-center h-[34px] text-secondary hover:bg-grey-500 hover:text-primary flex"
                                         onClick={handleNewCustomerModel}
                                     >
@@ -1538,6 +1581,7 @@ const SalesOrder = () => {
                     <div className="flex flex-col gap-1 ">
                         <label htmlFor="refNo" className="font-medium text-secondary mt-[-10px]">Ref No.</label>
                         <input
+                            disabled={isEdit}
                             type="text"
                             id="refNo"
                             name="refNo"
@@ -1550,7 +1594,8 @@ const SalesOrder = () => {
                     <div className="flex flex-col gap-1">
                         <label htmlFor="date" className="font-medium text-secondary mt-[-10px]">Date</label>
                         <DatePicker
-                            customInput={<CustomInput />}
+                            disabled={isEdit}
+                            customInput={<CustomInput disabled={isEdit} />}
                             selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
                             id="SalesDate"
                             name="SalesDate"
@@ -1563,6 +1608,7 @@ const SalesOrder = () => {
                     <div className="flex flex-col gap-1">
                         <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
                         <DropDownBox
+                            disabled={isEdit}
                             id="SalesPersonSelection"
                             className="border rounded w-full"
                             value={SalesPersonGridBoxValue?.id ?? ""}
@@ -1582,7 +1628,8 @@ const SalesOrder = () => {
                         <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
                         <div className="flex flex-col space-y-1 w-full">
                             <DatePicker
-                                customInput={<CustomInput />}
+                                disabled={isEdit}
+                                customInput={<CustomInput disabled={isEdit} />}
                                 selected={masterData?.nextVisitDate ? new Date(masterData.nextVisitDate) : new Date()}
                                 id="nextVisit"
                                 name="nextVisit"
@@ -1600,6 +1647,7 @@ const SalesOrder = () => {
                         <div className="ml-3 space-x-1">
                             {intervals.map(intv => (
                                 <button
+                                    disabled={isEdit}
                                     key={intv.months}
                                     type="button"
                                     className={`
@@ -1620,6 +1668,7 @@ const SalesOrder = () => {
                     <div className="flex flex-col gap-1">
                         <label htmlFor="practitioner" className="font-medium text-secondary">Practitioner</label>
                         <DropDownBox
+                            disabled={isEdit}
                             id="PractionerSelection"
                             className="border rounded w-full"
                             value={PractionerGridBoxValue?.id ?? ""}
@@ -1643,6 +1692,7 @@ const SalesOrder = () => {
 
             <div className="p-3 bg-white shadow rounded">
                 <TransactionItemWithDiscountDataGrid
+                    disabled={isEdit}
                     height={220}
                     className={"p-2"}
                     customStore={salesItemStore}
@@ -1900,6 +1950,7 @@ const SalesOrder = () => {
                                 <label className="font-extrabold py-2 px-4 justify-self-end text-[15px]" >{label}</label>
                                 {label === "Rounding Adj" ? (
                                     <input
+                                        disabled={isEdit}
                                         type="number"
                                         step="0.01"
                                         value={rounding}
