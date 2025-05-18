@@ -59,6 +59,13 @@ const CashSalesPaymentModal = ({ isOpen, onClose, total, companyId, userId, cash
 
   const addPaymentMethod = async (method) => {
     try {
+      if (method.paymentType === 'Cash') {
+        const hasCash = selectedPayments.some(p => p.paymentType === 'Cash');
+        if (hasCash) {
+          onError({ title: 'Payment Method Error', message: 'Only one Cash payment is allowed.' });
+          return;
+        }
+      }
       const response = await NewCashSalesPaymentDetail();
       if (response?.success && response.data) {
         const newEntry = {
@@ -115,6 +122,22 @@ const CashSalesPaymentModal = ({ isOpen, onClose, total, companyId, userId, cash
       return;
     }
     try {
+      const paymentDetailsList = [...selectedPayments];
+
+      // Calculate total payment
+      const totalPaid = paymentDetailsList.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+
+      // If overpaid, compute the change
+      const overpaidAmount = totalPaid - total;
+
+      // Adjust the cash payment if needed
+      if (overpaidAmount > 0) {
+        const cashPayment = paymentDetailsList.find(item => item.paymentType === 'Cash');
+        if (cashPayment) {
+          const originalAmount = parseFloat(cashPayment.amount) || 0;
+          cashPayment.amount = Math.max(originalAmount - overpaidAmount, 0); // Ensure it doesn't go negative
+        }
+      }
       const payload = {
         actionData: { companyId, userId, id: cashSalesId },
         cashSalesPaymentId: cashSalesPaymentData?.cashSalesPaymentId,
@@ -123,20 +146,20 @@ const CashSalesPaymentModal = ({ isOpen, onClose, total, companyId, userId, cash
         remark: '',
         total: parseFloat(total),
         isVoid: false,
-        details: selectedPayments.map(item => ({
+        details: paymentDetailsList.map(item => ({
           cashSalesPaymentDetailId: item.cashSalesPaymentDetailId,
           paymentMethodId: item.paymentMethodId,
-          reference: JSON.stringify({ refNo: item.refsqwno, ccNo: item.ccno, approvalCode: item.approvalcode, remark: item.remark }),
+          reference: JSON.stringify({ refNo: item.refno, ccNo: item.ccno, approvalCode: item.approvalcode, remark: item.remark }),
           amount: parseFloat(item.amount) || 0,
         }))
       };
       await SaveCashSalePayment(payload);
       setFocusedField(null);
       setRawAmountDigits('');
-      if(action === "save-print"){
+      if (action === "save-print") {
         await onSave({ action: action })
         onClose()
-      }else{
+      } else {
         await onSave({ action: action })
         setNotifyModal({ isOpen: true, message: 'Payment made successfully!' });
       }
@@ -151,22 +174,37 @@ const CashSalesPaymentModal = ({ isOpen, onClose, total, companyId, userId, cash
   };
 
   const handlePlusClick = () => {
-    const selectedIndex = selectedPayments.findIndex(item => item.uid === activePaymentMethod.uid);
-    if (selectedIndex !== -1) {
-      const updated = [...selectedPayments];
-      updated[selectedIndex] = { ...updated[selectedIndex], ...paymentDetails };
-       const totalPaid = updated.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-      const hasCashPayment = updated.some(item => item.paymentType === "Cash");
-      if(!hasCashPayment && totalPaid > total){
-        onError({title: 'Payment Error', message: "Amount entered is more than total value"});
-        return;
+    const selectedIndex = selectedPayments.findIndex(item => item.uid === activePaymentMethod?.uid);
+    if (selectedIndex === -1) return;
+
+    const updated = [...selectedPayments];
+    const newAmount = parseFloat(paymentDetails.amount || '0');
+    const paymentType = updated[selectedIndex].paymentType;
+
+    const totalOtherPayments = updated.reduce((sum, item, index) => {
+      if (index !== selectedIndex) {
+        return sum + parseFloat(item.amount || 0);
       }
+      return sum;
+    }, 0);
+
+    if (paymentType !== "Cash" && (totalOtherPayments + newAmount > total)) {
+      onError({ title: 'Payment Error', message: "Total payment amount exceeds the bill amount." });
+      updated.splice(selectedIndex, 1);
       setSelectedPayments(updated);
+      setActivePaymentMethod(null);
       setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
       setRawAmountDigits('');
-      setActivePaymentMethod(null);
+      return;
     }
+
+    updated[selectedIndex] = { ...updated[selectedIndex], ...paymentDetails };
+    setSelectedPayments(updated);
+    setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
+    setRawAmountDigits('');
+    setActivePaymentMethod(null);
   };
+
 
   const formatRawAmount = (digits) => {
     const cleaned = digits.replace(/\D/g, '');

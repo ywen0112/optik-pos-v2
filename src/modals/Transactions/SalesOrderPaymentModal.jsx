@@ -59,6 +59,13 @@ const SalesOrderPaymentModal = ({ isOpen, onClose, total, companyId, userId, sal
 
   const addPaymentMethod = async (method) => {
     try {
+      if (method.paymentType === 'Cash') {
+        const hasCash = selectedPayments.some(p => p.paymentType === 'Cash');
+        if (hasCash) {
+          onError({ title: 'Payment Method Error', message: 'Only one Cash payment is allowed.' });
+          return;
+        }
+      }
       const response = await NewSalesOrderPaymentDetail();
       if (response?.success && response.data) {
         const newEntry = {
@@ -112,6 +119,22 @@ const SalesOrderPaymentModal = ({ isOpen, onClose, total, companyId, userId, sal
 
   const handleSave = async ({ action }) => {
     try {
+      const paymentDetailsList = [...selectedPayments];
+
+      // Calculate total payment
+      const totalPaid = paymentDetailsList.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+
+      // If overpaid, compute the change
+      const overpaidAmount = totalPaid - total;
+
+      // Adjust the cash payment if needed
+      if (overpaidAmount > 0) {
+        const cashPayment = paymentDetailsList.find(item => item.paymentType === 'Cash');
+        if (cashPayment) {
+          const originalAmount = parseFloat(cashPayment.amount) || 0;
+          cashPayment.amount = Math.max(originalAmount - overpaidAmount, 0); // Ensure it doesn't go negative
+        }
+      }
       const payload = {
         actionData: { companyId, userId, id: salesOrderId },
         salesOrderPaymentId: salesOrderPaymentData?.salesOrderPaymentId,
@@ -123,7 +146,7 @@ const SalesOrderPaymentModal = ({ isOpen, onClose, total, companyId, userId, sal
         details: selectedPayments.map(item => ({
           salesOrderPaymentDetailId: item.salesOrderPaymentDetailId,
           paymentMethodId: item.paymentMethodId,
-          reference: JSON.stringify({ refNo: item.refsqwno, ccNo: item.ccno, approvalCode: item.approvalcode, remark: item.remark }),
+          reference: JSON.stringify({ refNo: item.refno, ccNo: item.ccno, approvalCode: item.approvalcode, remark: item.remark }),
           amount: parseFloat(item.amount) || 0,
         }))
       };
@@ -148,21 +171,35 @@ const SalesOrderPaymentModal = ({ isOpen, onClose, total, companyId, userId, sal
   };
 
   const handlePlusClick = () => {
-    const selectedIndex = selectedPayments.findIndex(item => item.uid === activePaymentMethod.uid);
-    if (selectedIndex !== -1) {
-      const updated = [...selectedPayments];
-      updated[selectedIndex] = { ...updated[selectedIndex], ...paymentDetails };
-      const totalPaid = updated.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-      const hasCashPayment = updated.some(item => item.paymentType === "Cash");
-      if(!hasCashPayment && totalPaid > total){
-        onError({title: 'Payment Error', message: "Amount entered is more than total value"});
-        return;
+    const selectedIndex = selectedPayments.findIndex(item => item.uid === activePaymentMethod?.uid);
+    if (selectedIndex === -1) return;
+
+    const updated = [...selectedPayments];
+    const newAmount = parseFloat(paymentDetails.amount || '0');
+    const paymentType = updated[selectedIndex].paymentType;
+
+    const totalOtherPayments = updated.reduce((sum, item, index) => {
+      if (index !== selectedIndex) {
+        return sum + parseFloat(item.amount || 0);
       }
+      return sum;
+    }, 0);
+
+    if (paymentType !== "Cash" && (totalOtherPayments + newAmount > total)) {
+      onError({ title: 'Payment Error', message: "Total payment amount exceeds the bill amount." });
+      updated.splice(selectedIndex, 1);
       setSelectedPayments(updated);
+      setActivePaymentMethod(null);
       setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
       setRawAmountDigits('');
-      setActivePaymentMethod(null);
+      return;
     }
+
+    updated[selectedIndex] = { ...updated[selectedIndex], ...paymentDetails };
+    setSelectedPayments(updated);
+    setPaymentDetails({ refno: '', ccno: '', approvalcode: '', remark: '', amount: '' });
+    setRawAmountDigits('');
+    setActivePaymentMethod(null);
   };
 
   const formatRawAmount = (digits) => {

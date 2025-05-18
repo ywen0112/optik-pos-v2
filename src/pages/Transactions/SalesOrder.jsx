@@ -664,6 +664,7 @@ const SalesOrder = () => {
         setRounding("0.00")
         setBalance(0);
         setPaidAmount(0);
+        setIsNormalItem(true);
         setSelectedSalesOrder({ salesOrderId: "", docNo: "" })
         setActualDistanceData({
             l_D_ADD: null,
