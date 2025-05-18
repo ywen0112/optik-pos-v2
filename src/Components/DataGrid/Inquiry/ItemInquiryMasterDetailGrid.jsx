@@ -19,7 +19,7 @@ const DetailTabs = ({ data }) => {
     if (!data) return;
 
     const store = new CustomStore({
-      key: 'docNo', // or whatever is unique
+      key: 'docNo', // ensure this is a unique field
       load: async (loadOptions) => {
         const { skip = 0, take = 20 } = loadOptions;
 
@@ -37,7 +37,7 @@ const DetailTabs = ({ data }) => {
 
           return {
             data: filtered,
-            totalCount: res.totalRecords || 1000, // default to large number if unknown
+            totalCount: res.totalRecords || 1000, // if totalRecords is returned, use that
           };
         } catch (err) {
           console.error('Error loading detail history:', err);
@@ -61,13 +61,15 @@ const DetailTabs = ({ data }) => {
             dataSource={historyStore}
             showBorders={true}
             columnAutoWidth={true}
-            height={300}
+            height={250}
+            remoteOperations={{ paging: true }}
           >
             <Paging enabled={true} pageSize={20} />
-            <Scrolling mode="infinite" />
-            <Column dataField="docType" caption="Doc Type" />
-            <Column dataField="docNo" caption="Doc No" />
+            <Pager showPageSizeSelector={true} showNavigationButtons={true} showInfo={true} />
+            <Column dataField="docType" caption="Doc Type" width={"100px"}/>
+            <Column dataField="docNo" caption="Doc No" width={"130px"} />
             <Column
+              width={"130px"}
               dataField="docDate"
               caption="Doc Date"
               dataType="date"
@@ -76,13 +78,13 @@ const DetailTabs = ({ data }) => {
                 return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
               }}
             />
-            <Column dataField="name" caption="Debtor Name" />
-            <Column dataField="uom" caption="UOM" />
-            <Column dataField="qty" caption="Qty" />
-            <Column dataField="unitPrice" caption="Unit Price" format={{ type: 'currency', currency: 'MYR' }} />
-            <Column dataField="discount" caption="Discount" />
-            <Column dataField="discountAmount" caption="Discount Amt" format={{ type: 'currency', currency: 'MYR' }} />
-            <Column dataField="subTotal" caption="Subtotal" format={{ type: 'currency', currency: 'MYR' }} />
+            <Column dataField="name" caption="Debtor Name" width={"300px"}/>
+            <Column dataField="uom" caption="UOM" width={"70px"}/>
+            <Column dataField="qty" caption="Qty" width={"50px"}/>
+            <Column dataField="unitPrice" caption="Unit Price" format={{ type: 'currency', currency: 'MYR' }} width={"70px"}/>
+            <Column dataField="discount" caption="Discount" width={"70px"}/>
+            <Column dataField="discountAmount" caption="Discount Amt" format={{ type: 'currency', currency: 'MYR' }} width={"100px"} />
+            <Column dataField="subTotal" caption="Subtotal" format={{ type: 'currency', currency: 'MYR' }} width={"150px"}/>
           </DataGrid>
         ) : (
           <div>Loading...</div>
@@ -98,6 +100,7 @@ const DetailTabs = ({ data }) => {
     />
   );
 };
+
 
 const ItemInquiryMasterDataDetailGrid = ({ ref, itemData }) => {
 
