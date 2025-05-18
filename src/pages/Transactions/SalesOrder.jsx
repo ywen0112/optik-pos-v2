@@ -776,7 +776,6 @@ const SalesOrder = () => {
             } else throw new Error(res.errorMessage || "Failed to Add Sales Order");
         } catch (error) {
             setErrorModal({ title: "Error", message: error.message });
-            await createNewSalesOrder()
             await clearData()
             return;
         }
