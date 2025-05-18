@@ -434,7 +434,7 @@ const PurchaseInvoice = () => {
         subTotal: item.subTotal ?? 0
       })),
       tax: tax ?? 0,
-      total: currentTotal,
+      total: total,
     }
     setConfirmModal({
       isOpen: true,
@@ -466,7 +466,7 @@ const PurchaseInvoice = () => {
         subTotal: item.subTotal ?? 0
       })),
       tax: tax ?? 0,
-      total: currentTotal,
+      total: total,
     }
     setConfirmModal({
       isOpen: true,
@@ -498,7 +498,7 @@ const PurchaseInvoice = () => {
         subTotal: item.subTotal ?? 0
       })),
       tax: tax ?? 0,
-      total: currentTotal,
+      total: total,
     }
     const res = await SavePurchaseInvoice(formData);
     if (!res.success) {

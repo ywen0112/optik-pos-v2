@@ -420,7 +420,7 @@ const CashSales = () => {
                 classification: item.classification ?? ""
             })),
             roundingAdjustment: rounding ?? 0,
-            total: currentSalesTotal,
+            total: total,
         }
         setConfirmModal({
             isOpen: true,
@@ -460,7 +460,7 @@ const CashSales = () => {
                 classification: item.classification ?? ""
             })),
             roundingAdjustment: rounding ?? 0,
-            total: currentSalesTotal,
+            total: total,
         }
         setConfirmModal({
             isOpen: true,
@@ -530,7 +530,7 @@ const CashSales = () => {
                 classification: item.classification ?? ""
             })),
             roundingAdjustment: rounding ?? 0,
-            total: currentSalesTotal,
+            total: total,
         }
         const res = await SaveCashSale(formData);
         if (!res.success) {

@@ -118,6 +118,17 @@ const TransactionItemWithDiscountDataGrid = ({ height, className, customStore, g
     return (
         <StandardDataGridComponent
             ref={gridRef}
+            onToolbarPreparing={(e) => {
+                const items = e.toolbarOptions.items;
+
+                // Find the index of the addRowButton
+                const addButtonIndex = items.findIndex(item => item.name === 'addRowButton');
+
+                if (addButtonIndex !== -1) {
+                    // Change its location to 'before'
+                    items[addButtonIndex].location = 'before';
+                }
+            }}
             height={height}
             keyExpr={customStore.key}
             dataSource={customStore}

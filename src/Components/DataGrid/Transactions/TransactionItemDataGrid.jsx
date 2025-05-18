@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
 import { TrashIcon } from "lucide-react";
 import CustomStore from 'devextreme/data/custom_store';
-import DataGrid, { Selection, Column, Paging, Editing, Scrolling, SearchPanel } from 'devextreme-react/data-grid';
+import DataGrid, { Selection, Column, Paging, Editing, Scrolling, SearchPanel, Item } from 'devextreme-react/data-grid';
 
 import StandardDataGridComponent from "../../BaseDataGrid";
 import { getInfoLookUp } from "../../../api/infolookupapi";
-import { DropDownBox, NumberBox } from "devextreme-react";
+import { DropDownBox, NumberBox, Toolbar } from "devextreme-react";
 
 const ItemGridColumns = [
     { dataField: "itemCode", caption: "Product Code", width: "30%" },
@@ -56,9 +56,9 @@ const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSe
             setSelectedItem(selected);
             onSelect(selected, currentRow);
             const grid = gridRef.current?.instance;
-                if (grid) {
-                    grid.cancelEditData();
-                }
+            if (grid) {
+                grid.cancelEditData();
+            }
         }
         setDropDownBoxOpen(false);
     }, [currentRow]);
@@ -112,11 +112,23 @@ const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSe
             grid.editCell(e.rowIndex, e.column.dataField); // Start editing cell directly
             setDropDownBoxOpen(true)
         }
-    },[])
+    }, [])
 
     return (
         <StandardDataGridComponent
             ref={gridRef}
+            onToolbarPreparing={(e) => {
+                const items = e.toolbarOptions.items;
+
+                // Find the index of the addRowButton
+                const addButtonIndex = items.findIndex(item => item.name === 'addRowButton');
+
+                if (addButtonIndex !== -1) {
+                    // Change its location to 'before'
+                    items[addButtonIndex].location = 'before';
+                }
+            }}
+
             height={height}
             keyExpr={customStore.key}
             dataSource={customStore}
@@ -189,13 +201,13 @@ const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSe
                 dataField="qty"
                 caption="QTY"
                 width={"80px"}
-                
+
             />
-            <Column 
-                dataField="unitCost" 
-                caption="Unit Cost" 
-                width={"80px"} 
-                
+            <Column
+                dataField="unitCost"
+                caption="Unit Cost"
+                width={"80px"}
+
             />
             <Column allowEditing={false} dataField="subTotal" caption="Amount" dataType="number" width={"80px"} />
             <Column
@@ -206,7 +218,7 @@ const TransactionItemDataGrid = ({ height, className, customStore, gridRef, onSe
                         <div className="flex flex-row justify-center space-x-2">
                             <div className=" text-red-600 hover:cursor-pointer flex justify-center "
                                 onClick={(e) => {
-                                    e.stopPropagation(); 
+                                    e.stopPropagation();
                                     const rowIndex = cellData.rowIndex;
                                     gridRef.current.instance.deleteRow(rowIndex);
                                 }}>
