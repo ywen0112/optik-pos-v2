@@ -90,7 +90,8 @@ const SalesOrder = () => {
 
     const [isEdit, setIsEdit] = useState(false);
 
-    const decimalRegex = /^\d*(\.\d{0,2})?$/;
+    const decimalRegex = /^-?\d*(\.\d{0,2})?$/;
+
     const roundUpToQuarter = (val) => Math.ceil(val * 4) / 4;
 
     const gridRef = useRef(null);

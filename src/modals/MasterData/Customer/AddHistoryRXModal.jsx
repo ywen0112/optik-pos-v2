@@ -145,7 +145,7 @@ const AddHistoryRXModal = ({ isOpen, type, handleClose, data, onConfirm }) => {
         setActiveRxTab(targetTab);
     };
 
-    const decimalRegex = /^\d*(\.\d{0,2})?$/;
+    const decimalRegex = /^-?\d*(\.\d{0,2})?$/;
     const roundUpToQuarter = (val) => Math.ceil(val * 4) / 4;
 
 
