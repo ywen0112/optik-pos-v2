@@ -10,6 +10,7 @@ const getItemUOMs = `${ApiBaseUrl}InfoLookup/GetItemUOMs`;
 const getPaymentMethods = `${ApiBaseUrl}InfoLookup/GetPaymentMethods`;
 const getUserRoles = `${ApiBaseUrl}InfoLookup/GetUserRoles`;
 const getUsers = `${ApiBaseUrl}InfoLookup/GetUsers`;
+const getDiscountType = `${ApiBaseUrl}InfoLookup/GetDiscountTypes`;
 
 export const getInfoLookUp = ({type, companyId, keyword, offset, limit}) =>{
     var url = "";
@@ -43,6 +44,9 @@ export const getInfoLookUp = ({type, companyId, keyword, offset, limit}) =>{
             break;
         case "user":
             url = getUsers;
+            break;
+        case "discount":
+            url = getDiscountType;
             break;
     }
 

@@ -5,7 +5,8 @@ import DataGrid, { Selection, Column, Paging, Editing, Scrolling, SearchPanel } 
 
 import StandardDataGridComponent from "../../BaseDataGrid";
 import { getInfoLookUp } from "../../../api/infolookupapi";
-import { DropDownBox, NumberBox } from "devextreme-react";
+import { DropDownBox, Lookup, NumberBox } from "devextreme-react";
+import { BsJournalMedical } from "react-icons/bs";
 
 const ItemGridColumns = [
     { dataField: "itemCode", caption: "Product Code", width: "30%" },
@@ -63,17 +64,59 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
         setDropDownBoxOpen(false);
     }, [currentRow, disabled]);
 
+    const handleDiscountChanged = useCallback((e) => {
+        if (disabled) return;
+        const selected = e.selectedRowsData?.[0];
+        if (selected && currentRow) {
+            onSelect(selected, currentRow);
+        }
+        const grid = gridRef.current?.instance;
+        if (grid) {
+            grid.cancelEditData();
+        }
+        setIsDiscountOpened(false);
+    }, [disabled, currentRow]);
+
     const handleItemLookupChanged = (e) => {
         if (!e.value) {
             setSelectedItem(null);
         }
     }
 
+    const handleDiscountLookupChanged = (e) => {
+        if (!e.value) {
+        setSelectedDiscount("");
+        }
+    }
+
+    const onDiscountOpened = useCallback((e) => {
+        if (e.name === 'opened') {
+            setIsDiscountOpened(e.value);
+        }
+    }, [])
+
     const onItemLookupOpened = useCallback((e) => {
         if (e.name === 'opened') {
             setDropDownBoxOpen(e.value);
         }
     }, []);
+
+    const onDiscountRender = useCallback(() => {
+        return (
+            <DataGrid
+                disabled={disabled}
+                dataSource={discountStore}
+                height={150}
+                hoverStateEnabled={true}
+                showBorders={true}
+                selectedRowKeys={selectedDiscount}
+                onSelectionChanged={handleDiscountChanged}
+            >
+                <Selection mode="single" />
+            </DataGrid>
+        )
+
+    }, [selectedItem, handleDiscountChanged])
 
     const onItemLookupRender = useCallback(() => {
         return (
@@ -107,10 +150,12 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
     }, [selectedItem, handleItemLookupValueChanged])
 
     const handleOnCellClick = useCallback((e) => {
-
         const grid = gridRef.current?.instance;
         if (e.rowType === "data" && grid) {
             if (disabled) {
+                if (setItemGroup) { setItemGroup(e.data.isNormalItem ?? true) }
+                if (setActiveItem) { setActiveItem(e.data) };
+                setCurrentRow(e.data);
                 grid.cancelEditData();
                 return;
             }
@@ -121,6 +166,20 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
             setDropDownBoxOpen(true)
         }
     }, [disabled])
+
+    const discountStore = new CustomStore({
+        key: "discountType",
+        load: async () => {
+            const res = await getInfoLookUp({ type: "discount" });
+            return res.data;
+        },
+        byKey: async () => {
+            return key;
+        }
+    });
+
+    const [isDiscountOpened, setIsDiscountOpened] = useState(false);
+    const [selectedDiscount, setSelectedDiscount] = useState("");
 
     return (
         <StandardDataGridComponent
@@ -176,7 +235,7 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
                 caption="Product Code"
                 width={"150px"}
                 editCellRender={() => {
-                    if(disabled) return;
+                    if (disabled) return;
                     return (
                         <DropDownBox
                             id="itemOpeningItemLookup"
@@ -217,12 +276,28 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
 
             />
             {/* <Column
-                value={false}
-                dataField="discount"
-                caption="Discount %"
-                dataType="boolean"
-                width={"90px"}
-
+                dataField="discountType"
+                caption="Discount Type"
+                width={"120px"}
+                allowEditing={!disabled}
+                editCellRender={(cellData) => {
+                    return (
+                        <DropDownBox
+                            value={selectedItem?.discountType}
+                            dataSource={discountStore}
+                            valueExpr="discountType"
+                            openOnFieldClick={true}
+                            displayExpr="discountType"
+                            opened={isDiscountOpened}
+                            onValueChanged={handleDiscountLookupChanged}
+                            onOptionChanged={onDiscountOpened}
+                            placeholder="Select Discount"
+                            showClearButton={true}
+                            dropDownOptions={{ width: 200 }}
+                            contentRender={onDiscountRender}
+                        />
+                    );
+                }}
             />
             <Column dataField="discountAmount" caption="Disc Amnt" dataType="number" value={0} width={"80px"} /> */}
             <Column allowEditing={false} dataField="subTotal" caption="Amount" dataType="number" width={"80px"} />

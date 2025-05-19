@@ -293,8 +293,15 @@ const CashSales = () => {
 
             const qty = Number(updatedData.qty) || 0;
             const unitPrice = Number(updatedData.price) || 0;
-            const isDiscByPercent = updatedData.discount;
-            const discAmt = Number(updatedData.discountAmount) || 0;
+            const isDiscByPercent = updatedData.discountType === "Percent";
+            let discAmt = Number(updatedData.discountAmount) || 0;
+            if (isDiscByPercent) {
+                if (discAmt > 100) {
+                    setErrorModal({ title: "Discount error", message: "Discount Percentage cannot exceed 100%" });
+                    discAmt = 0;
+                    updatedData.discountAmount = 0;
+                }
+            }
             const totalAmount = qty * unitPrice;
 
             updatedData.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
@@ -330,12 +337,18 @@ const CashSales = () => {
             return prev.map(record => {
                 if (record.cashSalesDetailId === key) {
                     const updatedRecord = { ...record, ...changedData };
-
-                    if ('qty' in changedData || 'price' in changedData || 'discount' in changedData || 'discountAmount' in changedData) {
+                    if ('qty' in changedData || 'price' in changedData || 'discountType' in changedData || 'discountAmount' in changedData) {
                         const qty = Number(updatedRecord.qty) || 0;
                         const unitPrice = Number(updatedRecord.price) || 0;
-                        const isDiscByPercent = updatedRecord.discount;
-                        const discAmt = Number(updatedRecord.discountAmount || 0)
+                        const isDiscByPercent = updatedRecord.discountType === "Percent";
+                        let discAmt = Number(updatedRecord.discountAmount || 0)
+                        if (isDiscByPercent) {
+                            if (discAmt > 100) {
+                                setErrorModal({ title: "Discount error", message: "Discount Percentage cannot exceed 100%" })
+                                discAmt = 0;
+                                updatedRecord.discountAmount = 0;
+                            }
+                        }
                         const totalAmount = qty * unitPrice;
                         updatedRecord.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
                     }
@@ -419,7 +432,7 @@ const CashSales = () => {
                 desc2: item.desc2 ?? "",
                 qty: item.qty ?? 0,
                 unitPrice: item.price ?? 0,
-                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discount: item.discountType,
                 discountAmount: item.discountAmount ?? 0,
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
@@ -461,7 +474,7 @@ const CashSales = () => {
                 desc2: item.desc2 ?? "",
                 qty: item.qty ?? 0,
                 unitPrice: item.price ?? 0,
-                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discount: item.discountType,
                 discountAmount: item.discountAmount ?? 0,
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
@@ -533,7 +546,7 @@ const CashSales = () => {
                 desc2: item.desc2 ?? "",
                 qty: item.qty ?? 0,
                 unitPrice: item.price ?? 0,
-                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discount: item.discountType,
                 discountAmount: item.discountAmount ?? 0,
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""

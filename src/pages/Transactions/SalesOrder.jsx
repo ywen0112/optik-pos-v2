@@ -592,8 +592,15 @@ const SalesOrder = () => {
 
             const qty = Number(updatedData.qty) || 0;
             const unitPrice = Number(updatedData.price) || 0;
-            const isDiscByPercent = updatedData.discount;
-            const discAmt = Number(updatedData.discountAmount) || 0;
+            const isDiscByPercent = updatedData.discountType === "Percent";
+            let discAmt = Number(updatedData.discountAmount) || 0;
+            if (isDiscByPercent) {
+                if (discAmt > 100) {
+                    setErrorModal({ title: "Discount error", message: "Discount Percentage cannot exceed 100%" })
+                    discAmt = 0;
+                    updatedData.discountAmount = 0;
+                }
+            }
             const totalAmount = qty * unitPrice;
 
             updatedData.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
@@ -635,11 +642,18 @@ const SalesOrder = () => {
             return prev.map(record => {
                 if (record.salesOrderDetailId === key) {
                     const updatedRecord = { ...record, ...changedData };
-                    if ('qty' in changedData || 'price' in changedData || 'discount' in changedData || 'discountAmount' in changedData) {
+                    if ('qty' in changedData || 'price' in changedData || 'discountType' in changedData || 'discountAmount' in changedData) {
                         const qty = Number(updatedRecord.qty) || 0;
                         const unitPrice = Number(updatedRecord.price) || 0;
-                        const isDiscByPercent = updatedRecord.discount;
-                        const discAmt = Number(updatedRecord.discountAmount || 0)
+                        const isDiscByPercent = updatedRecord.discountType === "Percent";
+                        let discAmt = Number(updatedRecord.discountAmount || 0)
+                        if (isDiscByPercent) {
+                            if (discAmt > 100) {
+                                setErrorModal({ title: "Discount error", message: "Discount Percentage cannot exceed 100%" });
+                                discAmt = 0;
+                                updatedRecord.discountAmount = 0;
+                            }
+                        }
                         const totalAmount = qty * unitPrice;
                         updatedRecord.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
                     }
@@ -748,7 +762,7 @@ const SalesOrder = () => {
 
     useEffect(() => {
         const total = salesItem?.reduce((sum, item) => {
-            return sum + (Number(item.subTotal) || 0);
+            return sum + (Number(item?.subTotal) || 0);
         }, 0);
 
         const bal = total - paidAmount + parseFloat(rounding);
@@ -806,7 +820,7 @@ const SalesOrder = () => {
                 desc2: item.desc2 ?? "",
                 qty: item.qty ?? 0,
                 unitPrice: item.price ?? 0,
-                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discount: item.discountType,
                 discountAmount: item.discountAmount ?? 0,
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
@@ -842,7 +856,7 @@ const SalesOrder = () => {
                 desc2: item.desc2 ?? "",
                 qty: item.qty ?? 0,
                 unitPrice: item.price ?? 0,
-                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discount: item.discountType,
                 discountAmount: item.discountAmount ?? 0,
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
@@ -878,7 +892,7 @@ const SalesOrder = () => {
                 desc2: item.desc2 ?? "",
                 qty: item.qty ?? 0,
                 unitPrice: item.price ?? 0,
-                discount: item.discount ? "percent" : "rate" ?? "rate",
+                discount: item.discountType,
                 discountAmount: item.discountAmount ?? 0,
                 subTotal: item.subTotal ?? 0,
                 classification: item.classification ?? ""
@@ -949,7 +963,6 @@ const SalesOrder = () => {
         key: "salesOrderId",
         load: async (loadOptions) => {
             const filter = loadOptions.filter;
-            console.log(filter)
             let keyword = filter?.[2][2] || "";
 
             const res = await GetSalesOrderRecords({

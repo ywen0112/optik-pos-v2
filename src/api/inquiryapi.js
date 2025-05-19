@@ -10,7 +10,7 @@ export const GetSalesInquiry = ({companyId, fromDate, toDate, id, offset, limit}
         companyId,
         fromDate,
         toDate,
-        id,
+        debtorId: id,
         offset,
         limit
     });
@@ -22,7 +22,7 @@ export const GetItemInquiry = ({companyId, fromDate, toDate, id, offset, limit})
         companyId,
         fromDate,
         toDate,
-        id,
+        itemId: id,
         offset,
         limit
     });
@@ -34,7 +34,7 @@ export const GetItemHistorys = ({companyId, fromDate, toDate, id, offset, limit}
         companyId,
         fromDate,
         toDate,
-        id,
+        itemId: id,
         offset,
         limit
     });

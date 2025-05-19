@@ -294,8 +294,15 @@ const PurchaseInvoice = () => {
 
       const qty = Number(updatedData.qty) || 0;
       const unitPrice = Number(updatedData.price) || 0;
-      const isDiscByPercent = updatedData.discount;
-      const discAmt = Number(updatedData.discountAmount) || 0;
+      const isDiscByPercent = updatedData.discountType === "Percent";
+      let discAmt = Number(updatedData.discountAmount) || 0;
+      if (isDiscByPercent) {
+        if (discAmt > 100) {
+          setErrorModal({ title: "Discount error", message: "Discount Percentage cannot exceed 100%" })
+          discAmt = 0;
+          updatedData.discountAmount = 0;
+        }
+      }
       const totalAmount = qty * unitPrice;
 
       updatedData.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
@@ -332,11 +339,18 @@ const PurchaseInvoice = () => {
         if (record.purchaseInvoiceDetailId === key) {
           const updatedRecord = { ...record, ...changedData };
 
-          if ('qty' in changedData || 'price' in changedData || 'discount' in changedData || 'discountAmount' in changedData) {
+          if ('qty' in changedData || 'price' in changedData || 'discountType' in changedData || 'discountAmount' in changedData) {
             const qty = Number(updatedRecord.qty) || 0;
             const unitPrice = Number(updatedRecord.price) || 0;
-            const isDiscByPercent = updatedRecord.discount;
-            const discAmt = Number(updatedRecord.discountAmount || 0)
+            const isDiscByPercent = updatedRecord.discountType === "Percent";
+            let discAmt = Number(updatedRecord.discountAmount || 0)
+            if (isDiscByPercent) {
+              if (discAmt > 100) {
+                setErrorModal({ title: "Discount error", message: "Discount Percentage cannot exceed 100%" })
+                discAmt = 0;
+                updatedRecord.discountAmount = 0;
+              }
+            }
             const totalAmount = qty * unitPrice;
             updatedRecord.subTotal = totalAmount - (isDiscByPercent ? totalAmount * (discAmt / 100) : discAmt);
           }
@@ -843,7 +857,7 @@ const PurchaseInvoice = () => {
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
               disabled={isEdit}
-              customInput={<CustomInput disabled={isEdit}/>}
+              customInput={<CustomInput disabled={isEdit} />}
               selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
               id="PurchaseDate"
               name="PurchaseDate"

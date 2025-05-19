@@ -40,7 +40,7 @@ const UpdateProductModal = ({
             setFormData(selectedItem);
             setProductGroup({ itemGroupId: selectedItem.itemGroupId });
             setProductType({ itemTypeId: selectedItem.itemTypeId });
-            setClassification({code: selectedItem.classification});
+            setClassification({ code: selectedItem.classification });
         }
     }, [isOpen, selectedItem, isEdit]);
 
@@ -49,7 +49,7 @@ const UpdateProductModal = ({
     const [productType, setProductType] = useState({ itemTypeId: null, itemTypeCode: "", description: "" });
     const [isTypeBoxOpened, setIsTypeBoxOpened] = useState(false);
     const [productGroup, setProductGroup] = useState({ itemGroupId: null, itemGroupCode: "", description: "" });
-    const [classification, setClassification] = useState({code: "", description: ""})
+    const [classification, setClassification] = useState({ code: "", description: "" })
     const [isGroupBoxOpened, setIsGroupBoxOpened] = useState(false);
     const [isClassificationBoxOpened, setIsClassificationBoxOpened] = useState(false);
     const [productMinPrice, setProductMinPrice] = useState(null);
@@ -147,14 +147,14 @@ const UpdateProductModal = ({
             };
 
             const res = await getInfoLookUp(params);
-            return res.data?.[0]; 
+            return res.data?.[0];
         }
     })
 
     const classificationOnSelectionChanged = useCallback((e) => {
         const selected = e.selectedRowsData?.[0];
         if (selected) {
-            setClassification({code: selected.code, description: selected.description})
+            setClassification({ code: selected.code, description: selected.description })
             setFormData(prev => ({ ...prev, classification: selected.code }))
             setIsClassificationBoxOpened(false);
         }
@@ -187,7 +187,7 @@ const UpdateProductModal = ({
 
     const handleProductClassificationGridBoxValueChanges = (e) => {
         if (!e.value) {
-            setClassification({code: "", description: ""})
+            setClassification({ code: "", description: "" })
             setFormData(prev => ({ ...prev, classification: "" }))
         }
     }
@@ -512,9 +512,13 @@ const UpdateProductModal = ({
                                     type="checkbox"
                                     checked={hasCommission}
                                     className="mr-2"
-                                    onChange={(e) =>
+                                    onChange={(e) => {
                                         setHasCommission(e.target.checked)
-                                    }
+                                        setFormData({
+                                            ...formData,
+                                            hasCommission: e.target.checked ?? hasCommission
+                                        });
+                                    }}
                                 />
                                 <div>Commission</div>
 
