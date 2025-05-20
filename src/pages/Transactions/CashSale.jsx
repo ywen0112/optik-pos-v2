@@ -34,7 +34,7 @@ const SalesPersonGridColumns = [
     { dataField: "userName", caption: "Name", width: "100%" }
 ];
 const CashSalesGridColumns = [
-    { dataField: "docNo", caption: "Doc No", width: "40%" },
+    { dataField: "docNo", caption: "Doc No", width: "20%" },
     {
         dataField: "docDate", caption: "Doc Date", calculateDisplayValue: (rowData) => {
             const date = new Date(rowData.docDate);
@@ -45,8 +45,10 @@ const CashSalesGridColumns = [
         },
         width: "30%"
     },
-    { dataField: "debtorCode", caption: "Code", width: "30%" },
-    { dataField: "debtorName", caption: "Name", width: "50%" }
+    { dataField: "debtorCode", caption: "Code", width: "20%" },
+    { dataField: "debtorName", caption: "Name", width: "30%" },
+    { dataField: "identityNo", caption: "Identity No", width: "20%"},
+    { dataField: "Phone1", caption: "Phone No", width: "25%"}
 
 ];
 
@@ -1048,7 +1050,7 @@ const CashSales = () => {
                         onOptionChanged={onCashSalesGridBoxOpened}
                         contentRender={CashSalesDataGridRender}
                         dropDownOptions={{
-                            width: 500
+                            width: 900
                         }}
                     />
                     <button onClick={handleClear} className="bg-red-600 flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">

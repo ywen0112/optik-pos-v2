@@ -209,20 +209,18 @@ const SalesInquiry = () => {
         <div className="grid grid-cols-1 gap-2 w-1/2">
           <div className="w-full">
             <label className="block text-secondary font-medium mb-1">Date Range</label>
-            <div className="grid grid-cols-[1fr_auto_1fr] gap-2">
+            <div className="flex flex-row gap-2">
               <DatePicker
-                customInput={<CustomInput />}
+                customInput={<CustomInput width="w-[400px]"/>}
                 selected={startDate}
                 onChange={(date) => setStartDate(date)}
-                className="border rounded px-2 py-1 text-secondary w-full"
                 dateFormat="dd/MM/yyyy"
               />
               <span className="text-secondary self-center">to</span>
               <DatePicker
-                customInput={<CustomInput />}
+                customInput={<CustomInput width="w-[400px]"/>}
                 selected={endDate}
                 onChange={(date) => setEndDate(date)}
-                className="border rounded px-2 py-1 text-secondary w-full"
                 dateFormat="dd/MM/yyyy"
               />
             </div>

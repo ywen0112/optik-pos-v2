@@ -54,6 +54,11 @@ const AccessRightMaintenance = () => {
     setSelectedAccessRight({ ...selectedAccessRight, description: value });
   };
 
+  const handleInputCodeChange = (e) => {
+    const value = e.target.value.slice(0, 100); 
+    setSelectedAccessRight({ ...selectedAccessRight, userRoleCode: value });
+  };
+
   const handleDeleteClick = (id) => {
     setDeleteTarget(id);
     setConfirmModal({ isOpen: true, action: "delete" });
@@ -74,7 +79,6 @@ const AccessRightMaintenance = () => {
           throw new Error(data.errorMessage || "Failed to delete access right.");
         }
       } else {
-       
         const data = await SaveUserRole({...selectedAccessRight});
         if (data.success) {
           setNotifyModal({ isOpen: true, message: "Access Right saved successfully!" });
@@ -103,13 +107,13 @@ const AccessRightMaintenance = () => {
   
 
   const confirmationTitleMap = {
-    add: "Confirm New",
+    new: "Confirm New",
     edit: "Confirm Edit",
     delete: "Confirm Delete"
   };
 
   const confirmationMessageMap = {
-    add: "Are you sure you want to add this user role?",
+    new: "Are you sure you want to add this user role?",
     edit: "Are you sure you want to edit this user role?",
     delete: "Are you sure you want to delete this user role?"
   };
@@ -162,13 +166,23 @@ const AccessRightMaintenance = () => {
 
       <div className="flex-1">
         <div className="mb-4">
-          <label className="block mb-1">User Role</label>
+          <label className="block mb-1">User Role Code</label>
+          <input
+            type="text"
+            value={selectedAccessRight.userRoleCode}
+            readOnly={formAction === "view"}
+            onChange={handleInputCodeChange}
+            className={`mt-1 w-1/2 p-2 border rounded ${formAction === "view" ? "bg-gray-100" : "bg-white"}`}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block mb-1">Description</label>
           <input
             type="text"
             value={selectedAccessRight.description}
             readOnly={formAction === "view"}
             onChange={handleInputChange}
-            className={`mt-1 w-full p-2 border rounded ${formAction === "view" ? "bg-gray-100" : "bg-white"}`}
+            className={`mt-1 w-1/2 p-2 border rounded ${formAction === "view" ? "bg-gray-100" : "bg-white"}`}
           />
         </div>
         <div className="mb-2 font-semibold">Access Rights</div>
