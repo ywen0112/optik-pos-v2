@@ -7,92 +7,92 @@ const AddHistoryRXModal = ({ isOpen, type, handleClose, data, onConfirm }) => {
     const typeDefine = type === "Specs" ? "Spectacles" : "Contact Lens"
     const [actualRX, setActualRX] = useState({
         dominentEye: type === "Specs" ? data?.actualRXSpectacles?.dominentEye || "" : "",
-        opticalHeight: type === "Specs" ? data?.actualRXSpectacles?.opticalHeight  : 0,
-        segmentHeight: type === "Specs" ? data?.actualRXSpectacles?.segmentHeight  : 0,
+        opticalHeight: type === "Specs" ? data?.actualRXSpectacles?.opticalHeight : 0,
+        segmentHeight: type === "Specs" ? data?.actualRXSpectacles?.segmentHeight : 0,
     })
 
     const [prescribedRX, setPrescribedRX] = useState({
         dominentEye: type === "Specs" ? data?.prescribedRXSpectacles?.dominentEye || "" : "",
-        opticalHeight: type === "Specs" ? data?.prescribedRXSpectacles?.opticalHeight  : null,
-        segmentHeight: type === "Specs" ? data?.prescribedRXSpectacles?.segmentHeight  : null,
+        opticalHeight: type === "Specs" ? data?.prescribedRXSpectacles?.opticalHeight : null,
+        segmentHeight: type === "Specs" ? data?.prescribedRXSpectacles?.segmentHeight : null,
     })
 
     const [prescribedReadingData, setPrescribedReadingData] = useState({
-        l_R_ADD: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_ADD  : data?.prescribedRXContactLens?.l_R_ADD ,
-        l_R_AXIS: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_AXIS  : data?.prescribedRXContactLens?.l_R_AXIS ,
-        l_R_CYL: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_CYL  : data?.prescribedRXContactLens?.l_R_CYL ,
-        l_R_PD: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_PD  : data?.prescribedRXContactLens?.l_R_PD ,
-        l_R_PRISM: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_PRISM  : data?.prescribedRXContactLens?.l_R_PRISM ,
+        l_R_ADD: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_ADD : data?.prescribedRXContactLens?.l_R_ADD,
+        l_R_AXIS: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_AXIS : data?.prescribedRXContactLens?.l_R_AXIS,
+        l_R_CYL: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_CYL : data?.prescribedRXContactLens?.l_R_CYL,
+        l_R_PD: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_PD : data?.prescribedRXContactLens?.l_R_PD,
+        l_R_PRISM: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_PRISM : data?.prescribedRXContactLens?.l_R_PRISM,
         l_R_Remark: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_Remark ?? "" : data?.prescribedRXContactLens?.l_R_Remark ?? "",
-        l_R_SPH: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_SPH  : data?.prescribedRXContactLens?.l_R_SPH ,
-        l_R_VA: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_VA  : data?.prescribedRXContactLens?.l_R_VA ,
-        r_R_ADD: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_ADD  : data?.prescribedRXContactLens?.r_R_ADD ,
-        r_R_AXIS: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_AXIS  : data?.prescribedRXContactLens?.r_R_AXIS ,
-        r_R_CYL: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_CYL  : data?.prescribedRXContactLens?.r_R_CYL ,
-        r_R_PD: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_PD  : data?.prescribedRXContactLens?.r_R_PD ,
-        r_R_PRISM: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_PRISM  : data?.prescribedRXContactLens?.r_R_PRISM ,
+        l_R_SPH: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_SPH : data?.prescribedRXContactLens?.l_R_SPH,
+        l_R_VA: type === "Specs" ? data?.prescribedRXSpectacles?.l_R_VA : data?.prescribedRXContactLens?.l_R_VA,
+        r_R_ADD: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_ADD : data?.prescribedRXContactLens?.r_R_ADD,
+        r_R_AXIS: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_AXIS : data?.prescribedRXContactLens?.r_R_AXIS,
+        r_R_CYL: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_CYL : data?.prescribedRXContactLens?.r_R_CYL,
+        r_R_PD: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_PD : data?.prescribedRXContactLens?.r_R_PD,
+        r_R_PRISM: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_PRISM : data?.prescribedRXContactLens?.r_R_PRISM,
         r_R_Remark: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_Remark ?? "" : data?.prescribedRXContactLens?.r_R_Remark ?? "",
-        r_R_SPH: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_SPH  : data?.prescribedRXContactLens?.r_R_SPH ,
-        r_R_VA: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_VA  : data?.prescribedRXContactLens?.r_R_VA ,
+        r_R_SPH: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_SPH : data?.prescribedRXContactLens?.r_R_SPH,
+        r_R_VA: type === "Specs" ? data?.prescribedRXSpectacles?.r_R_VA : data?.prescribedRXContactLens?.r_R_VA,
     });
-    
+
     const [prescribedDistanceData, setPrescribedDistanceData] = useState({
-        l_D_ADD: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_ADD  : data?.prescribedRXContactLens?.l_D_ADD ,
-        l_D_AXIS: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_AXIS  : data?.prescribedRXContactLens?.l_D_AXIS ,
-        l_D_CYL: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_CYL  : data?.prescribedRXContactLens?.l_D_CYL ,
-        l_D_PD: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_PD  : data?.prescribedRXContactLens?.l_D_PD ,
-        l_D_PRISM: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_PRISM  : data?.prescribedRXContactLens?.l_D_PRISM ,
+        l_D_ADD: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_ADD : data?.prescribedRXContactLens?.l_D_ADD,
+        l_D_AXIS: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_AXIS : data?.prescribedRXContactLens?.l_D_AXIS,
+        l_D_CYL: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_CYL : data?.prescribedRXContactLens?.l_D_CYL,
+        l_D_PD: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_PD : data?.prescribedRXContactLens?.l_D_PD,
+        l_D_PRISM: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_PRISM : data?.prescribedRXContactLens?.l_D_PRISM,
         l_D_Remark: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_Remark ?? "" : data?.prescribedRXContactLens?.l_D_Remark ?? "",
-        l_D_SPH: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_SPH  : data?.prescribedRXContactLens?.l_D_SPH ,
-        l_D_VA: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_VA  : data?.prescribedRXContactLens?.l_D_VA ,
-        r_D_ADD: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_ADD  : data?.prescribedRXContactLens?.r_D_ADD ,
-        r_D_AXIS: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_AXIS  : data?.prescribedRXContactLens?.r_D_AXIS ,
-        r_D_CYL: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_CYL  : data?.prescribedRXContactLens?.r_D_CYL ,
-        r_D_PD: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_PD  : data?.prescribedRXContactLens?.r_D_PD ,
-        r_D_PRISM: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_PRISM  : data?.prescribedRXContactLens?.r_D_PRISM ,
+        l_D_SPH: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_SPH : data?.prescribedRXContactLens?.l_D_SPH,
+        l_D_VA: type === "Specs" ? data?.prescribedRXSpectacles?.l_D_VA : data?.prescribedRXContactLens?.l_D_VA,
+        r_D_ADD: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_ADD : data?.prescribedRXContactLens?.r_D_ADD,
+        r_D_AXIS: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_AXIS : data?.prescribedRXContactLens?.r_D_AXIS,
+        r_D_CYL: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_CYL : data?.prescribedRXContactLens?.r_D_CYL,
+        r_D_PD: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_PD : data?.prescribedRXContactLens?.r_D_PD,
+        r_D_PRISM: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_PRISM : data?.prescribedRXContactLens?.r_D_PRISM,
         r_D_Remark: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_Remark ?? "" : data?.prescribedRXContactLens?.r_D_Remark ?? "",
-        r_D_SPH: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_SPH  : data?.prescribedRXContactLens?.r_D_SPH ,
-        r_D_VA: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_VA  : data?.prescribedRXContactLens?.r_D_VA ,
+        r_D_SPH: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_SPH : data?.prescribedRXContactLens?.r_D_SPH,
+        r_D_VA: type === "Specs" ? data?.prescribedRXSpectacles?.r_D_VA : data?.prescribedRXContactLens?.r_D_VA,
     });
-    
+
     const [actualReadingData, setActualReadingData] = useState({
-        l_R_ADD: type === "Specs" ? data?.actualRXSpectacles?.l_R_ADD  : data?.actualRXContactLens?.l_R_ADD ,
-        l_R_AXIS: type === "Specs" ? data?.actualRXSpectacles?.l_R_AXIS  : data?.actualRXContactLens?.l_R_AXIS ,
-        l_R_CYL: type === "Specs" ? data?.actualRXSpectacles?.l_R_CYL  : data?.actualRXContactLens?.l_R_CYL ,
-        l_R_PD: type === "Specs" ? data?.actualRXSpectacles?.l_R_PD  : data?.actualRXContactLens?.l_R_PD ,
-        l_R_PRISM: type === "Specs" ? data?.actualRXSpectacles?.l_R_PRISM  : data?.actualRXContactLens?.l_R_PRISM ,
+        l_R_ADD: type === "Specs" ? data?.actualRXSpectacles?.l_R_ADD : data?.actualRXContactLens?.l_R_ADD,
+        l_R_AXIS: type === "Specs" ? data?.actualRXSpectacles?.l_R_AXIS : data?.actualRXContactLens?.l_R_AXIS,
+        l_R_CYL: type === "Specs" ? data?.actualRXSpectacles?.l_R_CYL : data?.actualRXContactLens?.l_R_CYL,
+        l_R_PD: type === "Specs" ? data?.actualRXSpectacles?.l_R_PD : data?.actualRXContactLens?.l_R_PD,
+        l_R_PRISM: type === "Specs" ? data?.actualRXSpectacles?.l_R_PRISM : data?.actualRXContactLens?.l_R_PRISM,
         l_R_Remark: type === "Specs" ? data?.actualRXSpectacles?.l_R_Remark ?? "" : data?.actualRXContactLens?.l_R_Remark ?? "",
-        l_R_SPH: type === "Specs" ? data?.actualRXSpectacles?.l_R_SPH  : data?.actualRXContactLens?.l_R_SPH ,
-        l_R_VA: type === "Specs" ? data?.actualRXSpectacles?.l_R_VA  : data?.actualRXContactLens?.l_R_VA ,
-        r_R_ADD: type === "Specs" ? data?.actualRXSpectacles?.r_R_ADD  : data?.actualRXContactLens?.r_R_ADD ,
-        r_R_AXIS: type === "Specs" ? data?.actualRXSpectacles?.r_R_AXIS  : data?.actualRXContactLens?.r_R_AXIS ,
-        r_R_CYL: type === "Specs" ? data?.actualRXSpectacles?.r_R_CYL  : data?.actualRXContactLens?.r_R_CYL ,
-        r_R_PD: type === "Specs" ? data?.actualRXSpectacles?.r_R_PD  : data?.actualRXContactLens?.r_R_PD ,
-        r_R_PRISM: type === "Specs" ? data?.actualRXSpectacles?.r_R_PRISM  : data?.actualRXContactLens?.r_R_PRISM ,
+        l_R_SPH: type === "Specs" ? data?.actualRXSpectacles?.l_R_SPH : data?.actualRXContactLens?.l_R_SPH,
+        l_R_VA: type === "Specs" ? data?.actualRXSpectacles?.l_R_VA : data?.actualRXContactLens?.l_R_VA,
+        r_R_ADD: type === "Specs" ? data?.actualRXSpectacles?.r_R_ADD : data?.actualRXContactLens?.r_R_ADD,
+        r_R_AXIS: type === "Specs" ? data?.actualRXSpectacles?.r_R_AXIS : data?.actualRXContactLens?.r_R_AXIS,
+        r_R_CYL: type === "Specs" ? data?.actualRXSpectacles?.r_R_CYL : data?.actualRXContactLens?.r_R_CYL,
+        r_R_PD: type === "Specs" ? data?.actualRXSpectacles?.r_R_PD : data?.actualRXContactLens?.r_R_PD,
+        r_R_PRISM: type === "Specs" ? data?.actualRXSpectacles?.r_R_PRISM : data?.actualRXContactLens?.r_R_PRISM,
         r_R_Remark: type === "Specs" ? data?.actualRXSpectacles?.r_R_Remark ?? "" : data?.actualRXContactLens?.r_R_Remark ?? "",
-        r_R_SPH: type === "Specs" ? data?.actualRXSpectacles?.r_R_SPH  : data?.actualRXContactLens?.r_R_SPH ,
-        r_R_VA: type === "Specs" ? data?.actualRXSpectacles?.r_R_VA  : data?.actualRXContactLens?.r_R_VA ,
+        r_R_SPH: type === "Specs" ? data?.actualRXSpectacles?.r_R_SPH : data?.actualRXContactLens?.r_R_SPH,
+        r_R_VA: type === "Specs" ? data?.actualRXSpectacles?.r_R_VA : data?.actualRXContactLens?.r_R_VA,
     });
-    
+
     const [actualDistanceData, setActualDistanceData] = useState({
-        l_D_ADD: type === "Specs" ? data?.actualRXSpectacles?.l_D_ADD  : data?.actualRXContactLens?.l_D_ADD ,
-        l_D_AXIS: type === "Specs" ? data?.actualRXSpectacles?.l_D_AXIS  : data?.actualRXContactLens?.l_D_AXIS ,
-        l_D_CYL: type === "Specs" ? data?.actualRXSpectacles?.l_D_CYL  : data?.actualRXContactLens?.l_D_CYL ,
-        l_D_PD: type === "Specs" ? data?.actualRXSpectacles?.l_D_PD  : data?.actualRXContactLens?.l_D_PD ,
-        l_D_PRISM: type === "Specs" ? data?.actualRXSpectacles?.l_D_PRISM  : data?.actualRXContactLens?.l_D_PRISM ,
+        l_D_ADD: type === "Specs" ? data?.actualRXSpectacles?.l_D_ADD : data?.actualRXContactLens?.l_D_ADD,
+        l_D_AXIS: type === "Specs" ? data?.actualRXSpectacles?.l_D_AXIS : data?.actualRXContactLens?.l_D_AXIS,
+        l_D_CYL: type === "Specs" ? data?.actualRXSpectacles?.l_D_CYL : data?.actualRXContactLens?.l_D_CYL,
+        l_D_PD: type === "Specs" ? data?.actualRXSpectacles?.l_D_PD : data?.actualRXContactLens?.l_D_PD,
+        l_D_PRISM: type === "Specs" ? data?.actualRXSpectacles?.l_D_PRISM : data?.actualRXContactLens?.l_D_PRISM,
         l_D_Remark: type === "Specs" ? data?.actualRXSpectacles?.l_D_Remark ?? "" : data?.actualRXContactLens?.l_D_Remark ?? "",
-        l_D_SPH: type === "Specs" ? data?.actualRXSpectacles?.l_D_SPH  : data?.actualRXContactLens?.l_D_SPH ,
-        l_D_VA: type === "Specs" ? data?.actualRXSpectacles?.l_D_VA  : data?.actualRXContactLens?.l_D_VA ,
-        r_D_ADD: type === "Specs" ? data?.actualRXSpectacles?.r_D_ADD  : data?.actualRXContactLens?.r_D_ADD ,
-        r_D_AXIS: type === "Specs" ? data?.actualRXSpectacles?.r_D_AXIS  : data?.actualRXContactLens?.r_D_AXIS ,
-        r_D_CYL: type === "Specs" ? data?.actualRXSpectacles?.r_D_CYL  : data?.actualRXContactLens?.r_D_CYL ,
-        r_D_PD: type === "Specs" ? data?.actualRXSpectacles?.r_D_PD  : data?.actualRXContactLens?.r_D_PD ,
-        r_D_PRISM: type === "Specs" ? data?.actualRXSpectacles?.r_D_PRISM  : data?.actualRXContactLens?.r_D_PRISM ,
+        l_D_SPH: type === "Specs" ? data?.actualRXSpectacles?.l_D_SPH : data?.actualRXContactLens?.l_D_SPH,
+        l_D_VA: type === "Specs" ? data?.actualRXSpectacles?.l_D_VA : data?.actualRXContactLens?.l_D_VA,
+        r_D_ADD: type === "Specs" ? data?.actualRXSpectacles?.r_D_ADD : data?.actualRXContactLens?.r_D_ADD,
+        r_D_AXIS: type === "Specs" ? data?.actualRXSpectacles?.r_D_AXIS : data?.actualRXContactLens?.r_D_AXIS,
+        r_D_CYL: type === "Specs" ? data?.actualRXSpectacles?.r_D_CYL : data?.actualRXContactLens?.r_D_CYL,
+        r_D_PD: type === "Specs" ? data?.actualRXSpectacles?.r_D_PD : data?.actualRXContactLens?.r_D_PD,
+        r_D_PRISM: type === "Specs" ? data?.actualRXSpectacles?.r_D_PRISM : data?.actualRXContactLens?.r_D_PRISM,
         r_D_Remark: type === "Specs" ? data?.actualRXSpectacles?.r_D_Remark ?? "" : data?.actualRXContactLens?.r_D_Remark ?? "",
-        r_D_SPH: type === "Specs" ? data?.actualRXSpectacles?.r_D_SPH  : data?.actualRXContactLens?.r_D_SPH ,
-        r_D_VA: type === "Specs" ? data?.actualRXSpectacles?.r_D_VA  : data?.actualRXContactLens?.r_D_VA ,
+        r_D_SPH: type === "Specs" ? data?.actualRXSpectacles?.r_D_SPH : data?.actualRXContactLens?.r_D_SPH,
+        r_D_VA: type === "Specs" ? data?.actualRXSpectacles?.r_D_VA : data?.actualRXContactLens?.r_D_VA,
     });
-    
+
 
     const [activeRxTab, setActiveRxTab] = useState("Prescribed RX");
 
@@ -290,7 +290,7 @@ const AddHistoryRXModal = ({ isOpen, type, handleClose, data, onConfirm }) => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {["Left", "Right"].map((eye) => (
+                                    {["Right", "Left"].map((eye) => (
                                         <tr key={eye}>
                                             <td className="border px-2 py-1 font-medium text-secondary">{eye}</td>
                                             {rxParams.map((field) => {
@@ -299,33 +299,36 @@ const AddHistoryRXModal = ({ isOpen, type, handleClose, data, onConfirm }) => {
                                                     <td key={field} className="border px-2 py-1 text-left text-secondary bg-white">
                                                         <input
                                                             type="number"
-                                                            step="0.25"
+                                                            step={field === "AXIS" ? "1" : "0.25"}
                                                             className="w-full border rounded px-1 py-0.5 text-left text-secondary bg-white"
                                                             value={getRxData()?.[key] || ""}
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 if (val === "" || decimalRegex.test(val)) {
-                                                                  handleRxChange(
-                                                                    eye === "Left" ? "l" : "r",
-                                                                    dataFieldMapping[activeRxMode],
-                                                                    field,
-                                                                    val
-                                                                  );
+                                                                    handleRxChange(
+                                                                        eye === "Left" ? "l" : "r",
+                                                                        dataFieldMapping[activeRxMode],
+                                                                        field,
+                                                                        val
+                                                                    );
                                                                 }
                                                             }}
                                                             onBlur={(e) => {
                                                                 const raw = parseFloat(e.target.value);
                                                                 if (!isNaN(raw)) {
-                                                                  const isPD = field === "PD";
-                                                                  const newVal = isPD
-                                                                    ? raw.toFixed(2)
-                                                                    : roundUpToQuarter(raw).toFixed(2);
-                                                                  handleRxChange(
-                                                                    eye === "Left" ? "l" : "r",
-                                                                    dataFieldMapping[activeRxMode],
-                                                                    field,
-                                                                    newVal
-                                                                  );
+                                                                    const isPD = field === "PD";
+                                                                    const isAxis = field === "AXIS";
+                                                                    const newVal = isAxis
+                                                                        ? Math.round(raw).toString()
+                                                                        : isPD
+                                                                            ? raw.toFixed(2)
+                                                                            : roundUpToQuarter(raw).toFixed(2);
+                                                                    handleRxChange(
+                                                                        eye === "Left" ? "l" : "r",
+                                                                        dataFieldMapping[activeRxMode],
+                                                                        field,
+                                                                        newVal
+                                                                    );
                                                                 }
                                                             }}
                                                         />
@@ -341,8 +344,8 @@ const AddHistoryRXModal = ({ isOpen, type, handleClose, data, onConfirm }) => {
                                                         const remarkKey = `${eye === "Left" ? "l" : "r"}_${dataFieldMapping[activeRxMode]}_Remark`;
                                                         const setter = getRxSetter();
                                                         setter((prev) => ({
-                                                        ...prev,
-                                                        [remarkKey]: e.target.value
+                                                            ...prev,
+                                                            [remarkKey]: e.target.value
                                                         }));
                                                     }}
                                                 />
@@ -359,7 +362,7 @@ const AddHistoryRXModal = ({ isOpen, type, handleClose, data, onConfirm }) => {
                         <div className="flex justify-end space-x-2">
                             <button
                                 className="bg-red-600 text-white w-36 px-4 py-2 rounded hover:bg-red-700"
-                                onClick={() =>{
+                                onClick={() => {
                                     setActualRX(null)
                                     setActualDistanceData(null)
                                     setActualReadingData(null)

@@ -355,7 +355,7 @@ export const GetItemGroup = ({companyId, userId, id}) =>{
     return postRequest(getItemGroup, body);
 };
 
-export const SaveItemGroup = ({actionData, itemGroupId, itemGroupCode, description, isNormalItem, isSpectacles, iscontctLens}) =>{
+export const SaveItemGroup = ({actionData, itemGroupId, itemGroupCode, description, isNormalItem, isSpectacles, isContactLens}) =>{
     const body = JSON.stringify({
         actionData,
         itemGroupId,
@@ -363,7 +363,7 @@ export const SaveItemGroup = ({actionData, itemGroupId, itemGroupCode, descripti
         description,
         isNormalItem,
         isSpectacles,
-        iscontctLens,
+        isContactLens,
     });
 
     return postRequest(saveItemGroup, body);

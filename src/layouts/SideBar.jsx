@@ -128,7 +128,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     },
     { name: "Reports", icon: <FileText size={20} />,
       children: [
-        { name: "Counter Session Report", icon: <Monitor size={20}/> , path: "/counter-session-report" },
+        // { name: "Counter Session Report", icon: <Monitor size={20}/> , path: "/counter-session-report" },
         { name: "Daily Closing Summary Report", icon: <NotepadText size={20}/>, path: "/daily-closing-summay-report" },
         { name: "Outstanding Balance Report", icon: <FileX size={20}/>, path: "/outstanding-report" },
         { name: "Uncollected Order List", icon: <PackageX size={20}/>, path: "/uncollected-order-list" },
@@ -138,7 +138,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     { name: "Tools", icon: <Wrench size={20} />, 
       children: [
         { name: "Audit Logs", icon: <ClipboardX size={20}/>, path: "/audit-logs" },
-        { name: "Close Counter", icon: <MonitorX size={20}/>, path: "/close-counter" },
+        // { name: "Close Counter", icon: <MonitorX size={20}/>, path: "/close-counter" },
       ]
     }
   ];

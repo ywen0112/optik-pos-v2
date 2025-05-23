@@ -1,42 +1,47 @@
-import { useRef, useState } from "react";
-import ErrorModal from "../../modals/ErrorModal";
-import CustomInput from "../../Components/input/dateInput";
-import DatePicker from "react-datepicker";
-import DailyClosingSummaryDataGrid from "../../Components/DataGrid/Report/DailyClosingSummaryDataGrid";
-import { GetDailyClosing } from "../../api/reportapi";
 import CustomStore from "devextreme/data/custom_store";
+import { useRef, useState } from "react";
+import { GetCommissionReport } from "../../api/reportapi";
+import ErrorModal from "../../modals/ErrorModal";
+import DatePicker from "react-datepicker";
+import CustomInput from "../../Components/input/dateInput";
+import CommissionReportDataGrid from "../../Components/DataGrid/Report/CommissionReportDataGrid";
 
-const DailyClosingSummaryReport = () => {
+const CommissionReport = () => {
     const companyId = sessionStorage.getItem("companyId");
     const userId = sessionStorage.getItem("userId");
     const gridRef = useRef(null);
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
     const [startDate, setStartDate] = useState(() => {
-        const today = new Date();
-        return today.toISOString().split('T')[0];
+        const date = new Date();
+        date.setMonth(date.getMonth() - 1);
+        return date.toISOString().split('T')[0];
     });
 
+
+    const [endDate, setEndDate] = useState(() => {
+        return new Date().toISOString().split('T')[0];
+    });
     const [data, setData] = useState(null);
 
-    const handleGetDailyClosing = async (isGenerateReport) => {
+    const handleGetCommission = async (isGenerateReport) => {
         let success = false;
-        const DailyClosingStore = new CustomStore({
+        const CommissionStore = new CustomStore({
             key: "documentId",
             load: async (loadOptions) => {
                 const { skip, take } = loadOptions;
-
                 const params = {
                     companyId,
                     userId,
-                    reportName: "Daily Closing Summary Report",
-                    date: startDate,
+                    reportName: "Commission Report",
                     generateReport: isGenerateReport,
+                    fromDate: startDate,
+                    toDate: endDate,
                     offset: skip || 0,
                     limit: take || 10,
                 };
 
                 try {
-                    const res = await GetDailyClosing(params);
+                    const res = await GetCommissionReport(params);
 
                     if (!res.success) {
                         throw new Error(res.errorMessage || "Failed to retrieve Daily Closing Summary");
@@ -45,7 +50,7 @@ const DailyClosingSummaryReport = () => {
                     success = true;
 
                     return {
-                        data: res.data,
+                        data: res.data.documents,
                         totalCount: res.totalRecords,
                     };
                 } catch (error) {
@@ -55,20 +60,18 @@ const DailyClosingSummaryReport = () => {
                     });
                 }
             }
-        });
+        })
 
-        setData(() => DailyClosingStore);
-
+        setData(() => CommissionStore);
         return new Promise((resolve) => {
             resolve(true);
         });
     }
 
-
     const handleGetReport = async (isDownload) => {
         try {
-            const success = await handleGetDailyClosing(true);
-            const reportName = "Daily Closing Summary Report"
+            const success = await handleGetCommission(true);
+            const reportName = "Commission Report"
             if (success) {
                 if (isDownload) {
                     const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
@@ -80,7 +83,6 @@ const DailyClosingSummaryReport = () => {
                     if (!fileResponse.ok) {
                         throw new Error("Failed to download report.");
                     }
-
                     const blob = await fileResponse.blob();
                     const url = window.URL.createObjectURL(blob);
 
@@ -104,9 +106,7 @@ const DailyClosingSummaryReport = () => {
         } catch (error) {
             setErrorModal({ title: "Report error", message: error.message });
         }
-
     }
-
 
     return (
         <>
@@ -114,16 +114,25 @@ const DailyClosingSummaryReport = () => {
             <div className="space-y-6 p-6 bg-white rounded shadow">
                 <div className="grid grid-cols-1 gap-2 w-1/2">
                     <div className="w-full">
-                        <label className="block text-secondary font-medium mb-1">Closing Date</label>
+                        <label className="block text-secondary font-medium mb-1">Date Range</label>
                         <div className="flex flex-row gap-2">
                             <DatePicker
                                 customInput={<CustomInput width="w-[400px]" />}
                                 selected={startDate}
                                 onChange={(date) => {
-                                    const formattedDate = date.toISOString().split('T')[0]; // "YYYY-MM-DD"
-                                    setStartDate(formattedDate);
+                                    const isoDate = date.toISOString().split('T')[0]; // "YYYY-MM-DD"
+                                    setStartDate(isoDate);
                                 }}
-
+                                dateFormat="dd/MM/yyyy"
+                            />
+                            <span className="text-secondary self-center">to</span>
+                            <DatePicker
+                                customInput={<CustomInput width="w-[400px]" />}
+                                selected={endDate}
+                                onChange={(date) => {
+                                    const isoDate = date.toISOString().split('T')[0];
+                                    setEndDate(isoDate);
+                                }}
                                 dateFormat="dd/MM/yyyy"
                             />
                         </div>
@@ -131,7 +140,7 @@ const DailyClosingSummaryReport = () => {
                 </div>
                 <div className="pt-6 flex space-x-4">
                     <button
-                        onClick={async () => await handleGetDailyClosing(false)}
+                        onClick={async () => await handleGetCommission(false)}
                         className="bg-primary text-white px-6 py-2 rounded">
                         Search
                     </button>
@@ -150,7 +159,7 @@ const DailyClosingSummaryReport = () => {
 
 
                 <div className="mt-6">
-                    <DailyClosingSummaryDataGrid
+                    <CommissionReportDataGrid
                         ref={gridRef}
                         // key={dataStoreKey}
                         data={data}
@@ -162,4 +171,4 @@ const DailyClosingSummaryReport = () => {
     )
 }
 
-export default DailyClosingSummaryReport;
+export default CommissionReport;

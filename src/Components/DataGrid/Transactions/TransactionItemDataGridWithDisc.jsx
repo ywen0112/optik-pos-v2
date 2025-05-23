@@ -154,13 +154,15 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
         if (e.rowType === "data" && grid) {
             if (disabled) {
                 if (setItemGroup) { setItemGroup(e.data.isNormalItem ?? true) }
-                if (setActiveItem) { setActiveItem(e.data) };
+                if (setActiveItem) { console.log(e.data) 
+                    setActiveItem(e.data) };
                 setCurrentRow(e.data);
                 grid.cancelEditData();
                 return;
             }
             if (setItemGroup) { setItemGroup(e.data.isNormalItem ?? true) }
-            if (setActiveItem) { setActiveItem(e.data) };
+            if (setActiveItem) { console.log(e.data) 
+                setActiveItem(e.data) };
             setCurrentRow(e.data);
             grid.editCell(e.rowIndex, e.column.dataField);
             setDropDownBoxOpen(true)

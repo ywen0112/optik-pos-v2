@@ -555,9 +555,10 @@ const PurchaseInvoice = () => {
       });
       if (saveRes.success) {
         setShowSupplierModal(false);
-        setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
+        setNotifyModal({ isOpen: true, message: "Supplier saved successfully!" });
+        setSupplierGridBoxValue({creditorId: newSupplier.creditorId, companyName: data.companyName})
         setNewSupplier(null);
-      } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
+      } else throw new Error(saveRes.errorMessage || "Failed to save supplier.");
 
     } catch (error) {
       setErrorModal({ title: `Save Error`, message: error.message });

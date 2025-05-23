@@ -34,20 +34,18 @@ const SalesInquiry = () => {
   const companyId = sessionStorage.getItem("companyId");
   const userId = sessionStorage.getItem("userId");
   const [startDate, setStartDate] = useState(() => {
-    const today = new Date();
-    today.setMonth(today.getMonth() - 1);
-    return today;
-  });
+  return new Date(2024, 11, 1);
+});
 
-  const [endDate, setEndDate] = useState(new Date());
+
+  const [endDate, setEndDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isCustomerBoxOpen, setIsCustomerBoxOpen] = useState(false);
   const [data, setData] = useState(null);
   const gridRef = useRef(null);
-  // const [dataStoreKey, setDataStoreKey] = useState(0);
-  // const [selectedItemId, setSelectedItemId] = useState(null);
-
-  // const CustomerBoxDisplayExpr = (item) => item && `${item.Code}`;
 
   const customerStore = new CustomStore({
     key: "debtorId",
@@ -128,9 +126,9 @@ const SalesInquiry = () => {
           highlightSearchText={true}
         />
       </DataGrid>
-    ),[]);
+    ), []);
 
-    const handleGetInquiry = async () => {
+  const handleGetInquiry = async () => {
     const store = new CustomStore({
       key: "docNo",
       load: async (loadOptions) => {
@@ -172,15 +170,15 @@ const SalesInquiry = () => {
           };
         } catch (error) {
           setErrorModal({
-          title: "Inquiry Error",
-          message: error.errorMessage || "An unexpected error occurred.",
-        });
+            title: "Inquiry Error",
+            message: error.errorMessage || "An unexpected error occurred.",
+          });
         }
       }
     });
 
     setData(() => store);
-  // setDataStoreKey(prev => prev + 1); // force re-binding
+    // setDataStoreKey(prev => prev + 1); // force re-binding
   };
 
 
@@ -211,14 +209,14 @@ const SalesInquiry = () => {
             <label className="block text-secondary font-medium mb-1">Date Range</label>
             <div className="flex flex-row gap-2">
               <DatePicker
-                customInput={<CustomInput width="w-[400px]"/>}
+                customInput={<CustomInput width="w-[400px]" />}
                 selected={startDate}
                 onChange={(date) => setStartDate(date)}
                 dateFormat="dd/MM/yyyy"
               />
               <span className="text-secondary self-center">to</span>
               <DatePicker
-                customInput={<CustomInput width="w-[400px]"/>}
+                customInput={<CustomInput width="w-[400px]" />}
                 selected={endDate}
                 onChange={(date) => setEndDate(date)}
                 dateFormat="dd/MM/yyyy"
@@ -248,20 +246,10 @@ const SalesInquiry = () => {
             />
           </div>
 
-          {/* <div className="w-full">
-          <label className="block text-secondary font-medium mb-1">Product</label>
-          <ItemDropDownBoxComponent
-            data={itemData}
-            value={selectedItemId}
-            onValueChanged={setSelectedItemId}
-          />
-        </div> */}
         </div>
 
         <div className="pt-6 flex space-x-4">
           <button onClick={handleGetInquiry} className="bg-primary text-white px-6 py-2 rounded">Search</button>
-          {/* <button className="bg-primary text-white px-6 py-2 rounded">Preview</button>
-        <button className="bg-primary text-white px-6 py-2 rounded">Export</button> */}
         </div>
 
         <div className="mt-6">
@@ -272,34 +260,34 @@ const SalesInquiry = () => {
             onPay={handleAddPaymentForSales}
           />
         </div>
-        
+
 
       </div>
       {paymentItem && paymentItem?.docType === "Cash Sales" && (
-          <CashSalesPaymentModal
-            isOpen={salesPayment}
-            onClose={() => setSalesPayment(false)}
-            total={paymentItem?.outstanding}
-            companyId={companyId}
-            userId={userId}
-            cashSalesId={paymentItem?.documentId}
-            onError={setErrorModal}
-            onSave={handleProcessAfterSavePayment}
-          />
-        )}
+        <CashSalesPaymentModal
+          isOpen={salesPayment}
+          onClose={() => setSalesPayment(false)}
+          total={paymentItem?.outstanding}
+          companyId={companyId}
+          userId={userId}
+          cashSalesId={paymentItem?.documentId}
+          onError={setErrorModal}
+          onSave={handleProcessAfterSavePayment}
+        />
+      )}
 
-        {paymentItem && paymentItem?.docType === "Sales Order" && (
-          <SalesOrderPaymentModal
-            isOpen={salesPayment}
-            onClose={() => setSalesPayment(false)}
-            total={paymentItem?.outstanding}
-            companyId={companyId}
-            userId={userId}
-            salesOrderId={paymentItem?.documentId}
-            onError={setErrorModal}
-            onSave={handleProcessAfterSavePayment}
-          />
-        )}
+      {paymentItem && paymentItem?.docType === "Sales Order" && (
+        <SalesOrderPaymentModal
+          isOpen={salesPayment}
+          onClose={() => setSalesPayment(false)}
+          total={paymentItem?.outstanding}
+          companyId={companyId}
+          userId={userId}
+          salesOrderId={paymentItem?.documentId}
+          onError={setErrorModal}
+          onSave={handleProcessAfterSavePayment}
+        />
+      )}
     </>
   );
 };

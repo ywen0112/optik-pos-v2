@@ -520,6 +520,7 @@ const CashSales = () => {
             if (saveRes.success) {
                 setShowCustomerModal(false);
                 setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
+                setCustomerGridBoxValue({debtorId: newCustomer.debtorId, companyName: data.companyName})
                 setNewCustomer(null);
             } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
 

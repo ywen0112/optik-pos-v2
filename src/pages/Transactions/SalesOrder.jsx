@@ -52,8 +52,8 @@ const SalesOrderGridColumns = [
     },
     { dataField: "debtorCode", caption: "Code", width: "20%" },
     { dataField: "debtorName", caption: "Name", width: "30%" },
-    { dataField: "identityNo", caption: "Identity No", width: "20%"},
-    { dataField: "Phone1", caption: "Phone No", width: "25%"}
+    { dataField: "identityNo", caption: "Identity No", width: "20%" },
+    { dataField: "Phone1", caption: "Phone No", width: "25%" }
 ];
 
 const SalesOrder = () => {
@@ -99,6 +99,14 @@ const SalesOrder = () => {
     const gridRef = useRef(null);
 
     const [total, setTotal] = useState(0);
+
+    useEffect(() => {
+        if (currentActiveRow?.isContactLens) {
+            setActiveRxMode("ContactLens");
+        } else {
+            setActiveRxMode("Distance");
+        }
+    }, [currentActiveRow?.isContactLens]);
 
     useEffect(() => {
         const total = currentTotal + parseFloat(rounding);
@@ -528,6 +536,7 @@ const SalesOrder = () => {
             if (saveRes.success) {
                 setShowCustomerModal(false);
                 setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
+                setCustomerGridBoxValue({ debtorId: newCustomer.debtorId, companyName: data.companyName })
                 setNewCustomer(null);
             } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
 
@@ -1102,7 +1111,8 @@ const SalesOrder = () => {
     const rxParams = ["SPH", "CYL", "AXIS", "VA", "PRISM", "BC", "DIA", "ADD", "PD"];
     const dataFieldMapping = {
         Distance: "D",
-        Reading: "R"
+        Reading: "R",
+        ContactLens: "D"
     }
 
     const handleCopyRxdata = () => {
@@ -1494,7 +1504,7 @@ const SalesOrder = () => {
         <>
             <ReportSelectionModal
                 isOpen={reportSelectionModal.isOpen}
-                onCancel={() => setReportSelectionOpen(false)}
+                onCancel={() => setReportSelectionOpenModal(false)}
                 onSelect={handleSelectedReport}
                 companyId={companyId}
                 isCashSales={false}
@@ -1523,9 +1533,9 @@ const SalesOrder = () => {
                     userId={userId}
                 />
             )}
-            <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <div className="items-center gap-1">
+            <div className="grid grid-cols-4 gap-3">
+                <div className="space-y-2 col-span-2">
+                    <div className="items-center ">
                         <label htmlFor="customer" className="font-medium text-secondary" >
                             Customer
                         </label>
@@ -1577,133 +1587,118 @@ const SalesOrder = () => {
                         </div>
                     </div>
 
-
-
-
-                    <div className="items-start gap-1">
-                        <label htmlFor="remark" className="font-medium text-secondary">Remark</label>
-                        <div></div>
-                        <textarea
-                            id="remark"
-                            name="remark"
-                            rows={6}
-                            className="border rounded p-1 w-full resize-none bg-white justify-self-end"
-                            placeholder="Enter remarks…"
-                            onChange={e => setMasterData(prev => ({ ...prev, remark: e.target.value }))}
-                            value={masterData?.remark ?? ""}
-                        />
-                    </div>
                 </div>
-                <div className="grid grid-cols-2 items-center gap-1">
-                    <div className="flex flex-col gap-1 ">
-                        <label htmlFor="refNo" className="font-medium text-secondary mt-[-10px]">Ref No.</label>
-                        <input
-                            disabled={isEdit}
-                            type="text"
-                            id="refNo"
-                            name="refNo"
-                            className="border rounded p-1 w-full bg-white h-[34px]"
-                            placeholder="Ref No"
-                            onChange={e => setMasterData(prev => ({ ...prev, refNo: e.target.value }))}
-                            value={masterData?.refNo ?? ""}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="date" className="font-medium text-secondary mt-[-10px]">Date</label>
+                <div className="flex flex-col  ">
+                    <label htmlFor="refNo" className="font-medium text-secondary ">Ref No.</label>
+                    <input
+                        disabled={isEdit}
+                        type="text"
+                        id="refNo"
+                        name="refNo"
+                        className="border rounded p-1 w-full bg-white h-[34px]"
+                        placeholder="Ref No"
+                        onChange={e => setMasterData(prev => ({ ...prev, refNo: e.target.value }))}
+                        value={masterData?.refNo ?? ""}
+                    />
+                </div>
+                <div className="flex flex-col">
+                    <label htmlFor="date" className="font-medium text-secondary">Date</label>
+                    <DatePicker
+                        disabled={isEdit}
+                        customInput={<CustomInput disabled={isEdit} />}
+                        selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
+                        id="SalesDate"
+                        name="SalesDate"
+                        dateFormat="dd-MM-yyyy"
+                        className="border rounded p-1 w-full bg-white h-[34px]"
+                        onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
+                    />
+
+                </div>
+                <div className="flex flex-col ">
+                    <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
+                    <DropDownBox
+                        disabled={isEdit}
+                        id="SalesPersonSelection"
+                        className="border rounded w-full"
+                        value={SalesPersonGridBoxValue?.id ?? ""}
+                        opened={isSalesPersonGridBoxOpened}
+                        openOnFieldClick={true}
+                        valueExpr='userId'
+                        displayExpr={SalesPersonGridBoxDisplayExpr}
+                        placeholder="Select Sales Person"
+                        showClearButton={true}
+                        onValueChanged={handleSalesPersonGridBoxValueChanged}
+                        dataSource={userStore}
+                        onOptionChanged={onSalesPersonGridBoxOpened}
+                        contentRender={SalesPersonDataGridRender}
+                    />
+                </div>
+
+                <div className="flex flex-col ">
+                    <label htmlFor="practitioner" className="font-medium text-secondary">Practitioner</label>
+                    <DropDownBox
+                        disabled={isEdit}
+                        id="PractionerSelection"
+                        className="border rounded w-full"
+                        value={PractionerGridBoxValue?.id ?? ""}
+                        opened={isPractionerGridBoxOpened}
+                        openOnFieldClick={true}
+                        valueExpr='userId'
+                        displayExpr={PractitionerGridBoxDisplatExpr}
+                        placeholder="Select Practioner"
+                        showClearButton={true}
+                        onValueChanged={handlePractionerGridBoxValueChanged}
+                        dataSource={practitionerStore}
+                        onOptionChanged={onPractionerGridBoxOpened}
+                        contentRender={PractionerDataGridRender}
+                        dropDownOptions={{
+                            width: 400
+                        }}
+                    />
+                </div>
+
+
+                <div className="flex flex-col row-span-2 self-start  ">
+                    <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
+                    <div className="flex flex-col space-y-1 w-full">
                         <DatePicker
                             disabled={isEdit}
                             customInput={<CustomInput disabled={isEdit} />}
-                            selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
-                            id="SalesDate"
-                            name="SalesDate"
+                            selected={masterData?.nextVisitDate ? new Date(masterData.nextVisitDate) : new Date()}
+                            id="nextVisit"
+                            name="nextVisit"
                             dateFormat="dd-MM-yyyy"
-                            className="border rounded p-1 w-full bg-white h-[34px]"
-                            onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
-                        />
-
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
-                        <DropDownBox
-                            disabled={isEdit}
-                            id="SalesPersonSelection"
-                            className="border rounded w-full"
-                            value={SalesPersonGridBoxValue?.id ?? ""}
-                            opened={isSalesPersonGridBoxOpened}
-                            openOnFieldClick={true}
-                            valueExpr='userId'
-                            displayExpr={SalesPersonGridBoxDisplayExpr}
-                            placeholder="Select Sales Person"
-                            showClearButton={true}
-                            onValueChanged={handleSalesPersonGridBoxValueChanged}
-                            dataSource={userStore}
-                            onOptionChanged={onSalesPersonGridBoxOpened}
-                            contentRender={SalesPersonDataGridRender}
-                        />
-                    </div>
-                    <div className="flex flex-col row-span-2 self-start gap-1 mt-2">
-                        <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
-                        <div className="flex flex-col space-y-1 w-full">
-                            <DatePicker
-                                disabled={isEdit}
-                                customInput={<CustomInput disabled={isEdit} />}
-                                selected={masterData?.nextVisitDate ? new Date(masterData.nextVisitDate) : new Date()}
-                                id="nextVisit"
-                                name="nextVisit"
-                                dateFormat="dd-MM-yyyy"
-                                placeholderText="dd-MM-yyyy"
-                                className="border rounded p-1 w-full bg-white text-secondary h-[34px]"
-                                onChange={e => {
-                                    setSelectedInterval(null);
-                                    setMasterData(prev => ({ ...prev, nextVisitDate: e }))
-                                }}
-                            >
-
-                            </DatePicker>
-                        </div>
-                        <div className="ml-3 space-x-1">
-                            {intervals.map(intv => (
-                                <button
-                                    disabled={isEdit}
-                                    key={intv.months}
-                                    type="button"
-                                    className={`
-                                                text-sm px-1 py-0.5 rounded border w-16 h-10
-                                                ${selectedInterval === intv.months
-                                            ? 'bg-slate-700 text-white'
-                                            : 'bg-white text-gray-700'
-                                        }
-                                        `}
-                                    onClick={() => pickInterval(intv.months)}
-                                >
-                                    {intv.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="practitioner" className="font-medium text-secondary">Practitioner</label>
-                        <DropDownBox
-                            disabled={isEdit}
-                            id="PractionerSelection"
-                            className="border rounded w-full"
-                            value={PractionerGridBoxValue?.id ?? ""}
-                            opened={isPractionerGridBoxOpened}
-                            openOnFieldClick={true}
-                            valueExpr='userId'
-                            displayExpr={PractitionerGridBoxDisplatExpr}
-                            placeholder="Select Practioner"
-                            showClearButton={true}
-                            onValueChanged={handlePractionerGridBoxValueChanged}
-                            dataSource={practitionerStore}
-                            onOptionChanged={onPractionerGridBoxOpened}
-                            contentRender={PractionerDataGridRender}
-                            dropDownOptions={{
-                                width: 400
+                            placeholderText="dd-MM-yyyy"
+                            className="border rounded p-1 w-full bg-white text-secondary h-[34px]"
+                            onChange={e => {
+                                setSelectedInterval(null);
+                                setMasterData(prev => ({ ...prev, nextVisitDate: e }))
                             }}
-                        />
+                        >
+
+                        </DatePicker>
                     </div>
+
+                </div>
+                <div className="self-end space-x-1">
+
+                    {intervals.map(intv => (
+                        <button
+                            disabled={isEdit}
+                            key={intv.months}
+                            type="button"
+                            className={`text-sm px-1 py-0.5 rounded border w-16 h-10
+                                       ${selectedInterval === intv.months
+                                    ? 'bg-slate-700 text-white'
+                                    : 'bg-white text-gray-700'
+                                }
+                                        `}
+                            onClick={() => pickInterval(intv.months)}
+                        >
+                            {intv.label}
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -1822,18 +1817,20 @@ const SalesOrder = () => {
 
                     <div className="overflow-x-auto flex flex-row">
                         <div className="px-2 py-4">
-                            {["Distance", "Reading"].map((mode) => (
-                                <button
-                                    key={mode}
-                                    onClick={() => setActiveRxMode(mode)}
-                                    className={`px-1 py-1 border rounded text-sm w-full font-medium ${activeRxMode === mode
-                                        ? "bg-primary text-white"
-                                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                                        }`}
-                                >
-                                    {mode}
-                                </button>
-                            ))}
+                            {(currentActiveRow?.isContactLens ? ["ContactLens"] : ["Distance", "Reading"])
+                                .map((mode) => (
+                                    <button
+                                        key={mode}
+                                        onClick={() => setActiveRxMode(mode)}
+                                        className={`px-1 py-1 border rounded text-sm w-full font-medium ${activeRxMode === mode
+                                            ? "bg-primary text-white"
+                                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                                            }`}
+                                    >
+                                        {mode === "ContactLens" ? "Contact Lens" : mode}
+                                    </button>
+                                ))}
+
                         </div>
                         <table className="min-w-[80%] border mt-2 text-sm">
                             <thead className="bg-gray-100 text-secondary">
@@ -1846,7 +1843,7 @@ const SalesOrder = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {["Left", "Right"].map((eye) => (
+                                {["Right", "Left"].map((eye) => (
                                     <tr key={eye}>
                                         <td className="border px-2 py-1 font-medium text-secondary">{eye}</td>
                                         {rxParams.map((field) => {
@@ -1855,7 +1852,7 @@ const SalesOrder = () => {
                                                 <td key={field} className="border px-2 py-1 text-left text-secondary bg-white">
                                                     <input
                                                         type="number"
-                                                        step="0.25"
+                                                        step={field === "AXIS" ? "1" : "0.25"}
                                                         className="w-full border rounded px-1 py-0.5 text-left text-secondary bg-white"
                                                         value={getRxData()?.[key] || ""}
                                                         onChange={(e) => {
@@ -1873,9 +1870,12 @@ const SalesOrder = () => {
                                                             const raw = parseFloat(e.target.value);
                                                             if (!isNaN(raw)) {
                                                                 const isPD = field === "PD";
-                                                                const newVal = isPD
-                                                                    ? raw.toFixed(2)
-                                                                    : roundUpToQuarter(raw).toFixed(2);
+                                                                const isAxis = field === "AXIS";
+                                                                const newVal = isAxis
+                                                                    ? Math.round(raw).toString()
+                                                                    : isPD
+                                                                        ? raw.toFixed(2)
+                                                                        : roundUpToQuarter(raw).toFixed(2);
                                                                 handleRxChange(
                                                                     eye === "Left" ? "l" : "r",
                                                                     dataFieldMapping[activeRxMode],
@@ -1909,6 +1909,20 @@ const SalesOrder = () => {
                         </table>
                     </div>
                 </div>
+            </div>
+
+            <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4">
+                <label htmlFor="remark" className="font-medium text-secondary">Remark</label>
+                <div></div>
+                <textarea
+                    id="remark"
+                    name="remark"
+                    rows={2}
+                    className="border rounded p-1 w-full resize-none bg-white justify-self-end"
+                    placeholder="Enter remarks…"
+                    onChange={e => setMasterData(prev => ({ ...prev, remark: e.target.value }))}
+                    value={masterData?.remark ?? ""}
+                />
             </div>
 
             <div className="w-full mt-3 bg-white shadow rounded p-4 mb-4">

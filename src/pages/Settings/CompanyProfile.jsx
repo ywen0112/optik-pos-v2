@@ -124,7 +124,7 @@ const CompanyProfile = () => {
                 disabled={true}
                 readOnly={true}
                 type="tel"
-                value={company.contact1}
+                value={company.phone1}
                 placeholder="Contact No 1"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />
@@ -133,7 +133,7 @@ const CompanyProfile = () => {
                 disabled={true}
                 readOnly={true}
                 type="tel"
-                value={company.contact2}
+                value={company.phone2}
                 placeholder="Contact No 2"
                 className="bg-gray-300 text-black p-2 rounded w-full"
               />

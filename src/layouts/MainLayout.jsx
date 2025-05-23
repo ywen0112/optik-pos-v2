@@ -28,6 +28,8 @@ import NumberingFormat from "../pages/MasterData/NumberingFormat";
 
 import ProductTypeMaintenance from "../pages/MasterData/ProductTypeMaintenence";
 import ProductGroupMaintenance from "../pages/MasterData/ProductGroupMaintenance";
+import DailyClosingSummaryReport from "../pages/Reports/DailyClosingSummary";
+import CommissionReport from "../pages/Reports/CommissionReport";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -60,13 +62,13 @@ const MainLayout = ({ title }) => {
       case "/counter-session-report":
         return <Reports />;
       case "/daily-closing-summay-report":
-        return <Reports />;
+        return <DailyClosingSummaryReport />;
       case "/outstanding-report":
         return <Reports />;
       case "/uncollected-order-list":
         return <Reports />;
       case "/commision-report":
-        return <Reports />;
+        return <CommissionReport />;
       case "/close-counter":
         return <Reports />;
       case "/user":

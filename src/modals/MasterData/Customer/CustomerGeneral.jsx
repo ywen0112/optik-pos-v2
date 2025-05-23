@@ -1,5 +1,4 @@
 const CustomerGeneral = ({ debtorFormData, setDebtorFormData, isView }) => {
-    console.log(debtorFormData)
     return (
         <div className="w-full h-full overflow-y-auto border-2 rounded p-4 ">
             <div className="grid grid-cols-4 gap-1">
