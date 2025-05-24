@@ -20,8 +20,9 @@ useEffect(() => {
   if (isOpen) {
     if (salesOrder?.details && Array.isArray(salesOrder.details)) {
       processSalesOrderData(salesOrder);
+      createCollectRecord(); 
     }
-    createCollectRecord(); 
+    initData();
   }
 }, [isOpen, salesOrder, companyId, userId]);
 
