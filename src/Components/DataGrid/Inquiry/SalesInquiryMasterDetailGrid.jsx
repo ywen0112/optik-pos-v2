@@ -9,7 +9,7 @@ import DataGrid, {
 import TabPanel from 'devextreme-react/tab-panel';
 import 'devextreme/dist/css/dx.light.css';
 import StandardDataGridComponent from '../../BaseDataGrid';
-import { DollarSign, PackageOpen } from 'lucide-react';
+import { DollarSign, PackageOpen, Printer } from 'lucide-react';
 
 const DetailTabs = ({ data }) => {
     const details = data.details || [];
@@ -68,7 +68,7 @@ const DetailTabs = ({ data }) => {
 };
 
 
-const SalesInquiryMasterDetailGrid = ({ ref, salesData, onPay }) => {
+const SalesInquiryMasterDetailGrid = ({ ref, salesData, onPay, onPrint }) => {
     return (
         <StandardDataGridComponent
             ref={ref}
@@ -112,6 +112,15 @@ const SalesInquiryMasterDetailGrid = ({ ref, salesData, onPay }) => {
                     const item = data.data;
                     return (
                         <div className="flex justify-center gap-2 text-blue-400">
+                            <div
+                                onClick={(e)=>{
+                                    e.stopPropagation();
+                                    onPrint(item);
+                                }} 
+                                className="hover:cursor-pointer"
+                            >
+                                <Printer size={20}/>
+                            </div>
                             <div
                                 className="hover:cursor-pointer"
                                 onClick={(e) => {

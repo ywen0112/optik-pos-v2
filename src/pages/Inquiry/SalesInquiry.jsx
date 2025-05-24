@@ -21,6 +21,8 @@ import CashSalesPaymentModal from "../../modals/Transactions/CashSalesPaymentMod
 import SalesOrderPaymentModal from "../../modals/Transactions/SalesOrderPaymentModal";
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
+import ReportSelectionModal from "../../modals/ReportSelectionModel";
+import { GetSalesDocPaymentReport, GetSalesDocReport } from "../../api/reportapi";
 
 const CustomerGridBoxDisplayExpr = (item) =>
   item ? `${item.debtorCode}-${item.companyName}` : "";
@@ -34,8 +36,8 @@ const SalesInquiry = () => {
   const companyId = sessionStorage.getItem("companyId");
   const userId = sessionStorage.getItem("userId");
   const [startDate, setStartDate] = useState(() => {
-  return new Date(2024, 11, 1);
-});
+    return new Date(2024, 11, 1);
+  });
 
 
   const [endDate, setEndDate] = useState(() => {
@@ -45,6 +47,7 @@ const SalesInquiry = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isCustomerBoxOpen, setIsCustomerBoxOpen] = useState(false);
   const [data, setData] = useState(null);
+  const [reportSelectionModal, setReportSelectionModal] = useState({ isOpen: false, docId: "", docType: "" });
   const gridRef = useRef(null);
 
   const customerStore = new CustomStore({
@@ -196,12 +199,89 @@ const SalesInquiry = () => {
       gridRef.current.instance.refresh();
     }
     if (action === "save-print") {
-      console.log("print acknowledgement");
+      setReportSelectionModal({ isOpen: true, docId: paymentItem?.documentId, docType: paymentItem?.docType })
     }
   }
 
+  const handlePrintReport = async (item) => {
+    console.log(item)
+    setReportSelectionModal({ isOpen: true, docId: item?.documentId, docType: item?.docType })
+  }
+
+  const handleSelectedReport = async (selectedReports) => {
+    setReportSelectionModal({ isOpen: false });
+
+    for (const report of selectedReports) {
+      let res;
+
+      try {
+        if (report.reportType === "SalesOrder") {
+          res = await GetSalesDocReport({
+            companyId: companyId,
+            userId: userId,
+            id: reportSelectionModal.docId,
+            name: report.reportName,
+            isCashSales: true,
+          });
+        } else if (report.reportType === "SalesOrderPayment") {
+          res = await GetSalesDocPaymentReport({
+            companyId: companyId,
+            userId: userId,
+            id: reportSelectionModal.docId,
+            name: report.reportName,
+            isCashSales: true,
+          });
+        }
+
+        if (res?.success) {
+          const reportName = report.reportName;
+          const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/pdf'
+            }
+          });
+
+          if (!fileResponse.ok) {
+            throw new Error('File download failed');
+          }
+
+          const blob = await fileResponse.blob();
+          const url = window.URL.createObjectURL(blob);
+
+          const popup = window.open('', '_blank', 'width=800,height=600');
+          if (!popup) {
+            throw new Error("Popup blocked. Please allow popups for this site.");
+          }
+
+          popup.document.write(`
+                      <html>
+                          <head><title>${reportName}</title></head>
+                          <body style="margin:0">
+                              <iframe src="${url}" frameborder="0" style="width:100%; height:100%;"></iframe>
+                          </body>
+                      </html>
+                  `);
+          popup.document.close();
+        }
+
+      } catch (error) {
+        setErrorModal({ title: "Download error", message: error.message });
+      }
+    }
+
+    setReportSelectionModal({ docId: "", docType: "" });
+  };
+
   return (
     <>
+      <ReportSelectionModal
+        isOpen={reportSelectionModal.isOpen}
+        onCancel={() => setReportSelectionModal({ isOpen: false, docId: "", docType: "" })}
+        onSelect={handleSelectedReport}
+        companyId={companyId}
+        isCashSales={reportSelectionModal?.docType === "Cash Sales"}
+      />
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
       <div className="space-y-6 p-6 bg-white rounded shadow">
         <div className="grid grid-cols-1 gap-2 w-1/2">
@@ -258,6 +338,7 @@ const SalesInquiry = () => {
             // key={dataStoreKey}
             salesData={data}
             onPay={handleAddPaymentForSales}
+            onPrint={handlePrintReport}
           />
         </div>
 
