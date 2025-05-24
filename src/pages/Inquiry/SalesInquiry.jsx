@@ -23,6 +23,7 @@ import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ReportSelectionModal from "../../modals/ReportSelectionModel";
 import { GetSalesDocPaymentReport, GetSalesDocReport } from "../../api/reportapi";
+import CollectItemModal from "../../modals/Transactions/CollectItemModal";
 
 const CustomerGridBoxDisplayExpr = (item) =>
   item ? `${item.debtorCode}-${item.companyName}` : "";
@@ -203,6 +204,14 @@ const SalesInquiry = () => {
     }
   }
 
+  const [collectModal, setCollectModal] = useState(false);
+  const [collectItem, setCollectItem] = useState({});
+
+  const handleCollectForSales = (item) => {
+    setCollectItem(item);
+    setCollectModal(true);
+  }
+
   const handlePrintReport = async (item) => {
     console.log(item)
     setReportSelectionModal({ isOpen: true, docId: item?.documentId, docType: item?.docType })
@@ -338,6 +347,7 @@ const SalesInquiry = () => {
             // key={dataStoreKey}
             salesData={data}
             onPay={handleAddPaymentForSales}
+            onCollect={handleCollectForSales}
             onPrint={handlePrintReport}
           />
         </div>
@@ -369,6 +379,15 @@ const SalesInquiry = () => {
           onSave={handleProcessAfterSavePayment}
         />
       )}
+
+     <CollectItemModal
+      isOpen={collectModal}
+      onClose={() => setCollectModal(false)}
+      salesOrder={collectItem}
+      companyId={companyId}
+      userId={userId}
+      ref={gridRef}
+    />
     </>
   );
 };

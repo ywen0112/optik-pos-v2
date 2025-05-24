@@ -68,7 +68,7 @@ const DetailTabs = ({ data }) => {
 };
 
 
-const SalesInquiryMasterDetailGrid = ({ ref, salesData, onPay, onPrint }) => {
+const SalesInquiryMasterDetailGrid = ({ ref, salesData, onPay, onCollect, onPrint }) => {
     return (
         <StandardDataGridComponent
             ref={ref}
@@ -121,15 +121,17 @@ const SalesInquiryMasterDetailGrid = ({ ref, salesData, onPay, onPrint }) => {
                             >
                                 <Printer size={20}/>
                             </div>
-                            <div
+                            {item.docType === "Sales Order" && (
+                                <div
                                 className="hover:cursor-pointer"
                                 onClick={(e) => {
-                                    e.stopPropagation(); // prevent row click
-                                    // onCollect(item);
+                                    e.stopPropagation();
+                                    onCollect(item);
                                 }}
-                            >
+                                >
                                 <PackageOpen size={20} />
-                            </div>
+                                </div>
+                            )}
                             {item.outstanding > 0 && (
                                 <div
                                     className="hover:cursor-pointer"
