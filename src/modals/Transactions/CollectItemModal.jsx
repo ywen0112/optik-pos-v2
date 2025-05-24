@@ -16,18 +16,70 @@ const CollectItemModal = ({ isOpen, onClose, salesOrder, companyId, userId, ref 
   const [salesOrderCollectId, setSalesOrderCollectId] = useState(null);
   const [salesOrderCollectDetailId, setSalesOrderCollectDetailId] = useState(null);
 
-  useEffect(() => {
-  if (isOpen && salesOrder?.documentId) {
-    initData();
+useEffect(() => {
+  if (isOpen) {
+    if (salesOrder?.details && Array.isArray(salesOrder.details)) {
+      processSalesOrderData(salesOrder);
+    }
+    createCollectRecord(); 
   }
-}, [isOpen, salesOrder?.documentId, companyId, userId]);
+}, [isOpen, salesOrder, companyId, userId]);
+
+const createCollectRecord = async () => {
+  try {
+    const newRes = await NewSalesOrderCollect({
+      companyId,
+      userId,
+      id: salesOrder.documentId || salesOrder.salesOrderId,
+    });
+
+    if (!newRes.success) throw new Error(newRes.errorMessage || 'Failed to create new collect record');
+    setSalesOrderCollectId(newRes.data.salesOrderCollectId);
+
+    const detailRes = await NewSalesOrderCollectDetail();
+    if (!detailRes.success) throw new Error(detailRes.errorMessage || 'Failed to create collect detail');
+    setSalesOrderCollectDetailId(detailRes.data.salesOrderCollectDetailId);
+  } catch (error) {
+    setErrorModal({ title: 'Init Error', message: error.message });
+  }
+};
+
+const processSalesOrderData = (data) => {
+  const details = data.details || [];
+  const collects = data.collects?.flatMap(c => c.details) || [];
+
+  const collectedQtyMap = collects.reduce((acc, collect) => {
+    acc[collect.itemId] = (acc[collect.itemId] || 0) + collect.collectQty;
+    return acc;
+  }, {});
+
+  const ready = details
+    .map(item => {
+      const collected = collectedQtyMap[item.itemId] || 0;
+      const remainingQty = item.qty - collected;
+      return { ...item, remainingQty };
+    })
+    .filter(item => item.remainingQty > 0);
+
+  const collected = collects.map(collect => {
+    const match = details.find(d => d.itemId === collect.itemId);
+    return {
+      itemCode: match?.itemCode || '',
+      description: match?.description || '',
+      qty: collect.collectQty,
+    };
+  });
+
+  setReadyItems(ready);
+  setCollectedItems(collected);
+};
 
   const initData = async () => {
   try {
     const newRes = await NewSalesOrderCollect({
       companyId,
       userId,
-      id: salesOrder.documentId,
+      id: salesOrder.documentId || salesOrder.salesOrderId,
     });
 
     if (!newRes.success) throw new Error(newRes.errorMessage || 'Failed to create new collect record');
@@ -40,7 +92,7 @@ const CollectItemModal = ({ isOpen, onClose, salesOrder, companyId, userId, ref 
     const res = await GetSalesOrder({
       companyId,
       userId,
-      id: salesOrder.documentId,
+      id: salesOrder.documentId || salesOrder.salesOrderId,
     });
 
     if (!res.success) throw new Error(res.errorMessage || 'Failed to fetch sales order');
@@ -78,39 +130,7 @@ const CollectItemModal = ({ isOpen, onClose, salesOrder, companyId, userId, ref 
   }
 };
 
-  const handleConfirmCollect = () => {
-  if (!selectedItem) return;
-
-  // Add to collected items
-  setCollectedItems(prev => [
-    ...prev,
-    {
-        itemCode: selectedItem.itemCode,
-        description: selectedItem.description,
-        collectQty: selectedQty,
-        itemId: selectedItem.itemId,
-        itemUOMId: selectedItem.itemUOMId,
-    }
-  ]);
-
-  // Update ready items
-  setReadyItems(prev =>
-    prev
-      .map(item =>
-        item.itemId === selectedItem.itemId
-          ? { ...item, remainingQty: item.remainingQty - selectedQty }
-          : item
-      )
-      .filter(item => item.remainingQty > 0)
-  );
-
-  // Reset selection
-  setSelectedItem(null);
-  setSelectedQty(1);
-};
-
 const handleSaveCollection = async () => {
-  if (!salesOrderCollectId || !selectedItem || !salesOrder) return;
 
   try {
     const payload = {
@@ -121,14 +141,14 @@ const handleSaveCollection = async () => {
         name: ""
       },
       salesOrderCollectId,
-      salesOrderId: salesOrder.documentId,
+      salesOrderId: salesOrder.documentId || salesOrder.salesOrderId,
       docNo: salesOrder.docNo,
       docDate: salesOrder.docDate,
       isVoid: false,
       details: [
         {
           salesOrderCollectDetailId: salesOrderCollectDetailId,
-          salesOrderId: salesOrder.documentId,
+          salesOrderId: salesOrder.documentId || salesOrder.salesOrderId,
           salesOrderDetailId: "", 
           itemId: selectedItem.itemId,
           itemUOMId: selectedItem.itemUOMId,
@@ -233,7 +253,7 @@ const handleNotifyModalClose = () => {
                   </button>
                   <div className="text-lg font-bold">{selectedQty}</div>
                   <button
-                    className="bg-gray-200 px-3 py-1 rounded text-lg hover:bg-gray-/90"
+                    className="bg-gray-200 px-3 py-1 rounded text-lg hover:bg-opacity-70"
                     onClick={() => setSelectedQty(prev => Math.min(selectedItem.remainingQty, prev + 1))}
                   >
                     +1

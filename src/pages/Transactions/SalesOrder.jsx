@@ -23,7 +23,7 @@ import { NewSpectacles, NewContactLens, SaveContactLensProfile, SaveSpectacles }
 import CustomInput from "../../Components/input/dateInput";
 import { GetJobSheetForm, GetSalesDocPaymentReport, GetSalesDocReport } from "../../api/reportapi";
 import ReportSelectionModal from "../../modals/ReportSelectionModel";
-
+import CollectItemModal from "../../modals/Transactions/CollectItemModal";
 
 const CustomerGridBoxDisplayExpr = (item) => item && `${item.debtorCode}`;
 const SalesPersonGridBoxDisplayExpr = (item) => item && `${item.userName}`;
@@ -1499,6 +1499,7 @@ const SalesOrder = () => {
         setReportSelectionOpenModal({ docId: "" });
     };
 
+    const [isCollectModalOpen, setIsCollectModalOpen] = useState(false);
 
     return (
         <>
@@ -2034,7 +2035,8 @@ const SalesOrder = () => {
 
                 <div className="w-full flex flex-row justify-end">
 
-                    <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
+                        onClick={() => setIsCollectModalOpen(true)}>
                         Collection
                     </button>
                     <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
@@ -2058,6 +2060,15 @@ const SalesOrder = () => {
                     salesOrderId={masterData?.salesOrderId}
                     onError={setErrorModal}
                     onSave={handleSaveAfterPayment}
+                />
+
+                <CollectItemModal
+                    isOpen={isCollectModalOpen}
+                    onClose={() => setIsCollectModalOpen(false)}
+                    salesOrder={masterData}
+                    companyId={companyId}
+                    userId={userId}
+                    ref={gridRef}
                 />
             </div>
         </>
