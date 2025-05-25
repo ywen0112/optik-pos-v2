@@ -2036,7 +2036,13 @@ const SalesOrder = () => {
                 <div className="w-full flex flex-row justify-end">
 
                     <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
-                        onClick={() => setIsCollectModalOpen(true)}>
+                        onClick={() => {
+                            if(selectedSalesOrder.salesOrderId === "" || selectedSalesOrder.salesOrderId === null){
+                                setErrorModal({title: "Collection Error", message: "Please Save current Sales Order first and select select a Sales Order to proceed"});
+                                return;
+                            }
+                            setIsCollectModalOpen(true)    
+                        }}>
                         Collection
                     </button>
                     <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"

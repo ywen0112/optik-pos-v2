@@ -132,7 +132,6 @@ const processSalesOrderData = (data) => {
 };
 
 const handleSaveCollection = async () => {
-
   try {
     const payload = {
       actionData: {
@@ -150,7 +149,7 @@ const handleSaveCollection = async () => {
         {
           salesOrderCollectDetailId: salesOrderCollectDetailId,
           salesOrderId: salesOrder.documentId || salesOrder.salesOrderId,
-          salesOrderDetailId: "", 
+          salesOrderDetailId: selectedItem.salesOrderDetailId, 
           itemId: selectedItem.itemId,
           itemUOMId: selectedItem.itemUOMId,
           collectQty: selectedQty,

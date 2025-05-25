@@ -40,7 +40,6 @@ const TransactionItemDataGrid = ({ disabled, height, className, customStore, gri
             };
         },
         byKey: async (key) => {
-            console.log(key)
             const res = await GetItem({
                 companyId,
                 userId,

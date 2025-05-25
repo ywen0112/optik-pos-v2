@@ -213,7 +213,6 @@ const SalesInquiry = () => {
   }
 
   const handlePrintReport = async (item) => {
-    console.log(item)
     setReportSelectionModal({ isOpen: true, docId: item?.documentId, docType: item?.docType })
   }
 

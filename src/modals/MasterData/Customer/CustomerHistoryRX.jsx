@@ -120,7 +120,6 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
           } else throw new Error(res.errorMessage || "Failed to save Contact Lens Eye Power Records");
         }
       } else if (confirmModal.action === "delete") {
-        console.log(confirmModal.data)
         const item = confirmModal.data;
         if (item.type === "ContactLens") {
           const res = await DeleteContactLen({
