@@ -22,7 +22,7 @@ import SalesOrderPaymentModal from "../../modals/Transactions/SalesOrderPaymentM
 import ErrorModal from "../../modals/ErrorModal";
 import NotificationModal from "../../modals/NotificationModal";
 import ReportSelectionModal from "../../modals/ReportSelectionModel";
-import { GetSalesDocPaymentReport, GetSalesDocReport } from "../../api/reportapi";
+import { GetJobSheetForm, GetSalesDocPaymentReport, GetSalesDocReport } from "../../api/reportapi";
 import CollectItemModal from "../../modals/Transactions/CollectItemModal";
 
 const CustomerGridBoxDisplayExpr = (item) =>
@@ -37,7 +37,9 @@ const SalesInquiry = () => {
   const companyId = sessionStorage.getItem("companyId");
   const userId = sessionStorage.getItem("userId");
   const [startDate, setStartDate] = useState(() => {
-    return new Date(2024, 11, 1);
+    const today = new Date();
+    const oneMonthBefore = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    return oneMonthBefore;
   });
 
 
@@ -221,7 +223,6 @@ const SalesInquiry = () => {
 
     for (const report of selectedReports) {
       let res;
-
       try {
         if (report.reportType === "SalesOrder") {
           res = await GetSalesDocReport({
@@ -229,7 +230,7 @@ const SalesInquiry = () => {
             userId: userId,
             id: reportSelectionModal.docId,
             name: report.reportName,
-            isCashSales: true,
+            isCashSales: reportSelectionModal.docType === "Cash Sales",
           });
         } else if (report.reportType === "SalesOrderPayment") {
           res = await GetSalesDocPaymentReport({
@@ -237,7 +238,14 @@ const SalesInquiry = () => {
             userId: userId,
             id: reportSelectionModal.docId,
             name: report.reportName,
-            isCashSales: true,
+            isCashSales: reportSelectionModal.docType === "Cash Sales",
+          });
+        } else if (report.reportType === "JobSheetForm"){
+          res = await GetJobSheetForm({
+            companyId: companyId,
+            userId: userId,
+            id: reportSelectionModal.docId,
+            name: report.reportName
           });
         }
 
@@ -379,14 +387,14 @@ const SalesInquiry = () => {
         />
       )}
 
-     <CollectItemModal
-      isOpen={collectModal}
-      onClose={() => setCollectModal(false)}
-      salesOrder={collectItem}
-      companyId={companyId}
-      userId={userId}
-      ref={gridRef}
-    />
+      <CollectItemModal
+        isOpen={collectModal}
+        onClose={() => setCollectModal(false)}
+        salesOrder={collectItem}
+        companyId={companyId}
+        userId={userId}
+        ref={gridRef}
+      />
     </>
   );
 };

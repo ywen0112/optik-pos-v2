@@ -1,6 +1,6 @@
 import CustomStore from "devextreme/data/custom_store";
 import { useRef, useState } from "react";
-import { GetCommissionReport } from "../../api/reportapi";
+import { GetCommissionData, GetCommissionReport } from "../../api/reportapi";
 import ErrorModal from "../../modals/ErrorModal";
 import DatePicker from "react-datepicker";
 import CustomInput from "../../Components/input/dateInput";
@@ -23,17 +23,13 @@ const CommissionReport = () => {
     });
     const [data, setData] = useState(null);
 
-    const handleGetCommission = async (isGenerateReport) => {
-        let success = false;
+    const handleGetCommission = async () => {
         const CommissionStore = new CustomStore({
             key: "documentId",
             load: async (loadOptions) => {
                 const { skip, take } = loadOptions;
                 const params = {
                     companyId,
-                    userId,
-                    reportName: "Commission Report",
-                    generateReport: isGenerateReport,
                     fromDate: startDate,
                     toDate: endDate,
                     offset: skip || 0,
@@ -41,13 +37,12 @@ const CommissionReport = () => {
                 };
 
                 try {
-                    const res = await GetCommissionReport(params);
+                    const res = await GetCommissionData(params);
 
                     if (!res.success) {
                         throw new Error(res.errorMessage || "Failed to retrieve Daily Closing Summary");
                     }
 
-                    success = true;
 
                     return {
                         data: res.data.documents,
@@ -63,15 +58,20 @@ const CommissionReport = () => {
         })
 
         setData(() => CommissionStore);
-        return new Promise((resolve) => {
-            resolve(true);
-        });
     }
 
     const handleGetReport = async (isDownload) => {
         try {
-            const success = await handleGetCommission(true);
             const reportName = "Commission Report"
+            const params = {
+                companyId: companyId,
+                userId: userId,
+                reportName: reportName,
+                fromDate: startDate,
+                toDate: endDate,
+            }
+            const res = await GetCommissionReport(params)
+            const success = res.success
             if (success) {
                 if (isDownload) {
                     const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {

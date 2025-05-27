@@ -13,7 +13,9 @@ const SalesHistoryDataGrid = ({ className, onError, debtorId }) => {
   const companyId = sessionStorage.getItem("companyId")
   const userId = sessionStorage.getItem("userId");
   const salesDataGridRef = useRef(null);
-  const [fromDate, setFromDate] = useState(new Date());
+  const [fromDate, setFromDate] = useState(() => {
+    return new Date(2024, 11, 1);
+  });
   const [toDate, setToDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
 

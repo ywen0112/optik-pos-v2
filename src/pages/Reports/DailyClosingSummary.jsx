@@ -3,7 +3,7 @@ import ErrorModal from "../../modals/ErrorModal";
 import CustomInput from "../../Components/input/dateInput";
 import DatePicker from "react-datepicker";
 import DailyClosingSummaryDataGrid from "../../Components/DataGrid/Report/DailyClosingSummaryDataGrid";
-import { GetDailyClosing } from "../../api/reportapi";
+import { GetDailyClosingReport, GetDailyClosingData } from "../../api/reportapi";
 import CustomStore from "devextreme/data/custom_store";
 
 const DailyClosingSummaryReport = () => {
@@ -18,8 +18,7 @@ const DailyClosingSummaryReport = () => {
 
     const [data, setData] = useState(null);
 
-    const handleGetDailyClosing = async (isGenerateReport) => {
-        let success = false;
+    const handleGetDailyClosing = async () => {
         const DailyClosingStore = new CustomStore({
             key: "documentId",
             load: async (loadOptions) => {
@@ -27,22 +26,17 @@ const DailyClosingSummaryReport = () => {
 
                 const params = {
                     companyId,
-                    userId,
-                    reportName: "Daily Closing Summary Report",
                     date: startDate,
-                    generateReport: isGenerateReport,
                     offset: skip || 0,
                     limit: take || 10,
                 };
 
                 try {
-                    const res = await GetDailyClosing(params);
+                    const res = await GetDailyClosingData(params);
 
                     if (!res.success) {
                         throw new Error(res.errorMessage || "Failed to retrieve Daily Closing Summary");
                     }
-
-                    success = true;
 
                     return {
                         data: res.data,
@@ -58,17 +52,19 @@ const DailyClosingSummaryReport = () => {
         });
 
         setData(() => DailyClosingStore);
-
-        return new Promise((resolve) => {
-            resolve(true);
-        });
     }
-
 
     const handleGetReport = async (isDownload) => {
         try {
-            const success = await handleGetDailyClosing(true);
             const reportName = "Daily Closing Summary Report"
+            const params = {
+                companyId: companyId,
+                userId: userId,
+                reportName: reportName,
+                date: startDate
+            }
+            const res = await GetDailyClosingReport(params);
+            const success = res.success
             if (success) {
                 if (isDownload) {
                     const fileResponse = await fetch(`https://report.absplt.com/reporting/GetReport/${companyId}/${reportName}/${userId}`, {

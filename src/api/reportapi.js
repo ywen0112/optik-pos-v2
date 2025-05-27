@@ -4,8 +4,10 @@ const getSalesReportType = `${ApiBaseUrl}Report/GetAvailableSalesDocReportName`;
 const getSalesDocReport = `${ApiBaseUrl}Report/GetSalesDocReport`;
 const getSalesDocPaymentReport = `${ApiBaseUrl}Report/GetSalesDocPaymentReport`;
 const getJobSheetForm = `${ApiBaseUrl}Report/GetJobSheetForm`;
-const getDailyClosing = `${ApiBaseUrl}DailyClosingSummary/GetResults`;
-const getCommissionReport = `${ApiBaseUrl}Commission/GetResults`;
+const getDailyClosingData = `${ApiBaseUrl}DailyClosingSummary/GetResults`;
+const getDailyClosingReport = `${ApiBaseUrl}DailyClosingSummary/GenerateReport`;
+const getCommissionData = `${ApiBaseUrl}Commission/GetResults`;
+const getCommissionReport = `${ApiBaseUrl}Commission/GenerateReport`;
 
 export const GetSalesReportType = ({companyId, isCashSales}) =>{
     return getRequest(`${getSalesReportType}?companyId=${companyId}&isCashSales=${isCashSales}`)
@@ -32,31 +34,49 @@ export const GetJobSheetForm = ({companyId, userId, id, name}) =>{
     return postRequest(getJobSheetForm, body);
 }
 
-export const GetDailyClosing = ({companyId, userId, reportName, generateReport, date, offset, limit}) =>{
+export const GetDailyClosingData = ({companyId, date, offset, limit}) =>{
     const body = JSON.stringify({
         companyId,
-        userId,
-        reportName,
-        generateReport,
         date,
         offset,
         limit
     });
 
-    return postRequest(getDailyClosing, body);
+    return postRequest(getDailyClosingData, body);
 }
 
-export const GetCommissionReport = ({companyId, userId, reportName, generateReport, fromDate, toDate, offset, limit}) =>{
+export const GetDailyClosingReport = ({companyId, userId, reportName, date}) =>{
     const body = JSON.stringify({
         companyId,
         userId,
         reportName,
-        generateReport,
+        date,
+    });
+
+    return postRequest(getDailyClosingReport, body);
+}
+
+
+export const GetCommissionReport = ({companyId, userId, reportName, fromDate, toDate}) =>{
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        reportName,
+        fromDate,
+        toDate,
+    });
+
+    return postRequest(getCommissionReport, body);
+}
+
+export const GetCommissionData = ({companyId, offset, limit, fromDate, toDate}) =>{
+    const body = JSON.stringify({
+        companyId,
         fromDate,
         toDate,
         offset,
         limit
     });
 
-    return postRequest(getCommissionReport, body);
+    return postRequest(getCommissionData, body);
 }
