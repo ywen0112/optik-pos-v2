@@ -159,7 +159,6 @@ const SalesInquiry = () => {
           if (!res.success) {
             throw new Error(res.errorMessage || "Failed to retrieve sales inquiry data.");
           }
-
           const enrichedSalesData = res.data?.map(sale => {
             if (!sale.payments) return { ...sale, outstanding: sale.total };
 

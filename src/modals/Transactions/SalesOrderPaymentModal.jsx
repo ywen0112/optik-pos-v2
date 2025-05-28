@@ -135,13 +135,15 @@ const SalesOrderPaymentModal = ({ isOpen, onClose, total, companyId, userId, sal
           cashPayment.amount = Math.max(originalAmount - overpaidAmount, 0); // Ensure it doesn't go negative
         }
       }
+      const totalPayments = selectedPayments.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+   
       const payload = {
         actionData: { companyId, userId, id: salesOrderId },
         salesOrderPaymentId: salesOrderPaymentData?.salesOrderPaymentId,
         salesOrderId,
         docDate: new Date().toISOString(),
         remark: '',
-        total: parseFloat(total),
+        total: totalPayments,
         isVoid: false,
         details: selectedPayments.map(item => ({
           salesOrderPaymentDetailId: item.salesOrderPaymentDetailId,

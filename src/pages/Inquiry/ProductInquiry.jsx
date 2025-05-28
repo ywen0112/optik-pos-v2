@@ -167,7 +167,6 @@ const handleGetInquiry = useCallback(() => {
           toDate: endDate,
           // history: historyRes.data?.filter(h => h.itemCode === item.itemCode) || [],
         }];
-
         return {
           data: enrichedData,
           totalCount: 1,

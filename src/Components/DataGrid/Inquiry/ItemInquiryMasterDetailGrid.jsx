@@ -34,7 +34,7 @@ const DetailTabs = ({ data }) => {
           });
 
           const filtered = res.data?.filter(h => h.itemCode === data.itemCode) || [];
-
+          console.log('Filtered History Data:', filtered);
           return {
             data: filtered,
             totalCount: res.totalRecords || 1000, // if totalRecords is returned, use that
@@ -81,10 +81,22 @@ const DetailTabs = ({ data }) => {
             <Column dataField="name" caption="Debtor Name" width={"300px"}/>
             <Column dataField="uom" caption="UOM" width={"70px"}/>
             <Column dataField="qty" caption="Qty" width={"50px"}/>
-            <Column dataField="unitPrice" caption="Unit Price" format={{ type: 'currency', currency: 'MYR' }} width={"70px"}/>
+            <Column dataField="unitPrice" caption="Unit Price" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} width={"150px"}/>
             <Column dataField="discount" caption="Discount" width={"70px"}/>
-            <Column dataField="discountAmount" caption="Discount Amt" format={{ type: 'currency', currency: 'MYR' }} width={"100px"} />
-            <Column dataField="subTotal" caption="Subtotal" format={{ type: 'currency', currency: 'MYR' }} width={"150px"}/>
+            <Column dataField="discountAmount" caption="Discount Amt" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} width={"100px"} />
+            <Column dataField="subTotal" caption="Subtotal" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} width={"150px"}/>
           </DataGrid>
         ) : (
           <div>Loading...</div>
@@ -123,9 +135,17 @@ const ItemInquiryMasterDataDetailGrid = ({ ref, itemData }) => {
         <Column dataField="itemTypeCode" />
         {/* <Column dataField="barCode" /> */}
         <Column dataField="uom" />
-        <Column dataField="price" format={{ type: "currency", currency: "MYR" }} />
+        <Column dataField="price" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
         {/* <Column dataField="rate" /> */}
-        <Column dataField="cost" format={{ type: "currency", currency: "MYR" }} />
+        <Column dataField="cost" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }}/>
         {/* <Column dataField="minSalePrice" format={{ type: "currency", currency: "MYR" }} /> */}
         <Column dataField="classification" />
         <Column dataField="balQty" />

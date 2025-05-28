@@ -24,10 +24,22 @@ const DetailTabs = ({ data }) => {
                     <Column dataField="uom" caption="UOM" />
                     <Column dataField="description" />
                     <Column dataField="qty" caption="Qty" />
-                    <Column dataField="unitPrice" caption="Unit Price" format={{ type: "currency", currency: "MYR" }} />
+                    <Column dataField="unitPrice" caption="Unit Price" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
                     <Column dataField="discount" />
-                    <Column dataField="discountAmount" caption="Discount Amt" format={{ type: "currency", currency: "MYR" }} />
-                    <Column dataField="subTotal" caption="Subtotal" format={{ type: "currency", currency: "MYR" }} />
+                    <Column dataField="discountAmount" caption="Discount Amt" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
+                    <Column dataField="subTotal" caption="Subtotal" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
                 </DataGrid>
             ),
         },
@@ -48,10 +60,26 @@ const DetailTabs = ({ data }) => {
                         }}
                     />
 
-                    <Column dataField="cashAmount" format={{ type: "currency", currency: "MYR" }} />
-                    <Column dataField="creditCardAmount" format={{ type: "currency", currency: "MYR" }} />
-                    <Column dataField="eWalletAmount" format={{ type: "currency", currency: "MYR" }} />
-                    <Column dataField="total" format={{ type: "currency", currency: "MYR" }} />
+                    <Column dataField="cashAmount" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
+                    <Column dataField="creditCardAmount" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
+                    <Column dataField="eWalletAmount" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
+                    <Column dataField="total" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
                     <Column dataField="isVoid" caption="Is Void" dataType="boolean" />
                 </DataGrid>
             ),
@@ -100,11 +128,19 @@ const SalesInquiryMasterDetailGrid = ({ ref, salesData, onPay, onCollect, onPrin
             <Column dataField="debtorCode" />
             <Column dataField="debtorName" />
             <Column dataField="salesPerson" />
-            <Column dataField="total" format={{ type: "currency", currency: "MYR" }} />
+            <Column dataField="total" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
             <Column
                 dataField="outstanding"
                 caption="Outstanding"
-                format={{ type: "currency", currency: "MYR" }}
+                format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }}
             />
             <Column
                 caption="Action"
