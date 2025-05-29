@@ -13,10 +13,22 @@ const DetailTabs = ({ data }) => {
                 <Column dataField="uom" caption="UOM" />
                 <Column dataField="description" />
                 <Column dataField="qty" caption="Qty" />
-                <Column dataField="unitPrice" caption="Unit Price" format={{ type: "currency", currency: "MYR" }} />
+                <Column dataField="unitPrice" caption="Unit Price" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
                 <Column dataField="discount" />
-                <Column dataField="discountAmount" caption="Discount Amt" format={{ type: "currency", currency: "MYR" }} />
-                <Column dataField="subTotal" caption="Subtotal" format={{ type: "currency", currency: "MYR" }} />
+                <Column dataField="discountAmount" caption="Discount Amt" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
+                <Column dataField="subTotal" caption="Subtotal" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
                 <Column dataField="classification" />
                 <Column dataField="commissionType" caption="Commission Type"/>
                 <Column dataField="value" caption="Comm Value"/>
@@ -69,11 +81,19 @@ const CommissionReportDataGrid = ({ ref, data }) => {
                 <Column dataField="debtorCode" />
                 <Column dataField="debtorName" />
                 <Column dataField="isVoid" />
-                <Column dataField="total" format={{ type: "currency", currency: "MYR" }} />
+                <Column dataField="total" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
                 <Column
                     dataField="totalCommissionAmount"
                     caption="Total Commission"
-                    format={{ type: "currency", currency: "MYR" }}
+                    format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }}
                 />
                 <Column dataField="salesPerson" caption="Sales Person" />
                 <Column dataField="Remark" />

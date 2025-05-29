@@ -289,7 +289,7 @@ export const GetItem = ({companyId, userId, id}) =>{
     return postRequest(getItem, body);
 };
 
-export const SaveItem = ({actionData, itemId, itemCode, isActive, description, desc2, itemGroupId, itemTypeId, classification, itemUOM, itemCommission}) =>{
+export const SaveItem = ({actionData, itemId, itemCode, isActive, description, desc2, itemGroupId, itemTypeId, classification, itemUOM, hasCommission, itemCommission}) =>{
     const body = JSON.stringify({
         actionData,
         itemId,
@@ -301,6 +301,7 @@ export const SaveItem = ({actionData, itemId, itemCode, isActive, description, d
         itemTypeId,
         classification,
         itemUOM,
+        hasCommission,
         itemCommission,
     });
 

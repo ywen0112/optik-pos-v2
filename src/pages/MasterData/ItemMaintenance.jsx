@@ -96,6 +96,7 @@ const ItemMaintenance = () => {
                     itemTypeId: data.itemTypeId,
                     remark: data.remark,
                     itemUOM: data.itemUOM,
+                    hasCommission: data.hasCommission,
                     itemCommission: data.itemCommission
                 });
                 if (resData.success) {

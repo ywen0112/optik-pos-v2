@@ -137,10 +137,22 @@ const SalesHistoryDataGrid = ({ className, onError, debtorId }) => {
               <Column dataField="desc2" caption="Desc2" />
               <Column dataField="uom" caption="UOM" />
               <Column dataField="qty" caption="Qty" alignment="left" dataType="number" />
-              <Column dataField="unitPrice" caption="Unit Price" alignment="left" format="currency" />
+              <Column dataField="unitPrice" caption="Unit Price" alignment="left" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }}/>
               <Column dataField="discount" caption="Discount" alignment="left" />
-              <Column dataField="discountAmount" caption="Discount Amount" alignment="left" format="currency" />
-              <Column dataField="subTotal" caption="SubTotal" alignment="left" format="currency" />
+              <Column dataField="discountAmount" caption="Discount Amount" alignment="left" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }}/>
+              <Column dataField="subTotal" caption="SubTotal" alignment="left" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
               <Column dataField="classification" caption="Classification" />
             </StandardDataGridComponent>
           </div>

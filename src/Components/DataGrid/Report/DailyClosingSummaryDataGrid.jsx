@@ -18,9 +18,21 @@ const DetailTabs = ({ data }) => {
         title: "Detail",
         component: () => (
             <DataGrid dataSource={details} showBorders={true} columnAutoWidth={true}>
-                <Column dataField="cashAmount" caption="Cash Received" format={{ type: "currency", currency: "MYR" }} />
-                <Column dataField="creditCardAmount" caption="Credit Card Received" format={{ type: "currency", currency: "MYR" }} />
-                <Column dataField="eWalletAmount" caption="E-Wallet Received" format={{ type: "currency", currency: "MYR" }} />
+                <Column dataField="cashAmount" caption="Cash Received" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }}/>
+                <Column dataField="creditCardAmount" caption="Credit Card Received" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
+                <Column dataField="eWalletAmount" caption="E-Wallet Received" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
                 <Column dataField="createdUserName" caption="Created By" />
                 <Column dataField="createdTimeStamp" caption="Created On" />
                 <Column dataField="lastModifiedUserName" caption="Modified by" />
@@ -71,11 +83,19 @@ const DailyClosingSummaryDataGrid = ({ ref, data }) => {
 
                 <Column dataField="debtorCode" />
                 <Column dataField="debtorName" />
-                <Column dataField="total" format={{ type: "currency", currency: "MYR" }} />
+                <Column dataField="total" format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }} />
                 <Column
                     dataField="outstandingAmount"
                     caption="Outstanding"
-                    format={{ type: "currency", currency: "MYR" }}
+                    format={{ 
+                    type: "currency", 
+                    currency: "MYR", 
+                    precision: 2 // Allows 2 decimal places
+                }}
                 />
                 <MasterDetail enabled={true} render={DetailTabs} />
             </StandardDataGridComponent>

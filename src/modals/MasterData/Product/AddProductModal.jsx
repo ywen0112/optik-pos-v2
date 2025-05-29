@@ -510,7 +510,7 @@ const UpdateProductModal = ({
                             <div className='flex flex-row'>
                                 <input
                                     type="checkbox"
-                                    checked={hasCommission}
+                                    checked={formData?.hasCommission ?? false}
                                     className="mr-2"
                                     onChange={(e) => {
                                         setHasCommission(e.target.checked)
@@ -525,7 +525,7 @@ const UpdateProductModal = ({
                             </div>
                             <div className="flex flex-col col-span-2 mt-2 border-[1px]  border-[#e5e7eb] p-2">
 
-                                <div className={`flex-col items-center transition-opacity duration-200 ${hasCommission ? '' : 'opacity-50 pointer-events-none select-none'}`}>
+                                <div className={`flex-col items-center transition-opacity duration-200 ${formData?.hasCommission ? '' : 'opacity-50 pointer-events-none select-none'}`}>
 
                                     <div className="flex-row space-x-2">
 
