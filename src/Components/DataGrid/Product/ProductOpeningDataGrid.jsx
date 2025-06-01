@@ -198,14 +198,14 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                         <DropDownBox
                             id="itemOpeningItemLookup"
                             value={selectedItem?.itemId}
-                            opened={dropDownBoxOpen}
+                            // opened={dropDownBoxOpen}
                             openOnFieldClick={true}
                             valueExpr="itemId"
                             displayExpr="itemCode"
                             placeholder="Select Item"
                             showClearButton={true}
                             onValueChanged={handleItemLookupChanged}
-                            onOptionChanged={onItemLookupOpened}
+                            // onOptionChanged={onItemLookupOpened}
                             contentRender={onItemLookupRender}
                             dataSource={itemStore}
                             dropDownOptions={{
@@ -222,37 +222,37 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                 dataField="qty" 
                 caption="QTY" 
                 width={"80px"} 
-                editCellRender={({ data, setValue }) => {
-                    return (
-                        <NumberBox
-                            value={data?.qty}
-                            min={0}
-                            showSpinButtons={true}
-                            inputAttr={{ 'aria-label': 'Quantity' }}
-                            onValueChanged={(e) => {
-                                setValue(e.value);
-                            }}
-                        />
-                    );
-                }}
+                // editCellRender={({ value, setValue }) => {
+                //     return (
+                //         <NumberBox
+                //             value={value}
+                //             min={0}
+                //             showSpinButtons={true}
+                //             inputAttr={{ 'aria-label': 'Quantity' }}
+                //             onValueChanged={(e) => {
+                //                 setValue(e.value);
+                //             }}
+                //         />
+                //     );
+                // }}
             />
             <Column 
                 dataField="unitCost" 
                 caption="Unit Cost" 
                 width={"80px"} 
-                editCellRender={({ data, setValue }) => {
-                    return (
-                        <NumberBox
-                            value={data?.unitCost}
-                            min={0}
-                            showSpinButtons={true}
-                            inputAttr={{ 'aria-label': 'Quantity' }}
-                            onValueChanged={(e) => {
-                                setValue(e.value);
-                            }}
-                        />
-                    );
-                }}
+                // editCellRender={({ value, setValue }) => {
+                //     return (
+                //         <NumberBox
+                //             value={value}
+                //             min={0}
+                //             showSpinButtons={true}
+                //             inputAttr={{ 'aria-label': 'Quantity' }}
+                //             onValueChanged={(e) => {
+                //                 setValue(e.value);
+                //             }}
+                //         />
+                //     );
+                // }}
             />
             <Column
                 caption="Action"
