@@ -92,8 +92,11 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
             setSelectedItem(selected);
             onSelect(selected, currentRow);
         }
+        const grid = productOpeningDataGridRef.current?.instance;
+        if (grid) {
+            grid.cancelEditData();
+        }
         setDropDownBoxOpen(false);
-
     }, [currentRow]);
 
     const handleItemLookupChanged = (e) => {
@@ -143,6 +146,9 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
         if (e.rowType === "data" && grid) {
             setCurrentRow(e.data);
             grid.editCell(e.rowIndex, e.column.dataField);
+            if (e.column.dataField === "itemCode") {
+                setDropDownBoxOpen(true);
+            }
         }
     },[])
 
@@ -162,19 +168,29 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
             allowColumnReordering={false}
             allowEditing={true}
             onCellClick={handleOnCellClick}
+            onToolbarPreparing={(e) => {
+                const items = e.toolbarOptions.items;
+                const addButtonIndex = items.findIndex(item => item.name === 'addRowButton');
+
+                if (addButtonIndex !== -1) {
+                    items[addButtonIndex].location = 'before';
+                }
+            }}
             onInitNewRow={async (e) => {
                 e.cancel = true
                 setSelectedItem(null)
-                await onNew();
+                const data = await onNew();
                 const grid = productOpeningDataGridRef.current?.instance;
                 if (grid) {
                     grid.cancelEditData();
-                    setTimeout(() => {
+                    setCurrentRow(data);
+                    setTimeout(() => {                        
                         const visibleRows = grid.getVisibleRows();
                         const lastRowIndex = visibleRows.length - 1;
             
                         if (lastRowIndex >= 0) {
                             grid.editCell(lastRowIndex, "itemCode");
+                            setDropDownBoxOpen(true)
                         }
                     }, 100); 
                 }
@@ -198,7 +214,7 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                         <DropDownBox
                             id="itemOpeningItemLookup"
                             value={selectedItem?.itemId}
-                            // opened={dropDownBoxOpen}
+                            opened={dropDownBoxOpen}
                             openOnFieldClick={true}
                             valueExpr="itemId"
                             displayExpr="itemCode"
@@ -209,7 +225,7 @@ const ProductOpeningDataGrid = ({ className, dataRecords, totalRecords, onSelect
                             contentRender={onItemLookupRender}
                             dataSource={itemStore}
                             dropDownOptions={{
-                                width: 500
+                                width: 700
                             }}
                         />
                     )

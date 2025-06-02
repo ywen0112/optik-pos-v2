@@ -163,7 +163,9 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
             if (setActiveItem) { setActiveItem(e.data) };
             setCurrentRow(e.data);
             grid.editCell(e.rowIndex, e.column.dataField);
-            setDropDownBoxOpen(true)
+            if (e.column.dataField === "itemCode") {
+                setDropDownBoxOpen(true);
+            }
         }
     }, [disabled])
 
@@ -207,16 +209,18 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
             onInitNewRow={async (e) => {
                 e.cancel = true
                 setSelectedItem(null)
-                await onNew();
+                const data = await onNew();
                 const grid = gridRef.current?.instance;
                 if (grid) {
                     grid.cancelEditData();
+                    setCurrentRow(data);
                     setTimeout(() => {
                         const visibleRows = grid.getVisibleRows();
                         const lastRowIndex = visibleRows.length - 1;
 
                         if (lastRowIndex >= 0) {
                             grid.editCell(lastRowIndex, "itemCode");
+                            setDropDownBoxOpen(true);
                         }
                     }, 100);
                 }
@@ -248,11 +252,11 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
                             placeholder="Select Item"
                             showClearButton={true}
                             onValueChanged={handleItemLookupChanged}
-                            onOptionChanged={onItemLookupOpened}
+                            // onOptionChanged={onItemLookupOpened}
                             contentRender={onItemLookupRender}
                             dataSource={itemStore}
                             dropDownOptions={{
-                                width: 500
+                                width: 700
                             }}
                         />
                     )

@@ -328,6 +328,7 @@ const CashSales = () => {
             if (res.success) {
                 const newRecords = res.data;
                 setCashSalesItem(prev => [...prev, newRecords]);
+                return newRecords;
             } else throw new Error(res.errorMessage || "Failed to add new Cash Sales Details");
         } catch (error) {
             setErrorModal({ title: "Failed to Add", message: error.message });

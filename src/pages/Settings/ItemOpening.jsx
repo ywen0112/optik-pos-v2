@@ -116,7 +116,7 @@ const ItemOpening = () => {
       <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
       <ConfirmationModal isOpen={confirmModal.isOpen} title={confirmationTitleMap[confirmModal.type] || "Confirm Action"} message={confirmationMessageMap[confirmModal.type] || "Are you sure?"} onConfirm={confirmAction} onCancel={() => setConfirmModal({ isOpen: false, type: "", targetUser: null })} />
       <NotificationModal isOpen={notifyModal.isOpen} message={notifyModal.message} onClose={() => setNotifyModal({ isOpen: false, message: "" })} />
-      <div className="mt-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
+      <div className="mt-2 p-2 bg-white h-[72vh] rounded-lg shadow overflow-hidden">
 
         <ProductOpeningDataGrid
           className={"p-2"}

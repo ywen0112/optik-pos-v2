@@ -643,6 +643,7 @@ const SalesOrder = () => {
                 const newRecords = res.data;
                 setIsNormalItem(true);
                 setSalesItem(prev => [...prev, newRecords]);
+                return newRecords;
             } else throw new Error(res.errorMessage || "Failed to add new Sales Order Details");
         } catch (error) {
             setErrorModal({ title: "Failed to Add", message: error.message });
@@ -1946,7 +1947,12 @@ const SalesOrder = () => {
                                 <input
                                     type="checkbox"
                                     checked={masterData?.isCollected}
-                                    onChange={(e) => setMasterData(prev => ({ ...prev, isCollected: e.target.checked }))}
+                                    onChange={(e) => {
+                                        if(e.target.checked){
+                                            setMasterData(prev => ({...prev, isReady: e.target.checked}))
+                                        }
+                                        setMasterData(prev => ({ ...prev, isCollected: e.target.checked }))
+                                    }}
                                     className="mr-1 accent-white"
                                 />
                                 Collected

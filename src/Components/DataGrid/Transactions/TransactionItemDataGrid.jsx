@@ -148,16 +148,17 @@ const TransactionItemDataGrid = ({ disabled, height, className, customStore, gri
             onInitNewRow={async (e) => {
                 e.cancel = true
                 setSelectedItem(null)
-                await onNew();
+                const data = await onNew();
                 const grid = gridRef.current?.instance;
                 if (grid) {
                     grid.cancelEditData();
                     setTimeout(() => {
                         const visibleRows = grid.getVisibleRows();
                         const lastRowIndex = visibleRows.length - 1;
-
+                        setCurrentRow(data);
                         if (lastRowIndex >= 0) {
                             grid.editCell(lastRowIndex, "itemCode");
+                            setDropDownBoxOpen(true);
                         }
                     }, 100);
                 }
@@ -189,11 +190,11 @@ const TransactionItemDataGrid = ({ disabled, height, className, customStore, gri
                             placeholder="Select Item"
                             showClearButton={true}
                             onValueChanged={handleItemLookupChanged}
-                            onOptionChanged={onItemLookupOpened}
+                            // onOptionChanged={onItemLookupOpened}
                             contentRender={onItemLookupRender}
                             dataSource={itemStore}
                             dropDownOptions={{
-                                width: 500
+                                width: 700
                             }}
                         />
                     )
