@@ -40,7 +40,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
-                checked={latesSpecRXData.dominentRightEye}
+                checked={latesSpecRXData?.actualRXSpectacles?.dominentEye === "right"}
                 readOnly
                 disabled
                 className=""
@@ -56,7 +56,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 readOnly
                 className="mr-2 border-2 w-full h-[40px] px-2 "
                 placeholder="Spectacles Type"
-                value={latesSpecRXData.spectaclesType}
+                value={latesSpecRXData?.actualRXSpectacles?.spectaclesType}
               />
             </div>
             <div className="mt-2">
@@ -65,7 +65,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 readOnly
                 className="mr-2 border-2 w-full h-[40px] px-2 "
                 placeholder="Optical Height"
-                value={latesSpecRXData.opticalHeight}
+                value={latesSpecRXData?.actualRXSpectacles?.opticalHeight}
               />
             </div>
             <div className="mt-2">
@@ -74,13 +74,13 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 readOnly
                 className="mr-2 border-2 w-full h-[40px] px-2 "
                 placeholder="Segment Height"
-                value={latesSpecRXData.segmentHeight}
+                value={latesSpecRXData?.actualRXSpectacles?.segmentHeight}
               />
             </div>
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
-                checked={latesSpecRXData.dominentLeftEye}
+                checked={latesSpecRXData?.actualRXSpectacles?.dominentEye === "left"}
                 readOnly
                 disabled
                 className=""
@@ -116,7 +116,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 type="text"
                 readOnly
                 className="border-2 px-2 h-[40px] "
-                value={latesSpecRXData[
+                value={latesSpecRXData?.actualRXSpectacles[
                   activeSpectaclesTab === 'SpecDistance' ? `r_D_${field}` : `r_R_${field}`
                 ] || ""}
               />
@@ -129,7 +129,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 type="text"
                 readOnly
                 className="border-2 px-2 h-[40px] "
-                value={latesSpecRXData[
+                value={latesSpecRXData?.actualRXSpectacles[
                   activeSpectaclesTab === 'SpecDistance' ? `l_D_${field}` : `l_R_${field}`
                 ] || ""}
               />
@@ -181,7 +181,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 type="text"
                 readOnly
                 className="border-2 px-2 h-[40px] "
-                value={latestLensRXData[
+                value={latestLensRXData?.actualRXContactLens[
                   activeLensTab === 'LensDistance' ? `r_D_${field}` : `r_R_${field}`
                 ] || ""}
               />
@@ -195,7 +195,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
                 type="text"
                 readOnly
                 className="border-2 px-2 h-[40px] "
-                value={latestLensRXData[
+                value={latestLensRXData?.actualRXContactLens[
                   activeLensTab === 'LensDistance' ? `l_D_${field}` : `l_R_${field}`
                 ] || ""}
               />

@@ -17,7 +17,7 @@ import { GetSalesOrder, GetSalesOrderRecords, NewSalesOrder, NewSalesOrderDetail
 import { getInfoLookUp } from "../../api/infolookupapi";
 import { GetSpecificUser } from "../../api/userapi";
 import TransactionItemWithDiscountDataGrid from "../../Components/DataGrid/Transactions/TransactionItemDataGridWithDisc";
-import { SaveDebtor, NewDebtor, GetDebtor, GetItem, GetItemGroup } from "../../api/maintenanceapi";
+import { SaveDebtor, NewDebtor, GetDebtor, GetItem, GetItemGroup, GetLatestDebtorSpectacles, GetLatestDebtorContactLens } from "../../api/maintenanceapi";
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
 import { NewSpectacles, NewContactLens, SaveContactLensProfile, SaveSpectacles } from "../../api/eyepowerapi";
 import CustomInput from "../../Components/input/dateInput";
@@ -197,6 +197,11 @@ const SalesOrder = () => {
         r_D_VA: null,
     });
 
+    const [oldSpecRX, setOldSpecRX] = useState(null);
+    const [oldLensRX, setOldLensRX] = useState(null);
+    const [isSpecNew, setIsSpecNew] = useState(false);
+    const [isLensNew, setIsLensNew] = useState(false);
+
     useEffect(() => {
         createNewSalesOrder();
     }, []);
@@ -231,7 +236,6 @@ const SalesOrder = () => {
             return res.data;
         },
     });
-
 
     const userStore = new CustomStore({
         key: "userId",
@@ -342,10 +346,19 @@ const SalesOrder = () => {
         }
     };
 
-    const CustomerDataGridOnSelectionChanged = useCallback((e) => {
+    const CustomerDataGridOnSelectionChanged = useCallback(async (e) => {
         const selected = e.selectedRowsData?.[0];
         if (selected) {
+            if (salesItem.length >= 1) {
+                await clearData();
+            }
             setCustomerGridBoxValue({ debtorId: selected.debtorId, debtorCode: selected.debtorCode, companyName: selected.companyName });
+            const spec_res = await GetLatestDebtorSpectacles({ companyId, userId, id: selected.debtorId });
+            const lens_res = await GetLatestDebtorContactLens({ companyId, userId, id: selected.debtorId });
+            setOldSpecRX(spec_res.data);
+            setOldLensRX(lens_res.data);
+            setIsSpecNew(spec_res.data.isNew);
+            setIsLensNew(lens_res.data.isNew);
             setIsCustomerGridBoxOpened(false);
         }
     }, []);
@@ -565,6 +578,7 @@ const SalesOrder = () => {
                     salesOrderDetailId: rowData.salesOrderDetailId,
                     docDate: masterData.docDate,
                 }
+
                 setEyePowerSpectaclesFormData(prev => {
                     const exists = prev.find(record => record.salesOrderDetailId === data.salesOrderDetailId);
                     if (exists) {
@@ -798,6 +812,12 @@ const SalesOrder = () => {
                 if (eyePowerSpectaclesFormData.length > 0) {
                     eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({ ...eyePower }));
                 }
+                if (isLensNew) {
+                    console.log(oldLensRX);
+                }
+                if (isSpecNew) {
+                    console.log(oldSpecRX);
+                }
                 setNotifyModal({ isOpen: true, message: "Sales Order added successfully!" });
                 if (confirmModal.action === "addPrint" || confirmModal.action === "editPrint") {
                     setReportSelectionOpenModal({ isOpen: true, docId: confirmModal.data.salesOrderId });
@@ -814,77 +834,77 @@ const SalesOrder = () => {
         return;
     }
 
-    const handleSavePrint = () => {
-        if (salesItem.length <= 0) {
-            return;
-        }
-        const formData = {
-            ...masterData,
-            isVoid: false,
-            debtorId: CustomerGridBoxValue?.debtorId,
-            debtorName: CustomerGridBoxValue?.companyName,
-            salesPersonUserID: SalesPersonGridBoxValue?.id,
-            practitionerUserID: PractionerGridBoxValue?.id,
-            details: salesItem.map((item) => ({
-                salesOrderDetailId: item.salesOrderDetailId ?? "",
-                itemId: item.itemId ?? "",
-                itemUOMId: item.itemUOMId ?? "",
-                description: item.description ?? "",
-                desc2: item.desc2 ?? "",
-                qty: item.qty ?? 0,
-                unitPrice: item.price ?? 0,
-                discount: item.discountType,
-                discountAmount: item.discountAmount ?? 0,
-                subTotal: item.subTotal ?? 0,
-                classification: item.classification ?? ""
-            })),
-            subTotal: currentTotal,
-            roundingAdjustment: rounding ?? 0,
-            total: total,
-        }
-        const action = isEdit ? "editPrint" : "addPrint";
-        setConfirmModal({
-            isOpen: true,
-            action: action,
-            data: formData,
-        })
-    }
+    // const handleSavePrint = () => {
+    //     if (salesItem.length <= 0) {
+    //         return;
+    //     }
+    //     const formData = {
+    //         ...masterData,
+    //         isVoid: false,
+    //         debtorId: CustomerGridBoxValue?.debtorId,
+    //         debtorName: CustomerGridBoxValue?.companyName,
+    //         salesPersonUserID: SalesPersonGridBoxValue?.id,
+    //         practitionerUserID: PractionerGridBoxValue?.id,
+    //         details: salesItem.map((item) => ({
+    //             salesOrderDetailId: item.salesOrderDetailId ?? "",
+    //             itemId: item.itemId ?? "",
+    //             itemUOMId: item.itemUOMId ?? "",
+    //             description: item.description ?? "",
+    //             desc2: item.desc2 ?? "",
+    //             qty: item.qty ?? 0,
+    //             unitPrice: item.price ?? 0,
+    //             discount: item.discountType,
+    //             discountAmount: item.discountAmount ?? 0,
+    //             subTotal: item.subTotal ?? 0,
+    //             classification: item.classification ?? ""
+    //         })),
+    //         subTotal: currentTotal,
+    //         roundingAdjustment: rounding ?? 0,
+    //         total: total,
+    //     }
+    //     const action = isEdit ? "editPrint" : "addPrint";
+    //     setConfirmModal({
+    //         isOpen: true,
+    //         action: action,
+    //         data: formData,
+    //     })
+    // }
 
-    const handleSave = () => {
-        if (salesItem.length <= 0) {
-            return;
-        }
-        const formData = {
-            ...masterData,
-            isVoid: false,
-            debtorId: CustomerGridBoxValue?.debtorId,
-            debtorName: CustomerGridBoxValue?.companyName,
-            salesPersonUserID: SalesPersonGridBoxValue?.id,
-            practitionerUserID: PractionerGridBoxValue?.id,
-            details: salesItem.map((item) => ({
-                salesOrderDetailId: item.salesOrderDetailId ?? "",
-                itemId: item.itemId ?? "",
-                itemUOMId: item.itemUOMId ?? "",
-                description: item.description ?? "",
-                desc2: item.desc2 ?? "",
-                qty: item.qty ?? 0,
-                unitPrice: item.price ?? 0,
-                discount: item.discountType,
-                discountAmount: item.discountAmount ?? 0,
-                subTotal: item.subTotal ?? 0,
-                classification: item.classification ?? ""
-            })),
-            subTotal: currentTotal,
-            roundingAdjustment: rounding ?? 0,
-            total: total,
-        }
-        const action = isEdit ? "edit" : "add";
-        setConfirmModal({
-            isOpen: true,
-            action: action,
-            data: formData,
-        })
-    }
+    // const handleSave = () => {
+    //     if (salesItem.length <= 0) {
+    //         return;
+    //     }
+    //     const formData = {
+    //         ...masterData,
+    //         isVoid: false,
+    //         debtorId: CustomerGridBoxValue?.debtorId,
+    //         debtorName: CustomerGridBoxValue?.companyName,
+    //         salesPersonUserID: SalesPersonGridBoxValue?.id,
+    //         practitionerUserID: PractionerGridBoxValue?.id,
+    //         details: salesItem.map((item) => ({
+    //             salesOrderDetailId: item.salesOrderDetailId ?? "",
+    //             itemId: item.itemId ?? "",
+    //             itemUOMId: item.itemUOMId ?? "",
+    //             description: item.description ?? "",
+    //             desc2: item.desc2 ?? "",
+    //             qty: item.qty ?? 0,
+    //             unitPrice: item.price ?? 0,
+    //             discount: item.discountType,
+    //             discountAmount: item.discountAmount ?? 0,
+    //             subTotal: item.subTotal ?? 0,
+    //             classification: item.classification ?? ""
+    //         })),
+    //         subTotal: currentTotal,
+    //         roundingAdjustment: rounding ?? 0,
+    //         total: total,
+    //     }
+    //     const action = isEdit ? "edit" : "add";
+    //     setConfirmModal({
+    //         isOpen: true,
+    //         action: action,
+    //         data: formData,
+    //     })
+    // }
 
     const handleSaveAfterPayment = async ({ action }) => {
         if (salesItem.length <= 0) {
@@ -924,6 +944,22 @@ const SalesOrder = () => {
         }
         if (eyePowerSpectaclesFormData.length > 0) {
             eyePowerSpectaclesFormData.forEach(async eyePower => await SaveSpectacles({ ...eyePower }));
+        }
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (isLensNew) {
+            setOldLensRX(prev => ({
+                ...prev,
+                docDate: yesterday
+            }));
+            await SaveContactLensProfile({ ...oldLensRX });
+        }
+        if (isSpecNew) {
+            setOldSpecRX(prev => ({
+                ...prev,
+                docDate: yesterday
+            }));
+            await SaveSpectacles({ ...oldSpecRX });
         }
         if (action === "save-print") {
             setReportSelectionOpenModal({ isOpen: true, docId: masterData.salesOrderId });
@@ -1104,7 +1140,7 @@ const SalesOrder = () => {
     //Eye Power
 
 
-    const [activeRxTab, setActiveRxTab] = useState("Prescribed RX");
+    const [activeRxTab, setActiveRxTab] = useState("Old RX");
     const [activeRxMode, setActiveRxMode] = useState("Distance");
 
     const [showCopyModal, setShowCopyModal] = useState(false);
@@ -1118,7 +1154,95 @@ const SalesOrder = () => {
 
     const handleCopyRxdata = () => {
         const sourceTab = activeRxTab;
-        const targetTab = activeRxTab === "Prescribed RX" ? "Actual RX" : "Prescribed RX";
+        let targetTab = activeRxTab === "Prescribed RX" ? "Actual RX" : "Prescribed RX";
+        if (activeRxTab === "Old RX") {
+            targetTab = "Actual RX";
+            if (currentActiveRow?.isSpectacles) {
+                setActualRX({
+                    dominantEye: oldSpecRX?.actualRXSpectacles?.dominantEye,
+                    opticalHeight: oldSpecRX?.actualRXSpectacles?.opticalHeight,
+                    segmentHeight: oldSpecRX?.actualRXSpectacles?.segmentHeight
+                });
+                setActualDistanceData({
+                    l_D_ADD: oldSpecRX.actualRXSpectacles.l_D_ADD ?? null,
+                    l_D_AXIS: oldSpecRX.actualRXSpectacles.l_D_AXIS ?? null,
+                    l_D_CYL: oldSpecRX.actualRXSpectacles.l_D_CYL ?? null,
+                    l_D_PD: oldSpecRX.actualRXSpectacles.l_D_PD ?? null,
+                    l_D_PRISM: oldSpecRX.actualRXSpectacles.l_D_PRISM ?? null,
+                    l_D_Remark: oldSpecRX.actualRXSpectacles.l_D_Remark ?? "",
+                    l_D_SPH: oldSpecRX.actualRXSpectacles.l_D_SPH ?? null,
+                    l_D_VA: oldSpecRX.actualRXSpectacles.l_D_VA ?? null,
+                    r_D_ADD: oldSpecRX.actualRXSpectacles.r_D_ADD ?? null,
+                    r_D_AXIS: oldSpecRX.actualRXSpectacles.r_D_AXIS ?? null,
+                    r_D_CYL: oldSpecRX.actualRXSpectacles.r_D_CYL ?? null,
+                    r_D_PRISM: oldSpecRX.actualRXSpectacles.r_D_PRISM ?? null,
+                    r_D_Remark: oldSpecRX.actualRXSpectacles.r_D_Remark ?? "",
+                    r_D_SPH: oldSpecRX.actualRXSpectacles.r_D_SPH ?? null,
+                    r_D_VA: oldSpecRX.actualRXSpectacles.r_D_VA ?? null
+                });
+                setActualReadingData({
+                    l_R_ADD: oldSpecRX.actualRXSpectacles.l_R_ADD ?? null,
+                    l_R_AXIS: oldSpecRX.actualRXSpectacles.l_R_AXIS ?? null,
+                    l_R_CYL: oldSpecRX.actualRXSpectacles.l_R_CYL ?? null,
+                    l_R_PD: oldSpecRX.actualRXSpectacles.l_R_PD ?? null,
+                    l_R_PRISM: oldSpecRX.actualRXSpectacles.l_R_PRISM ?? null,
+                    l_R_Remark: oldSpecRX.actualRXSpectacles.l_R_Remark ?? "",
+                    l_R_SPH: oldSpecRX.actualRXSpectacles.l_R_SPH ?? null,
+                    l_R_VA: oldSpecRX.actualRXSpectacles.l_R_VA ?? null,
+                    r_R_ADD: oldSpecRX.actualRXSpectacles.r_R_ADD ?? null,
+                    r_R_AXIS: oldSpecRX.actualRXSpectacles.r_R_AXIS ?? null,
+                    r_R_CYL: oldSpecRX.actualRXSpectacles.r_R_CYL ?? null,
+                    r_R_PRISM: oldSpecRX.actualRXSpectacles.r_R_PRISM ?? null,
+                    r_R_Remark: oldSpecRX.actualRXSpectacles.r_R_Remark ?? "",
+                    r_R_SPH: oldSpecRX.actualRXSpectacles.r_R_SPH ?? null,
+                    r_R_VA: oldSpecRX.actualRXSpectacles.r_R_VA ?? null
+                });
+            }
+            if (currentActiveRow?.isContactLens) {
+                setActualRX({
+                    dominantEye: oldLensRX?.actualRXContactLens?.dominantEye,
+                    opticalHeight: oldLensRX?.actualRXContactLens?.opticalHeight,
+                    segmentHeight: oldLensRX?.actualRXContactLens?.segmentHeight
+                });
+                setActualDistanceData({
+                    l_D_ADD: oldLensRX.actualRXContactLens.l_D_ADD ?? null,
+                    l_D_AXIS: oldLensRX.actualRXContactLens.l_D_AXIS ?? null,
+                    l_D_CYL: oldLensRX.actualRXContactLens.l_D_CYL ?? null,
+                    l_D_PD: oldLensRX.actualRXContactLens.l_D_PD ?? null,
+                    l_D_PRISM: oldLensRX.actualRXContactLens.l_D_PRISM ?? null,
+                    l_D_Remark: oldLensRX.actualRXContactLens.l_D_Remark ?? "",
+                    l_D_SPH: oldLensRX.actualRXContactLens.l_D_SPH ?? null,
+                    l_D_VA: oldLensRX.actualRXContactLens.l_D_VA ?? null,
+                    r_D_ADD: oldLensRX.actualRXContactLens.r_D_ADD ?? null,
+                    r_D_AXIS: oldLensRX.actualRXContactLens.r_D_AXIS ?? null,
+                    r_D_CYL: oldLensRX.actualRXContactLens.r_D_CYL ?? null,
+                    r_D_PRISM: oldLensRX.actualRXContactLens.r_D_PRISM ?? null,
+                    r_D_Remark: oldLensRX.actualRXContactLens.r_D_Remark ?? "",
+                    r_D_SPH: oldLensRX.actualRXContactLens.r_D_SPH ?? null,
+                    r_D_VA: oldLensRX.actualRXContactLens.r_D_VA ?? null
+                });
+                setActualReadingData({
+                    l_R_ADD: oldLensRX.actualRXContactLens.l_R_ADD ?? null,
+                    l_R_AXIS: oldLensRX.actualRXContactLens.l_R_AXIS ?? null,
+                    l_R_CYL: oldLensRX.actualRXContactLens.l_R_CYL ?? null,
+                    l_R_PD: oldLensRX.actualRXContactLens.l_R_PD ?? null,
+                    l_R_PRISM: oldLensRX.actualRXContactLens.l_R_PRISM ?? null,
+                    l_R_Remark: oldLensRX.actualRXContactLens.l_R_Remark ?? "",
+                    l_R_SPH: oldLensRX.actualRXContactLens.l_R_SPH ?? null,
+                    l_R_VA: oldLensRX.actualRXContactLens.l_R_VA ?? null,
+                    r_R_ADD: oldLensRX.actualRXContactLens.r_R_ADD ?? null,
+                    r_R_AXIS: oldLensRX.actualRXContactLens.r_R_AXIS ?? null,
+                    r_R_CYL: oldLensRX.actualRXContactLens.r_R_CYL ?? null,
+                    r_R_PRISM: oldLensRX.actualRXContactLens.r_R_PRISM ?? null,
+                    r_R_Remark: oldLensRX.actualRXContactLens.r_R_Remark ?? "",
+                    r_R_SPH: oldLensRX.actualRXContactLens.r_R_SPH ?? null,
+                    r_R_VA: oldLensRX.actualRXContactLens.r_R_VA ?? null
+                });
+            }
+            setShowCopyModal(false);
+            setActiveRxTab(targetTab);
+            return;
+        }
 
         if (sourceTab === "Prescribed RX") {
             setActualRX({ ...prescribedRX });
@@ -1314,6 +1438,8 @@ const SalesOrder = () => {
         if (activeRxTab === "Prescribed RX" && activeRxMode === "Distance") return prescribedDistanceData;
         if (activeRxTab === "Actual RX" && activeRxMode === "Reading") return actualReadingData;
         if (activeRxTab === "Actual RX" && activeRxMode === "Distance") return actualDistanceData;
+        if (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles) return oldSpecRX;
+        if (activeRxTab === "Old RX" && currentActiveRow?.isContactLens) return oldLensRX?.actualRXContactLens;
     };
 
     const getRxSetter = () => {
@@ -1321,10 +1447,32 @@ const SalesOrder = () => {
         if (activeRxTab === "Prescribed RX" && activeRxMode === "Distance") return setPrescribedDistanceData;
         if (activeRxTab === "Actual RX" && activeRxMode === "Reading") return setActualReadingData;
         if (activeRxTab === "Actual RX" && activeRxMode === "Distance") return setActualDistanceData;
+        if (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles) return setOldSpecRX;
+        if (activeRxTab === "Old RX" && currentActiveRow?.isContactLens) return setOldLensRX;
     };
 
     const handleRxChange = (eye, mode, field, value) => {
         const setter = getRxSetter();
+        if (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles) {
+            setter(prev => ({
+                ...prev,
+                actualRXSpectacles: {
+                    ...oldSpecRX.actualRXSpectacles,
+                    [`${eye}_${mode}_${field}`]: value
+                }
+            }));
+            return;
+        }
+        if (activeRxTab === "Old RX" && currentActiveRow?.isContactLens) {
+            setter(prev => ({
+                ...prev,
+                actualRXContactLens: {
+                    ...oldLensRX.actualRXContactLens,
+                    [`${eye}_${mode}_${field}`]: value
+                }
+            }));
+            return;
+        }
         setter(prev => ({
             ...prev,
             [`${eye}_${mode}_${field}`]: value
@@ -1722,9 +1870,10 @@ const SalesOrder = () => {
 
             <div className={isNormalItem ? "mt-3 p-2 bg-white shadow rounded w-full opacity-30" : "mt-3 p-2 bg-white shadow rounded w-full"}>
                 <div className="mb-4 flex space-x-4 w-full">
-                    {["Prescribed RX", "Actual RX"].map((tab) => (
+                    {["Old RX", "Prescribed RX", "Actual RX"].map((tab) => (
                         <div key={tab} className="relative flex-1">
                             <button
+                                disabled={isNormalItem}
                                 className={`w-full flex justify-center items-center gap-1 px-4 py-2 font-medium border-b-2 text-center relative ${activeRxTab === tab
                                     ? "text-secondary after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:border-b-2 after:border-primary after:bg-white"
                                     : "text-gray-500 hover:text-secondary"
@@ -1738,6 +1887,7 @@ const SalesOrder = () => {
                             </button>
 
                             <button
+                                disabled={isNormalItem}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setActiveRxTab(tab);
@@ -1755,44 +1905,71 @@ const SalesOrder = () => {
 
 
                 <div className="grid grid-cols-[7%,15%,7%,15%,20%,auto] items-center gap-3 w-full">
-                    <label className={activeRxTab === "Prescribed RX" ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary"}>Optical Height</label>
+                    <label className={(activeRxTab === "Prescribed RX" || (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles)) ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary"}>Optical Height</label>
                     <input
+                        disabled={activeRxTab === "Old RX" ? (currentActiveRow?.isSpectacles ? !isSpecNew : isNormalItem ? isNormalItem : !isLensNew) : isNormalItem}
                         type="text"
-                        className={activeRxTab === "Prescribed RX" ? "border rounded px-2 py-1 bg-white text-secondary w-full" : "border rounded px-2 py-1 bg-white text-secondary w-full invisible"}
+                        className={(activeRxTab === "Prescribed RX" || (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles)) ? "border rounded px-2 py-1 bg-white text-secondary w-full" : "border rounded px-2 py-1 bg-white text-secondary w-full invisible"}
                         placeholder="Enter"
-                        value={activeRxTab === "Prescribed RX" ? prescribedRX?.opticalHeight : actualRX?.opticalHeight}
+                        value={(activeRxTab === "Old RX" && currentActiveRow?.isSpectacles) ? oldSpecRX?.actualRXSpectacles?.opticalHeight : activeRxTab === "Prescribed RX" ? prescribedRX?.opticalHeight : actualRX?.opticalHeight}
                         onChange={(e) =>
-                            activeRxTab === "Prescribed RX"
-                                ? setPrescribedRX({ ...prescribedRX, opticalHeight: e.target.value })
-                                : setActualRX({ ...actualRX, opticalHeight: e.target.value })
+                            (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles)
+                                ? setOldSpecRX({
+                                    ...oldSpecRX,
+                                    actualRXSpectacles: {
+                                        ...oldSpecRX.actualRXSpectacles,
+                                        opticalHeight: e.target.value
+                                    }
+                                })
+                                : activeRxTab === "Prescribed RX"
+                                    ? setPrescribedRX({ ...prescribedRX, opticalHeight: e.target.value })
+                                    : setActualRX({ ...actualRX, opticalHeight: e.target.value })
                         }
                     />
 
-                    <label className={activeRxTab === "Prescribed RX" ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary"}>Segment Height</label>
+                    <label className={(activeRxTab === "Prescribed RX" || (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles)) ? "font-medium text-sm text-secondary" : "invisible font-medium text-sm text-secondary"}>Segment Height</label>
                     <input
+                        disabled={activeRxTab === "Old RX" ? (currentActiveRow?.isSpectacles ? !isSpecNew : isNormalItem ? isNormalItem : !isLensNew) : isNormalItem}
                         type="text"
                         placeholder="Enter"
-                        className={activeRxTab === "Prescribed RX" ? "border rounded px-2 py-1 bg-white text-secondary w-full" : "border rounded px-2 py-1 bg-white text-secondary w-full invisible"}
-                        value={activeRxTab === "Prescribed RX" ? prescribedRX?.segmentHeight : actualRX?.segmentHeight}
+                        className={(activeRxTab === "Prescribed RX" || (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles)) ? "border rounded px-2 py-1 bg-white text-secondary w-full" : "border rounded px-2 py-1 bg-white text-secondary w-full invisible"}
+                        value={(activeRxTab === "Old RX" && currentActiveRow?.isSpectacles) ? oldSpecRX?.actualRXSpectacles?.segmentHeight : activeRxTab === "Prescribed RX" ? prescribedRX?.segmentHeight : actualRX?.segmentHeight}
                         onChange={(e) =>
-                            activeRxTab === "Prescribed RX"
-                                ? setPrescribedRX({ ...prescribedRX, segmentHeight: e.target.value })
-                                : setActualRX({ ...actualRX, segmentHeight: e.target.value })
+                            (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles)
+                                ? setOldSpecRX({
+                                    ...oldSpecRX,
+                                    actualRXSpectacles: {
+                                        ...oldSpecRX.actualRXSpectacles,
+                                        segmentHeight: e.target.value
+                                    }
+                                })
+                                : activeRxTab === "Prescribed RX"
+                                    ? setPrescribedRX({ ...prescribedRX, segmentHeight: e.target.value })
+                                    : setActualRX({ ...actualRX, segmentHeight: e.target.value })
                         }
                     />
 
-                    <div className={activeRxTab === "Prescribed RX" ? "flex items-center space-x-2 col-span-2 " : "invisible items-center space-x-2 col-span-2"}>
+                    <div className={(activeRxTab === "Prescribed RX" || (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles)) ? "flex items-center space-x-2 col-span-2 " : "invisible items-center space-x-2 col-span-2"}>
                         <span className="font-medium text-sm text-secondary">Dominant Eye:</span>
 
                         <label className="inline-flex items-center text-secondary ">
                             <input
+                                disabled={activeRxTab === "Old RX" ? (currentActiveRow?.isSpectacles ? !isSpecNew : isNormalItem ? isNormalItem : !isLensNew) : isNormalItem}
                                 type="checkbox"
                                 className="mr-1 accent-white bg-white"
-                                checked={activeRxTab === "Prescribed RX" ? prescribedRX?.dominantEye === "left" : actualRX?.segmentHeight === "left"}
+                                checked={(activeRxTab === "Old RX" && currentActiveRow?.isSpectacles) ? oldSpecRX?.actualRXSpectacles?.dominantEye === "left" : activeRxTab === "Prescribed RX" ? prescribedRX?.dominantEye === "left" : actualRX?.dominantEye === "left"}
                                 onChange={(e) =>
-                                    activeRxTab === "Prescribed RX"
-                                        ? setPrescribedRX({ ...prescribedRX, dominantEye: e.target.checked ? "left" : "" })
-                                        : setActualRX({ ...actualRX, dominantEye: e.target.checked ? "left" : "" })
+                                    (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles)
+                                        ? setOldSpecRX({
+                                            ...oldSpecRX,
+                                            actualRXSpectacles: {
+                                                ...oldSpecRX.actualRXSpectacles,
+                                                dominantEye: e.target.checked ? "left" : ""
+                                            }
+                                        })
+                                        : activeRxTab === "Prescribed RX"
+                                            ? setPrescribedRX({ ...prescribedRX, dominantEye: e.target.checked ? "left" : "" })
+                                            : setActualRX({ ...actualRX, dominantEye: e.target.checked ? "left" : "" })
                                 }
                             />
                             Left
@@ -1800,13 +1977,22 @@ const SalesOrder = () => {
 
                         <label className="inline-flex items-center text-secondary ">
                             <input
+                                disabled={activeRxTab === "Old RX" ? (currentActiveRow?.isSpectacles ? !isSpecNew : isNormalItem ? isNormalItem : !isLensNew) : isNormalItem}
                                 type="checkbox"
                                 className="mr-1 accent-white bg-white"
-                                checked={activeRxTab === "Prescribed RX" ? prescribedRX?.dominantEye === "right" : actualRX?.segmentHeight === "right"}
+                                checked={(activeRxTab === "Old RX" && currentActiveRow?.isSpectacles) ? oldSpecRX?.actualRXSpectacles?.dominantEye === "right" : activeRxTab === "Prescribed RX" ? prescribedRX?.dominantEye === "right" : actualRX?.dominantEye === "right"}
                                 onChange={(e) =>
-                                    activeRxTab === "Prescribed RX"
-                                        ? setPrescribedRX({ ...prescribedRX, dominantEye: e.target.checked ? "right" : "" })
-                                        : setActualRX({ ...actualRX, dominantEye: e.target.checked ? "right" : "" })
+                                    (activeRxTab === "Old RX" && currentActiveRow?.isSpectacles)
+                                        ? setOldSpecRX({
+                                            ...oldSpecRX,
+                                            actualRXSpectacles: {
+                                                ...oldSpecRX.actualRXSpectacles,
+                                                dominantEye: e.target.checked ? "right" : ""
+                                            }
+                                        })
+                                        : activeRxTab === "Prescribed RX"
+                                            ? setPrescribedRX({ ...prescribedRX, dominantEye: e.target.checked ? "right" : "" })
+                                            : setActualRX({ ...actualRX, dominantEye: e.target.checked ? "right" : "" })
                                 }
                             />
                             Right
@@ -1822,6 +2008,7 @@ const SalesOrder = () => {
                             {(currentActiveRow?.isContactLens ? ["ContactLens"] : ["Distance", "Reading"])
                                 .map((mode) => (
                                     <button
+                                        disabled={activeRxTab === "Old RX" ? (currentActiveRow?.isSpectacles ? !isSpecNew : isNormalItem ? isNormalItem : !isLensNew) : isNormalItem}
                                         key={mode}
                                         onClick={() => setActiveRxMode(mode)}
                                         className={`px-1 py-1 border rounded text-sm w-full font-medium ${activeRxMode === mode
@@ -1853,10 +2040,11 @@ const SalesOrder = () => {
                                             return (
                                                 <td key={field} className="border px-2 py-1 text-left text-secondary bg-white">
                                                     <input
+                                                        disabled={activeRxTab === "Old RX" ? (currentActiveRow?.isSpectacles ? !isSpecNew : isNormalItem ? isNormalItem : !isLensNew) : isNormalItem}
                                                         type="number"
                                                         step={field === "AXIS" ? "1" : "0.25"}
                                                         className="w-full border rounded px-1 py-0.5 text-left text-secondary bg-white"
-                                                        value={getRxData()?.[key] || ""}
+                                                        value={(activeRxTab === "Old RX" && currentActiveRow?.isSpectacles) ? getRxData()?.actualRXSpectacles?.[key] || "" : getRxData()?.[key] || ""}
                                                         onChange={(e) => {
                                                             const val = e.target.value;
                                                             if (val === "" || decimalRegex.test(val)) {
@@ -1892,6 +2080,7 @@ const SalesOrder = () => {
                                         })}
                                         <td className="border px-2 py-1 text-left">
                                             <input
+                                                disabled={isNormalItem}
                                                 type="text"
                                                 className="w-28 border rounded px-1 py-0.5 text-left text-secondary bg-white"
                                                 value={getRxData()?.[`${eye === "Left" ? "l" : "r"}_${dataFieldMapping[activeRxMode]}_Remark`] || ""}
@@ -1948,8 +2137,8 @@ const SalesOrder = () => {
                                     type="checkbox"
                                     checked={masterData?.isCollected}
                                     onChange={(e) => {
-                                        if(e.target.checked){
-                                            setMasterData(prev => ({...prev, isReady: e.target.checked}))
+                                        if (e.target.checked) {
+                                            setMasterData(prev => ({ ...prev, isReady: e.target.checked }))
                                         }
                                         setMasterData(prev => ({ ...prev, isCollected: e.target.checked }))
                                     }}
@@ -2043,11 +2232,11 @@ const SalesOrder = () => {
 
                     <button className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]"
                         onClick={() => {
-                            if(selectedSalesOrder.salesOrderId === "" || selectedSalesOrder.salesOrderId === null){
-                                setErrorModal({title: "Collection Error", message: "Please Save current Sales Order first and select select a Sales Order to proceed"});
+                            if (selectedSalesOrder.salesOrderId === "" || selectedSalesOrder.salesOrderId === null) {
+                                setErrorModal({ title: "Collection Error", message: "Please Save current Sales Order first and select select a Sales Order to proceed" });
                                 return;
                             }
-                            setIsCollectModalOpen(true)    
+                            setIsCollectModalOpen(true)
                         }}>
                         Collection
                     </button>
@@ -2055,12 +2244,12 @@ const SalesOrder = () => {
                         onClick={() => setSalesOrderPayment(true)}>
                         Payment
                     </button>
-                    <button onClick={handleSavePrint} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    {/* <button onClick={handleSavePrint} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Save & Print
                     </button>
                     <button onClick={handleSave} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Save
-                    </button>
+                    </button> */}
                 </div>
 
                 <SalesOrderPaymentModal

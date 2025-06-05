@@ -316,7 +316,7 @@ const CustomerHistoryRX = ({ companyId, onError, customerId }) => {
                     value={renderLensValue("r_D", field)}
                   />
                 ))}
-
+                <div></div>
                 <label>Left</label>
                 {lensFields.map((field) => (
                   <input

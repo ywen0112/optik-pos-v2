@@ -32,7 +32,7 @@ export const GetContactLensProfile = ({companyId, userId, id}) =>{
     return postRequest(getContactLen, body);
 };
 
-export const SaveContactLensProfile = ({actionData, contactLensId, debtorId, salesOrderId, salesOrderDetailId, docDate, prescribedRXContactLens, actualRXContactLens}) =>{
+export const SaveContactLensProfile = ({actionData, contactLensId, debtorId, salesOrderId, salesOrderDetailId, isNew, docDate, prescribedRXContactLens, actualRXContactLens}) =>{
     const body = JSON.stringify({
         actionData,
         contactLensId,
@@ -40,6 +40,7 @@ export const SaveContactLensProfile = ({actionData, contactLensId, debtorId, sal
         salesOrderId,
         salesOrderDetailId,
         docDate,
+        isNew,
         prescribedRXContactLens,
         actualRXContactLens,
     });
@@ -77,10 +78,11 @@ export const GetSpectaclesProfile = ({companyId, userId, id}) =>{
     return postRequest(getSpectacles, body);
 };
 
-export const SaveSpectacles = ({actionData, spectaclesId, debtorId, salesOrderId, salesOrderDetailId, docDate, prescribedRXSpectacles, actualRXSpectacles}) =>{
+export const SaveSpectacles = ({actionData, spectaclesId, debtorId, isNew, salesOrderId, salesOrderDetailId, docDate, prescribedRXSpectacles, actualRXSpectacles}) =>{
     const body = JSON.stringify({
         actionData,
         spectaclesId,
+        isNew,
         debtorId,
         salesOrderId,
         salesOrderDetailId,

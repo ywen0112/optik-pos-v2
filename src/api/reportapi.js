@@ -8,6 +8,10 @@ const getDailyClosingData = `${ApiBaseUrl}DailyClosingSummary/GetResults`;
 const getDailyClosingReport = `${ApiBaseUrl}DailyClosingSummary/GenerateReport`;
 const getCommissionData = `${ApiBaseUrl}Commission/GetResults`;
 const getCommissionReport = `${ApiBaseUrl}Commission/GenerateReport`;
+const getOutstandingBalanceData = `${ApiBaseUrl}OutstandingBalance/GetResults`;
+const getOutstandingBalanceReport = `${ApiBaseUrl}OutstandingBalance/GenerateReport`;
+const getUncollectedOrderData = `${ApiBaseUrl}UncollectedOrder/GetResults`;
+const getUncollectedOrderReport = `${ApiBaseUrl}UncollectedOrder/GenerateReport`;
 
 export const GetSalesReportType = ({companyId, isCashSales}) =>{
     return getRequest(`${getSalesReportType}?companyId=${companyId}&isCashSales=${isCashSales}`)
@@ -79,4 +83,52 @@ export const GetCommissionData = ({companyId, offset, limit, fromDate, toDate}) 
     });
 
     return postRequest(getCommissionData, body);
+}
+
+export const GetOutstandingBalanceData = ({companyId, offset, limit, fromDate, toDate}) =>{
+    const body = JSON.stringify({
+        companyId,
+        fromDate,
+        toDate,
+        offset,
+        limit
+    });
+
+    return postRequest(getOutstandingBalanceData, body);
+}
+
+export const GetOutStandingBalanceReport = ({companyId, fromDate, toDate, userId, reportName}) =>{
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        reportName,
+        fromDate,
+        toDate,
+    });
+
+    return postRequest(getOutstandingBalanceReport, body);
+}
+
+export const GetUncollectedOrderData = ({companyId, offset, limit, fromDate, toDate}) =>{
+    const body = JSON.stringify({
+        companyId,
+        fromDate,
+        toDate,
+        offset,
+        limit
+    });
+
+    return postRequest(getUncollectedOrderData, body);
+}
+
+export const GetUncollectedOrderReport = ({companyId, fromDate, toDate, userId, reportName}) =>{
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        reportName,
+        fromDate,
+        toDate,
+    });
+
+    return postRequest(getUncollectedOrderReport, body);
 }

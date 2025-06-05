@@ -30,6 +30,8 @@ import ProductTypeMaintenance from "../pages/MasterData/ProductTypeMaintenence";
 import ProductGroupMaintenance from "../pages/MasterData/ProductGroupMaintenance";
 import DailyClosingSummaryReport from "../pages/Reports/DailyClosingSummary";
 import CommissionReport from "../pages/Reports/CommissionReport";
+import UncollectedORderReport from "../pages/Reports/UncollectedOrder";
+import OutstandingBalanceReport from "../pages/Reports/OutstandingBalance";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -64,9 +66,9 @@ const MainLayout = ({ title }) => {
       case "/daily-closing-summay-report":
         return <DailyClosingSummaryReport />;
       case "/outstanding-report":
-        return <Reports />;
+        return <OutstandingBalanceReport />;
       case "/uncollected-order-list":
-        return <Reports />;
+        return <UncollectedORderReport />;
       case "/commision-report":
         return <CommissionReport />;
       case "/close-counter":

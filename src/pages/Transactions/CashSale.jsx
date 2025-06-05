@@ -1066,12 +1066,12 @@ const CashSales = () => {
                         onClick={() => setCashSalesPayment(true)}>
                         Payment
                     </button>
-                    <button onClick={handleSavePrint} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
+                    {/* <button onClick={handleSavePrint} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Save & Print
                     </button>
                     <button onClick={handleSave} className="bg-primary flex justify-center justify-self-end text-white w-44 px-2 py-1 text-xl rounded hover:bg-primary/90 m-[2px]">
                         Save
-                    </button>
+                    </button> */}
                 </div>
 
                 <CashSalesPaymentModal
