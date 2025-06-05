@@ -824,6 +824,19 @@ const PurchaseInvoice = () => {
             />
           </div>
           <div className="flex flex-col gap-1">
+            <label htmlFor="refNo" className="font-medium text-secondary">Doc No.</label>
+            <input
+              disabled={isEdit}
+              type="text"
+              id="docNo"
+              name="docNo"
+              className="border rounded p-1 w-full bg-white h-[34px]"
+              placeholder="Doc No"
+              onChange={e => setMasterData(prev => ({ ...prev, docNo: e.target.value }))}
+              value={masterData?.docNo ?? ""}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
             <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
             <input
               disabled={isEdit}

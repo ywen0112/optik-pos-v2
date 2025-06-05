@@ -1738,7 +1738,20 @@ const SalesOrder = () => {
                     </div>
 
                 </div>
-                <div className="flex flex-col  ">
+                <div className="flex flex-col">
+                    <label htmlFor="refNo" className="font-medium text-secondary ">Doc No.</label>
+                    <input
+                        disabled={isEdit}
+                        type="text"
+                        id="docNo"
+                        name="docNo"
+                        className="border rounded p-1 w-full bg-white h-[34px]"
+                        placeholder="Doc No"
+                        onChange={e => setMasterData(prev => ({ ...prev, docNo: e.target.value }))}
+                        value={masterData?.docNo ?? ""}
+                    />
+                </div>
+                <div className="flex flex-col">
                     <label htmlFor="refNo" className="font-medium text-secondary ">Ref No.</label>
                     <input
                         disabled={isEdit}
@@ -1806,6 +1819,25 @@ const SalesOrder = () => {
                             width: 400
                         }}
                     />
+
+                     <div className="mt-4">
+                        {intervals.map(intv => (
+                            <button
+                                disabled={isEdit}
+                                key={intv.months}
+                                type="button"
+                                className={`text-sm px-1 py-0.5 rounded border w-16 h-10
+                                        ${selectedInterval === intv.months
+                                        ? 'bg-slate-700 text-white'
+                                        : 'bg-white text-gray-700'
+                                    }
+                                            `}
+                                onClick={() => pickInterval(intv.months)}
+                            >
+                                {intv.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
 
@@ -1829,26 +1861,6 @@ const SalesOrder = () => {
 
                         </DatePicker>
                     </div>
-
-                </div>
-                <div className="self-end space-x-1">
-
-                    {intervals.map(intv => (
-                        <button
-                            disabled={isEdit}
-                            key={intv.months}
-                            type="button"
-                            className={`text-sm px-1 py-0.5 rounded border w-16 h-10
-                                       ${selectedInterval === intv.months
-                                    ? 'bg-slate-700 text-white'
-                                    : 'bg-white text-gray-700'
-                                }
-                                        `}
-                            onClick={() => pickInterval(intv.months)}
-                        >
-                            {intv.label}
-                        </button>
-                    ))}
                 </div>
             </div>
 

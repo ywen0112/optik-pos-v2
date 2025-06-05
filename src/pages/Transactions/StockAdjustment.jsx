@@ -439,7 +439,19 @@ const StockAdjustment = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 items-center gap-1 justify-items-end content-start">
-
+          <div className="flex flex-col gap-1 w-1/2 ">
+            <label htmlFor="refNo" className="font-medium text-secondary">Doc No.</label>
+            <input
+              disabled={isEdit}
+              type="text"
+              id="docNo"
+              name="docNo"
+              className="border rounded p-1 w-full bg-white h-[34px]"
+              placeholder="Doc No"
+              onChange={e => setMasterData(prev => ({ ...prev, docNo: e.target.value }))}
+              value={masterData?.docNo ?? ""}
+            />
+          </div>
           <div className="flex flex-col gap-1 w-1/2 ">
             <label htmlFor="date" className="font-medium text-secondary">Date</label>
             <DatePicker
