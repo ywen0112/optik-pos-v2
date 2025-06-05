@@ -907,56 +907,65 @@ const CashSales = () => {
                         />
                     </div>
                 </div>
-                <div className="grid grid-cols-1 items-center gap-1 justify-items-end">
-                    <div className="flex flex-col gap-1 w-1/2">
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1 w-full">
+                        <label htmlFor="docNo" className="font-medium text-secondary">Doc No.</label>
+                        <input
+                        disabled={isEdit}
+                        type="text"
+                        id="docNo"
+                        name="docNo"
+                        className="border rounded p-1 w-full bg-white h-[34px]"
+                        placeholder="Doc No"
+                        onChange={e => setMasterData(prev => ({ ...prev, docNo: e.target.value }))}
+                        value={masterData?.docNo ?? ""}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1 w-full">
                         <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
                         <input
-                            disabled={isEdit}
-                            type="text"
-                            id="refNo"
-                            name="refNo"
-                            className="border rounded p-1 w-full bg-white h-[34px]"
-                            placeholder="Ref No"
-                            onChange={e => setMasterData(prev => ({ ...prev, refNo: e.target.value }))}
-                            value={masterData?.refNo ?? ""}
+                        disabled={isEdit}
+                        type="text"
+                        id="refNo"
+                        name="refNo"
+                        className="border rounded p-1 w-full bg-white h-[34px]"
+                        placeholder="Ref No"
+                        onChange={e => setMasterData(prev => ({ ...prev, refNo: e.target.value }))}
+                        value={masterData?.refNo ?? ""}
                         />
                     </div>
-                    <div className="flex flex-col gap-1 w-1/2">
+                    <div className="flex flex-col gap-1 w-full">
                         <label htmlFor="date" className="font-medium text-secondary">Date</label>
                         <DatePicker
-                            disabled={isEdit}
-                            customInput={<CustomInput disabled={isEdit} />}
-                            selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
-                            id="SalesDate"
-                            name="SalesDate"
-                            dateFormat="dd-MM-yyyy"
-                            className="border rounded p-1 w-full bg-white h-[34px]"
-                            onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
+                        disabled={isEdit}
+                        customInput={<CustomInput disabled={isEdit} />}
+                        selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
+                        id="SalesDate"
+                        name="SalesDate"
+                        dateFormat="dd-MM-yyyy"
+                        className="border rounded p-1 w-full bg-white h-[34px]"
+                        onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
                         />
                     </div>
-                    <div className="flex flex-col gap-1 w-1/2">
+                    <div className="flex flex-col gap-1 w-full">
                         <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
                         <DropDownBox
-                            disabled={isEdit}
-                            id="SalesPersonSelection"
-                            className="border rounded w-full"
-                            value={SalesPersonGridBoxValue?.id ?? null}
-                            opened={isSalesPersonGridBoxOpened}
-                            openOnFieldClick={true}
-                            valueExpr='userId'
-                            displayExpr={SalesPersonGridBoxDisplayExpr}
-                            placeholder="Select Sales Person"
-                            showClearButton={true}
-                            onValueChanged={handleSalesPersonGridBoxValueChanged}
-                            dataSource={userStore}
-                            onOptionChanged={onSalesPersonGridBoxOpened}
-                            contentRender={SalesPersonDataGridRender}
+                        disabled={isEdit}
+                        id="SalesPersonSelection"
+                        className="border rounded w-full"
+                        value={SalesPersonGridBoxValue?.id ?? null}
+                        opened={isSalesPersonGridBoxOpened}
+                        openOnFieldClick={true}
+                        valueExpr="userId"
+                        displayExpr={SalesPersonGridBoxDisplayExpr}
+                        placeholder="Select Sales Person"
+                        showClearButton={true}
+                        onValueChanged={handleSalesPersonGridBoxValueChanged}
+                        dataSource={userStore}
+                        onOptionChanged={onSalesPersonGridBoxOpened}
+                        contentRender={SalesPersonDataGridRender}
                         />
                     </div>
-
-
-
-
                 </div>
             </div>
 

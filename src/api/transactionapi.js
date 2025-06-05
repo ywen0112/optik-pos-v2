@@ -45,10 +45,11 @@ export const GetCashSale = ({companyId, userId, id}) =>{
     return postRequest(getCashSale, body);
 };
 
-export const SaveCashSale = ({actionData, cashSalesId, docDate, debtorId, debtorName, remark, refNo, salesPersonUserID, roundingAdjustment, subTotal, total, isVoid, submitEInvoice, details}) =>{
+export const SaveCashSale = ({actionData, cashSalesId, docNo, docDate, debtorId, debtorName, remark, refNo, salesPersonUserID, roundingAdjustment, subTotal, total, isVoid, submitEInvoice, details}) =>{
     const body = JSON.stringify({
         actionData,
         cashSalesId,
+        docNo,
         docDate,
         debtorId,
         debtorName,
@@ -191,10 +192,11 @@ export const GetPurchaseInvoice = ({companyId, userId, id}) =>{
     return postRequest(getPurchaseInvoice, body);
 };
 
-export const SavePurchaseInvoice = ({actionData, purchaseInvoiceId, docDate, creditorId, creditorName, remark, refNo, supplierRef, purchasePersonUserID, subTotal, total, tax, isVoid, details}) =>{
+export const SavePurchaseInvoice = ({actionData, purchaseInvoiceId, docNo, docDate, creditorId, creditorName, remark, refNo, supplierRef, purchasePersonUserID, subTotal, total, tax, isVoid, details}) =>{
     const body = JSON.stringify({
         actionData,
         purchaseInvoiceId,
+        docNo,
         docDate,
         creditorId,
         creditorName,
@@ -339,10 +341,11 @@ export const GetSalesOrder = ({companyId, userId, id}) =>{
     return postRequest(getSalesOrder, body);
 };
 
-export const SaveSalesOrder = ({actionData, salesOrderId, docDate, debtorId, debtorName, remark, refNo, salesPersonUserID, practitionerUserId, nextVisitDate, roundingAdjustment, subTotal, total, isReady, isCollected, isVoid, submitEInvoice, details}) =>{
+export const SaveSalesOrder = ({actionData, salesOrderId, docNo, docDate, debtorId, debtorName, remark, refNo, salesPersonUserID, practitionerUserId, nextVisitDate, roundingAdjustment, subTotal, total, isReady, isCollected, isVoid, submitEInvoice, details}) =>{
     const body = JSON.stringify({
         actionData,
         salesOrderId,
+        docNo,
         docDate,
         debtorId,
         debtorName,
@@ -491,10 +494,11 @@ export const GetStockAdjustment = ({companyId, userId, id}) =>{
     return postRequest(getStockAdjustment, body);
 };
 
-export const SaveStockAdjustment = ({actionData, stockAdjustmentId, docDate, description, remark, total, isVoid, details}) =>{
+export const SaveStockAdjustment = ({actionData, stockAdjustmentId, docNo, docDate, description, remark, total, isVoid, details}) =>{
     const body = JSON.stringify({
         actionData,
         stockAdjustmentId,
+        docNo,
         docDate,
         description,
         remark,

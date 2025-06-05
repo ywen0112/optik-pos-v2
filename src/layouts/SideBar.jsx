@@ -117,7 +117,7 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
         { name: "Sales Order", shortLabel: "SO", path: "/sales-order" },
         { name: "Purchase Invoice", shortLabel: "PI", path: "/purchase-invoice" },
         { name: "Stock Adjustment", shortLabel: "SA", path: "/stock-adjustment" },
-        { name: "Goods Transit", shortLabel: "GT", path: "/good-transit" },
+        // { name: "Goods Transit", shortLabel: "GT", path: "/good-transit" },
       ]
     },
     { name: "Inquiry", icon: <FileSearch size={20} />, 
