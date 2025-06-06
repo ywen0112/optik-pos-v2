@@ -182,7 +182,7 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
 
     const [isDiscountOpened, setIsDiscountOpened] = useState(false);
     const [selectedDiscount, setSelectedDiscount] = useState("");
-
+    
     return (
         <StandardDataGridComponent
             ref={gridRef}
@@ -226,6 +226,45 @@ const TransactionItemWithDiscountDataGrid = ({ disabled, height, className, cust
                 }
             }}
             onLoading={loading}
+            onEditorPreparing={(e) => {
+                if (e.parentType !== "dataRow" || e.readOnly) return;
+
+                const field = e.dataField;
+
+                e.editorOptions.onValueChanged = (args) => {
+                    const grid = gridRef.current?.instance;
+                    if (!grid) return;
+
+                    const rowIndex = e.row.rowIndex;
+                    const rowData = { ...e.row.data };
+
+                    // Update the current field with new value
+                    rowData[field] = args.value;
+
+                    const qty = Number(rowData.qty) || 0;
+                    const unitPrice = Number(rowData.price) || 0;
+                    const subTotal = Number(rowData.subTotal) || 0;
+
+                    if (field === "qty") {
+                        if (unitPrice > 0) {
+                            rowData.subTotal = +(qty * unitPrice).toFixed(2);
+                        } else if (subTotal > 0 && qty > 0) {
+                            rowData.price = +(subTotal / qty).toFixed(2);
+                        }
+                    } else if (field === "price") {
+                        rowData.subTotal = +(qty * args.value).toFixed(2);
+                    } else if (field === "subTotal") {
+                        if (qty > 0) {
+                            rowData.price = +(args.value / qty).toFixed(2);
+                        }
+                    }
+
+                    grid.cellValue(rowIndex, "qty", rowData.qty);
+                    grid.cellValue(rowIndex, "price", rowData.price);
+                    grid.cellValue(rowIndex, "subTotal", rowData.subTotal);
+                };
+            }}
+
         >
             <Editing
                 mode="cell"
