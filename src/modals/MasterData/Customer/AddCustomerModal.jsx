@@ -20,6 +20,7 @@ const AddCustomerModal = ({
     companyId,
     userId
 }) => {
+    const [isEdited, setIsEdited] = useState(false); 
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
     const [activeTab, setActiveTab] = useState("General");
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
@@ -353,7 +354,15 @@ const AddCustomerModal = ({
                     )}
 
                     {activeTab === "Latest RX" && (isEdit || isView) && (
-                        <CustomerLatestRX latesSpecRXData={latesSpecRXData} latestLensRXData={latestLensRXData} />
+                        <CustomerLatestRX 
+                            isEdited={isEdited}
+                            onEdit = {setIsEdited}
+                            isEdit = {isEdit}
+                            latesSpecRXData={latesSpecRXData}
+                            latestLensRXData={latestLensRXData}
+                            lensSetter={setLatestLensRXData}
+                            specSetter={setLatestSpecRXData}
+                        />
                     )}
 
                     {activeTab === "History RX" && (isEdit || isView) &&(
@@ -412,6 +421,9 @@ const AddCustomerModal = ({
                                         debtorId: selectedCustomer?.debtorId,
                                         ...mergedData
                                     },
+                                    isLatestEyePowerEdited: isEdited,
+                                    latestSpec: latesSpecRXData,
+                                    latestLens: latestLensRXData
                                 });
                             }}
                         >

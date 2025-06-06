@@ -6,6 +6,7 @@ import ConfirmationModal from "../../modals/ConfirmationModal";
 import CustomerTableDataGrid from "../../Components/DataGrid/CustomerTableDataGrid";
 import AddCustomerModal from "../../modals/MasterData/Customer/AddCustomerModal";
 import { GetDebtor, NewDebtor, SaveDebtor, DeleteDebtor } from "../../api/maintenanceapi";
+import { SaveContactLensProfile, SaveSpectacles } from "../../api/eyepowerapi";
 
 const DebtorMaintenance = () => {
   const companyId = sessionStorage.getItem("companyId");
@@ -59,7 +60,7 @@ const DebtorMaintenance = () => {
     setConfirmModal({ isOpen: true, action: "delete" });
   };
 
-  const confirmAction = async ({ action, data }) => {
+  const confirmAction = async ({ action, data, isLatestEyePowerEdited, latestSpec, latestLens }) => {
     setSaving(true);
     setConfirmModal({ isOpen: false, action: null });
 
@@ -95,6 +96,13 @@ const DebtorMaintenance = () => {
           setNotifyModal({ isOpen: true, message: "Customer saved successfully!" });
           setSelectedDebtor(null);
         } else throw new Error(saveRes.errorMessage || "Failed to save customer.");
+        if (isLatestEyePowerEdited){
+          const saveLatestSpecRes = await SaveSpectacles({...latestSpec})
+          const saveLatestLensRes = await SaveContactLensProfile({...latestLens})
+          if(!saveLatestLensRes.success || !saveLatestSpecRes.success){
+            throw new Error(data.errorMessage || "Failed to edit customer latest eye power.");
+          }
+        }
       }
     } catch (error) {
       setErrorModal({ title: `${action === "delete" ? "Delete" : "Save"} Error`, message: error.message });

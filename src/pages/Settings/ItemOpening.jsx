@@ -133,13 +133,6 @@ const ItemOpening = () => {
       <div className="absolute bottom-0 right-0 mr-4 mb-10 w-1/2 min-h-[50px]">
         <button className="bg-primary absolute right-0 text-white w-36 px-4 py-2 rounded hover:bg-primary/90"
           onClick={() => {
-            if (records.length <= 0) {
-              setErrorModal({
-                title: "Validation Error",
-                message: "No Item Opening to be Saved",
-              });
-              return;
-            }
             setConfirmModal({
               isOpen: true,
               action: "update",

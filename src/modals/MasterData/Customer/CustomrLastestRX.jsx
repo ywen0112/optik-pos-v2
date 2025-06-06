@@ -1,11 +1,13 @@
 import { useState } from "react";
+import DatePicker from "react-datepicker";
+import CustomInput from "../../../Components/input/dateInput";
 
-const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
+const CustomerLatestRX = ({ isEdited, onEdit, isEdit, latesSpecRXData, latestLensRXData, specSetter, lensSetter }) => {
   const [activeSpectaclesTab, setActiveSpectaclesTab] = useState('SpecDistance');
   const [activeLensTab, setActiveLensTab] = useState('LensDistance');
 
-  const specFields = ['SPH', 'CYL', 'AXIS', 'VA', 'PRISM', 'ADD', 'PD'];
-  const lensFields = ['SPH', 'CYL', 'AXIS', 'BC', 'DIA', 'ADD'];
+  const specFields = ['SPH', 'CYL', 'AXIS', 'VA', 'PRISM', 'ADD', 'PD', 'Remark'];
+  const lensFields = ['SPH', 'CYL', 'AXIS', 'BC', 'DIA', 'ADD', 'Remark'];
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -15,6 +17,51 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
     const yyyy = date.getFullYear();
     return `${dd}/${mm}/${yyyy}`;
   };
+
+  const handleSpecRxChange = (eye, mode, field, value) => {
+    if (!isEdit) {
+      return;
+    }
+    specSetter(prev => ({
+      ...prev,
+      actualRXSpectacles: {
+        ...prev.actualRXSpectacles,
+        [`${eye}_${mode}_${field}`]: value
+      }
+    }));
+    if (!isEdited) {
+      onEdit(true)
+    }
+
+  }
+
+  const handleLensRxChange = (eye, mode, field, value) => {
+    if (!isEdit) {
+      return;
+    }
+    lensSetter(prev => ({
+      ...prev,
+      actualRXContactLens: {
+        ...prev.actualRXContactLens,
+        [`${eye}_${mode}_${field}`]: value
+      }
+    }));
+    if (!isEdited) {
+      onEdit(true)
+    }
+  }
+
+  const SpecDataFieldMapping = {
+    SpecDistance: "D",
+    SpecReading: "R"
+  }
+  const LensDataFieldMapping = {
+    LensDistance: "D",
+    LensReading: "R"
+  }
+
+  const decimalRegex = /^-?\d*(\.\d{0,2})?$/;
+  const roundUpToQuarter = (val) => Math.ceil(val * 4) / 4;
 
   return (
     <div className="w-full h-[77vh] overflow-y-auto p-4">
@@ -26,23 +73,46 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
           </div>
 
           <label className="col-span-2">Doc Date</label>
-          <input
-            type="text"
-            readOnly
+          <DatePicker
+            disabled={!isEdit}
+            customInput={<CustomInput disabled={!isEdit} />}
+            selected={latesSpecRXData?.docDate ? new Date(latesSpecRXData.docDate) : new Date()}
+            dateFormat="dd-MM-yyyy"
             className="col-span-2 border-2 px-2 h-[40px] ml-2 "
-            value={formatDate(latesSpecRXData.docDate)}
+            onChange={(e) => {
+              specSetter(prev => ({
+                ...prev,
+                docDate: e
+              }));
+              if (!isEdited) {
+                onEdit(true)
+              }
+            }}
           />
 
+
           <div className="grid grid-cols-4 gap-1 mt-4">
-            <label className="block">Spectacles Type</label>
             <label className="block">Optical Height</label>
             <label className="block">Segment Height</label>
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={latesSpecRXData?.actualRXSpectacles?.dominentEye === "right"}
-                readOnly
-                disabled
+                onChange={(e) => {
+                  if (!isEdit) {
+                    return;
+                  }
+                  specSetter(prev => ({
+                    ...prev,
+                    actualRXSpectacles: {
+                      ...prev.actualRXSpectacles,
+                      dominentEye: e.target.checked ? "right" : ""
+                    }
+                  }))
+                  if (!isEdited) {
+                    onEdit(true)
+                  }
+                }}
                 className=""
               />
               <label>Right</label>
@@ -50,40 +120,74 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
           </div>
 
           <div className="grid grid-cols-4 gap-1">
+
             <div className="mt-2">
               <input
                 type="text"
-                readOnly
-                className="mr-2 border-2 w-full h-[40px] px-2 "
-                placeholder="Spectacles Type"
-                value={latesSpecRXData?.actualRXSpectacles?.spectaclesType}
-              />
-            </div>
-            <div className="mt-2">
-              <input
-                type="text"
-                readOnly
+
                 className="mr-2 border-2 w-full h-[40px] px-2 "
                 placeholder="Optical Height"
                 value={latesSpecRXData?.actualRXSpectacles?.opticalHeight}
+                onChange={(e) => {
+                  if (!isEdit) {
+                    return;
+                  }
+                  specSetter(prev => ({
+                    ...prev,
+                    actualRXSpectacles: {
+                      ...prev.actualRXSpectacles,
+                      opticalHeight: e.target.value
+                    }
+                  }))
+                  if (!isEdited) {
+                    onEdit(true)
+                  }
+                }}
               />
             </div>
             <div className="mt-2">
               <input
                 type="text"
-                readOnly
                 className="mr-2 border-2 w-full h-[40px] px-2 "
                 placeholder="Segment Height"
                 value={latesSpecRXData?.actualRXSpectacles?.segmentHeight}
+                onChange={(e) => {
+                  if (!isEdit) {
+                    return;
+                  }
+                  specSetter(prev => ({
+                    ...prev,
+                    actualRXSpectacles: {
+                      ...prev.actualRXSpectacles,
+                      segmentHeight: e.target.value
+                    }
+                  }))
+                  if (!isEdited) {
+                    onEdit(true)
+                  }
+                }}
               />
             </div>
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={latesSpecRXData?.actualRXSpectacles?.dominentEye === "left"}
-                readOnly
-                disabled
                 className=""
+                onChange={(e) => {
+                  if (!isEdit) {
+                    return;
+                  }
+                  specSetter(prev => ({
+                    ...prev,
+                    actualRXSpectacles: {
+                      ...prev.actualRXSpectacles,
+                      dominentEye: e.target.checked ? "left" : ""
+                    }
+                  }))
+                  if (!isEdited) {
+                    onEdit(true)
+                  }
+                }}
               />
               <label>Left</label>
             </div>
@@ -103,7 +207,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
           </div>
 
           {/* Spectacles Right / Left Table */}
-          <div className="grid grid-cols-8 gap-1 mt-4">
+          <div className="grid grid-cols-9 gap-1 mt-4">
             <div></div>
             {specFields.map(field => (
               <label key={`header-${field}`}>{field}</label>
@@ -114,9 +218,47 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
               <input
                 key={`r-${field}`}
                 type="text"
-                readOnly
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if(field === "Remark"){
+                    handleSpecRxChange(
+                      "r",
+                      SpecDataFieldMapping[activeSpectaclesTab],
+                      field,
+                      val
+                    );
+                    return;
+                  }
+                  if (val === "" || decimalRegex.test(val)) {
+                    handleSpecRxChange(
+                      "r",
+                      SpecDataFieldMapping[activeSpectaclesTab],
+                      field,
+                      val
+                    );
+                  }
+                }}
+                onBlur={(e) => {
+                  if(field === "Remark") return;
+                  const raw = parseFloat(e.target.value);
+                  if (!isNaN(raw)) {
+                    const isPD = field === "PD";
+                    const isAxis = field === "AXIS";
+                    const newVal = isAxis
+                      ? Math.round(raw).toString()
+                      : isPD
+                        ? raw.toFixed(2)
+                        : roundUpToQuarter(raw).toFixed(2);
+                    handleSpecRxChange(
+                      "r",
+                      SpecDataFieldMapping[activeSpectaclesTab],
+                      field,
+                      newVal
+                    );
+                  }
+                }}
                 className="border-2 px-2 h-[40px] "
-                value={latesSpecRXData?.actualRXSpectacles[
+                value={latesSpecRXData?.actualRXSpectacles?.[
                   activeSpectaclesTab === 'SpecDistance' ? `r_D_${field}` : `r_R_${field}`
                 ] || ""}
               />
@@ -127,9 +269,47 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
               <input
                 key={`l-${field}`}
                 type="text"
-                readOnly
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if(field === "Remark"){
+                    handleSpecRxChange(
+                      "l",
+                      SpecDataFieldMapping[activeSpectaclesTab],
+                      field,
+                      val
+                    );
+                    return;
+                  }
+                  if (val === "" || decimalRegex.test(val)) {
+                    handleSpecRxChange(
+                      "l",
+                      SpecDataFieldMapping[activeSpectaclesTab],
+                      field,
+                      val
+                    );
+                  }
+                }}
+                onBlur={(e) => {
+                  if(field === "Remark") return;
+                  const raw = parseFloat(e.target.value);
+                  if (!isNaN(raw)) {
+                    const isPD = field === "PD";
+                    const isAxis = field === "AXIS";
+                    const newVal = isAxis
+                      ? Math.round(raw).toString()
+                      : isPD
+                        ? raw.toFixed(2)
+                        : roundUpToQuarter(raw).toFixed(2);
+                    handleSpecRxChange(
+                      "l",
+                      SpecDataFieldMapping[activeSpectaclesTab],
+                      field,
+                      newVal
+                    );
+                  }
+                }}
                 className="border-2 px-2 h-[40px] "
-                value={latesSpecRXData?.actualRXSpectacles[
+                value={latesSpecRXData?.actualRXSpectacles?.[
                   activeSpectaclesTab === 'SpecDistance' ? `l_D_${field}` : `l_R_${field}`
                 ] || ""}
               />
@@ -146,11 +326,21 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
           </div>
 
           <label className="col-span-2">Doc Date</label>
-          <input
-            type="text"
-            readOnly
+          <DatePicker
+            disabled={!isEdit}
+            customInput={<CustomInput disabled={!isEdit} />}
+            selected={latestLensRXData?.docDate ? new Date(latestLensRXData.docDate) : new Date()}
+            dateFormat="dd-MM-yyyy"
             className="col-span-2 border-2 px-2 h-[40px] ml-2 "
-            value={formatDate(latestLensRXData.docDate)}
+            onChange={(e) => {
+              lensSetter(prev => ({
+                ...prev,
+                docDate: e
+              }));
+              if (!isEdited) {
+                onEdit(true)
+              }
+            }}
           />
 
           {/* Tabs for Lens */}
@@ -167,7 +357,7 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
           </div>
 
           {/* Contact Lens Right / Left Table */}
-          <div className="grid grid-cols-8 gap-1 mt-4">
+          <div className="grid grid-cols-9 gap-1 mt-4">
             <div></div>
             {lensFields.map(field => (
               <label key={`header-lens-${field}`}>{field}</label>
@@ -179,9 +369,47 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
               <input
                 key={`lens-r-${field}`}
                 type="text"
-                readOnly
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if(field === "Remark"){
+                    handleLensRxChange(
+                      "r",
+                      LensDataFieldMapping[activeLensTab],
+                      field,
+                      val
+                    );
+                    return;
+                  }
+                  if (val === "" || decimalRegex.test(val)) {
+                    handleLensRxChange(
+                      "r",
+                      LensDataFieldMapping[activeLensTab],
+                      field,
+                      val
+                    );
+                  }
+                }}
+                onBlur={(e) => {
+                  if(field === "Remark") return;
+                  const raw = parseFloat(e.target.value);
+                  if (!isNaN(raw)) {
+                    const isPD = field === "PD";
+                    const isAxis = field === "AXIS";
+                    const newVal = isAxis
+                      ? Math.round(raw).toString()
+                      : isPD
+                        ? raw.toFixed(2)
+                        : roundUpToQuarter(raw).toFixed(2);
+                    handleLensRxChange(
+                      "r",
+                      LensDataFieldMapping[activeLensTab],
+                      field,
+                      newVal
+                    );
+                  }
+                }}
                 className="border-2 px-2 h-[40px] "
-                value={latestLensRXData?.actualRXContactLens[
+                value={latestLensRXData?.actualRXContactLens?.[
                   activeLensTab === 'LensDistance' ? `r_D_${field}` : `r_R_${field}`
                 ] || ""}
               />
@@ -193,9 +421,47 @@ const CustomerLatestRX = ({ latesSpecRXData, latestLensRXData }) => {
               <input
                 key={`lens-l-${field}`}
                 type="text"
-                readOnly
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if(field === "Remark"){
+                    handleLensRxChange(
+                      "l",
+                      LensDataFieldMapping[activeLensTab],
+                      field,
+                      val
+                    );
+                    return;
+                  }
+                  if (val === "" || decimalRegex.test(val)) {
+                    handleLensRxChange(
+                      "l",
+                      LensDataFieldMapping[activeLensTab],
+                      field,
+                      val
+                    );
+                  }
+                }}
+                onBlur={(e) => {
+                  if(field === "Remark") return;
+                  const raw = parseFloat(e.target.value);
+                  if (!isNaN(raw)) {
+                    const isPD = field === "PD";
+                    const isAxis = field === "AXIS";
+                    const newVal = isAxis
+                      ? Math.round(raw).toString()
+                      : isPD
+                        ? raw.toFixed(2)
+                        : roundUpToQuarter(raw).toFixed(2);
+                    handleLensRxChange(
+                      "l",
+                      LensDataFieldMapping[activeLensTab],
+                      field,
+                      newVal
+                    );
+                  }
+                }}
                 className="border-2 px-2 h-[40px] "
-                value={latestLensRXData?.actualRXContactLens[
+                value={latestLensRXData?.actualRXContactLens?.[
                   activeLensTab === 'LensDistance' ? `l_D_${field}` : `l_R_${field}`
                 ] || ""}
               />
