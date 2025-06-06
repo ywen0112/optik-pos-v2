@@ -1683,188 +1683,191 @@ const SalesOrder = () => {
                     userId={userId}
                 />
             )}
-            <div className="grid grid-cols-4 gap-3">
-                <div className="space-y-2 col-span-2">
-                    <div className="items-center ">
-                        <label htmlFor="customer" className="font-medium text-secondary" >
-                            Customer
-                        </label>
-                        <div className="justify-self-start w-full">
+            <div className="space-y-6">
+  {/* First row */}
+  <div className="grid grid-cols-12 gap-4 items-end">
+    {/* Customer: spans 6 columns */}
+    <div className="col-span-6 space-y-2">
+      <label htmlFor="customer" className="font-medium text-secondary">Customer</label>
+      <div className="flex gap-2">
+        <DropDownBox
+          disabled={isEdit}
+          id="CustomerSelection"
+          className="border rounded p-1 w-1/2 h-[34px]"
+          value={CustomerGridBoxValue?.debtorId}
+          opened={isCustomerGridBoxOpened}
+          openOnFieldClick={true}
+          valueExpr="debtorId"
+          displayExpr={CustomerGridBoxDisplayExpr}
+          placeholder="Select Customer"
+          showClearButton={true}
+          onValueChanged={handleCustomerGridBoxValueChanged}
+          dataSource={customerStore}
+          onOptionChanged={onCustomerGridBoxOpened}
+          contentRender={CustomerDataGridRender}
+          dropDownOptions={{ width: 400 }}
+        />
+        <textarea
+          id="CustomerName"
+          name="CustomerName"
+          disabled={isEdit}
+          rows={1}
+          className="border rounded p-2 w-full resize-none bg-white text-secondary"
+          placeholder="Name"
+          onChange={(e) => {
+            setCustomerGridBoxValue(prev => ({ ...prev, companyName: e.target.value }))
+          }}
+          value={CustomerGridBoxValue?.companyName ?? ""}
+        />
+        <div className="relative group">
+          <button
+            disabled={isEdit}
+            className="items-center h-[34px] text-secondary hover:bg-grey-500 hover:text-primary flex"
+            onClick={handleNewCustomerModel}
+          >
+            <UserPlus />
+          </button>
+          <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+            Add New Customer
+          </span>
+        </div>
+      </div>
+    </div>
 
-                            <div className="flex justify-end gap-2">
-                                <DropDownBox
-                                    disabled={isEdit}
-                                    id="CustomerSelection"
-                                    className="border rounded p-1 w-1/2 h-[34px]"
-                                    value={CustomerGridBoxValue?.debtorId}
-                                    opened={isCustomerGridBoxOpened}
-                                    openOnFieldClick={true}
-                                    valueExpr='debtorId'
-                                    displayExpr={CustomerGridBoxDisplayExpr}
-                                    placeholder="Select Customer"
-                                    showClearButton={true}
-                                    onValueChanged={handleCustomerGridBoxValueChanged}
-                                    dataSource={customerStore}
-                                    onOptionChanged={onCustomerGridBoxOpened}
-                                    contentRender={CustomerDataGridRender}
-                                    dropDownOptions={{
-                                        width: 400
-                                    }}
-                                />
-                                <textarea
-                                    id="CustomerName"
-                                    name="CustomerName"
-                                    disabled={isEdit}
-                                    rows={1}
-                                    className="border rounded p-2 w-full resize-none bg-white text-secondary"
-                                    placeholder="Name"
-                                    onChange={(e) => { setCustomerGridBoxValue(prev => ({ ...prev, companyName: e.target.value })) }}
-                                    value={CustomerGridBoxValue?.companyName ?? ""}
-                                />
-                                <div className="relative group">
-                                    <button
-                                        disabled={isEdit}
-                                        className="items-center h-[34px] text-secondary hover:bg-grey-500 hover:text-primary flex"
-                                        onClick={handleNewCustomerModel}
-                                    >
-                                        <UserPlus />
-                                    </button>
-                                    <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                                        Add New Customer
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    {/* Ref No: spans 3 columns */}
+    <div className="col-span-3 flex flex-col">
+      <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
+      <input
+        disabled={isEdit}
+        type="text"
+        id="refNo"
+        name="refNo"
+        className="border rounded p-1 w-full bg-white h-[34px]"
+        placeholder="Ref No"
+        onChange={e => setMasterData(prev => ({ ...prev, refNo: e.target.value }))}
+        value={masterData?.refNo ?? ""}
+      />
+    </div>
 
-                </div>
-                <div className="flex flex-col">
-                    <label htmlFor="refNo" className="font-medium text-secondary ">Doc No.</label>
-                    <input
-                        disabled={isEdit}
-                        type="text"
-                        id="docNo"
-                        name="docNo"
-                        className="border rounded p-1 w-full bg-white h-[34px]"
-                        placeholder="Doc No"
-                        onChange={e => setMasterData(prev => ({ ...prev, docNo: e.target.value }))}
-                        value={masterData?.docNo ?? ""}
-                    />
-                </div>
-                <div className="flex flex-col">
-                    <label htmlFor="refNo" className="font-medium text-secondary ">Ref No.</label>
-                    <input
-                        disabled={isEdit}
-                        type="text"
-                        id="refNo"
-                        name="refNo"
-                        className="border rounded p-1 w-full bg-white h-[34px]"
-                        placeholder="Ref No"
-                        onChange={e => setMasterData(prev => ({ ...prev, refNo: e.target.value }))}
-                        value={masterData?.refNo ?? ""}
-                    />
-                </div>
-                <div className="flex flex-col">
-                    <label htmlFor="date" className="font-medium text-secondary">Date</label>
-                    <DatePicker
-                        disabled={isEdit}
-                        customInput={<CustomInput disabled={isEdit} />}
-                        selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
-                        id="SalesDate"
-                        name="SalesDate"
-                        dateFormat="dd-MM-yyyy"
-                        className="border rounded p-1 w-full bg-white h-[34px]"
-                        onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
-                    />
+    {/* Doc No: spans 3 columns */}
+    <div className="col-span-3 flex flex-col">
+      <label htmlFor="docNo" className="font-medium text-secondary">Doc No.</label>
+      <input
+        disabled={isEdit}
+        type="text"
+        id="docNo"
+        name="docNo"
+        className="border rounded p-1 w-full bg-white h-[34px]"
+        placeholder="Doc No"
+        onChange={e => setMasterData(prev => ({ ...prev, docNo: e.target.value }))}
+        value={masterData?.docNo ?? ""}
+      />
+    </div>
+  </div>
 
-                </div>
-                <div className="flex flex-col ">
-                    <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
-                    <DropDownBox
-                        disabled={isEdit}
-                        id="SalesPersonSelection"
-                        className="border rounded w-full"
-                        value={SalesPersonGridBoxValue?.id ?? ""}
-                        opened={isSalesPersonGridBoxOpened}
-                        openOnFieldClick={true}
-                        valueExpr='userId'
-                        displayExpr={SalesPersonGridBoxDisplayExpr}
-                        placeholder="Select Sales Person"
-                        showClearButton={true}
-                        onValueChanged={handleSalesPersonGridBoxValueChanged}
-                        dataSource={userStore}
-                        onOptionChanged={onSalesPersonGridBoxOpened}
-                        contentRender={SalesPersonDataGridRender}
-                    />
-                </div>
+ {/* Second row */}
+<div className="grid grid-cols-12 gap-4 items-end mb-5">
+  {/* Sales Person: 2 columns */}
+  <div className="col-span-2 flex flex-col">
+    <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
+    <DropDownBox
+      disabled={isEdit}
+      id="SalesPersonSelection"
+      className="border rounded w-full"
+      value={SalesPersonGridBoxValue?.id ?? ""}
+      opened={isSalesPersonGridBoxOpened}
+      openOnFieldClick={true}
+      valueExpr="userId"
+      displayExpr={SalesPersonGridBoxDisplayExpr}
+      placeholder="Select Sales Person"
+      showClearButton={true}
+      onValueChanged={handleSalesPersonGridBoxValueChanged}
+      dataSource={userStore}
+      onOptionChanged={onSalesPersonGridBoxOpened}
+      contentRender={SalesPersonDataGridRender}
+    />
+  </div>
 
-                <div className="flex flex-col ">
-                    <label htmlFor="practitioner" className="font-medium text-secondary">Practitioner</label>
-                    <DropDownBox
-                        disabled={isEdit}
-                        id="PractionerSelection"
-                        className="border rounded w-full"
-                        value={PractionerGridBoxValue?.id ?? ""}
-                        opened={isPractionerGridBoxOpened}
-                        openOnFieldClick={true}
-                        valueExpr='userId'
-                        displayExpr={PractitionerGridBoxDisplatExpr}
-                        placeholder="Select Practioner"
-                        showClearButton={true}
-                        onValueChanged={handlePractionerGridBoxValueChanged}
-                        dataSource={practitionerStore}
-                        onOptionChanged={onPractionerGridBoxOpened}
-                        contentRender={PractionerDataGridRender}
-                        dropDownOptions={{
-                            width: 400
-                        }}
-                    />
+  {/* Practitioner: 2 columns */}
+  <div className="col-span-2 flex flex-col">
+    <label htmlFor="practitioner" className="font-medium text-secondary">Practitioner</label>
+    <DropDownBox
+      disabled={isEdit}
+      id="PractionerSelection"
+      className="border rounded w-full"
+      value={PractionerGridBoxValue?.id ?? ""}
+      opened={isPractionerGridBoxOpened}
+      openOnFieldClick={true}
+      valueExpr="userId"
+      displayExpr={PractitionerGridBoxDisplatExpr}
+      placeholder="Select Practitioner"
+      showClearButton={true}
+      onValueChanged={handlePractionerGridBoxValueChanged}
+      dataSource={practitionerStore}
+      onOptionChanged={onPractionerGridBoxOpened}
+      contentRender={PractionerDataGridRender}
+      dropDownOptions={{ width: 400 }}
+    />
+  </div>
 
-                     <div className="mt-4">
-                        {intervals.map(intv => (
-                            <button
-                                disabled={isEdit}
-                                key={intv.months}
-                                type="button"
-                                className={`text-sm px-1 py-0.5 rounded border w-16 h-10
-                                        ${selectedInterval === intv.months
-                                        ? 'bg-slate-700 text-white'
-                                        : 'bg-white text-gray-700'
-                                    }
-                                            `}
-                                onClick={() => pickInterval(intv.months)}
-                            >
-                                {intv.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+  {/* Next Visit: 2 columns */}
+  <div className="col-span-2 flex flex-col">
+    <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
+    <DatePicker
+      disabled={isEdit}
+      customInput={<CustomInput disabled={isEdit} />}
+      selected={masterData?.nextVisitDate ? new Date(masterData.nextVisitDate) : new Date()}
+      id="nextVisit"
+      name="nextVisit"
+      dateFormat="dd-MM-yyyy"
+      placeholderText="dd-MM-yyyy"
+      className="border rounded p-1 w-full bg-white text-secondary h-[34px]"
+      onChange={e => {
+        setSelectedInterval(null);
+        setMasterData(prev => ({ ...prev, nextVisitDate: e }));
+      }}
+    />
+  </div>
+
+  {/* Interval buttons: 4 columns (expanded) */}
+  <div className="col-span-3 flex flex-col">
+    <label className="font-medium text-secondary mb-1">Interval</label>
+    <div className="flex flex-wrap gap-2">
+      {intervals.map(intv => (
+        <button
+          disabled={isEdit}
+          key={intv.months}
+          type="button"
+          className={`text-sm px-1 py-0.5 rounded border w-16 h-10
+            ${selectedInterval === intv.months ? 'bg-slate-700 text-white' : 'bg-white text-gray-700'}`}
+          onClick={() => pickInterval(intv.months)}
+        >
+          {intv.label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  {/* Date: 2 columns */}
+  <div className="col-span-2 flex flex-col">
+    <label htmlFor="date" className="font-medium text-secondary">Date</label>
+    <DatePicker
+      disabled={isEdit}
+      customInput={<CustomInput disabled={isEdit} />}
+      selected={masterData?.docDate ? new Date(masterData.docDate) : new Date()}
+      id="SalesDate"
+      name="SalesDate"
+      dateFormat="dd-MM-yyyy"
+      className="border rounded p-1 w-full bg-white text-secondary h-[34px]"
+      onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
+    />
+  </div>
+</div>
+
+</div>
 
 
-                <div className="flex flex-col row-span-2 self-start  ">
-                    <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
-                    <div className="flex flex-col space-y-1 w-full">
-                        <DatePicker
-                            disabled={isEdit}
-                            customInput={<CustomInput disabled={isEdit} />}
-                            selected={masterData?.nextVisitDate ? new Date(masterData.nextVisitDate) : new Date()}
-                            id="nextVisit"
-                            name="nextVisit"
-                            dateFormat="dd-MM-yyyy"
-                            placeholderText="dd-MM-yyyy"
-                            className="border rounded p-1 w-full bg-white text-secondary h-[34px]"
-                            onChange={e => {
-                                setSelectedInterval(null);
-                                setMasterData(prev => ({ ...prev, nextVisitDate: e }))
-                            }}
-                        >
-
-                        </DatePicker>
-                    </div>
-                </div>
-            </div>
-
-            <div className="p-3 bg-white shadow rounded">
+            <div className="p-3 mt-5 bg-white shadow rounded">
                 <TransactionItemWithDiscountDataGrid
                     disabled={isEdit}
                     height={220}

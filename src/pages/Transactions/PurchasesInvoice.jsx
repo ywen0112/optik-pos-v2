@@ -809,18 +809,18 @@ const PurchaseInvoice = () => {
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 mt-[-18px] items-center gap-1">
+        <div className="grid grid-cols-2 mt-[-7px] items-center gap-1">
           <div className="flex flex-col gap-1">
-            <label htmlFor="refNo" className="font-medium text-secondary">Supplier Ref</label>
+            <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
             <input
               disabled={isEdit}
               type="text"
-              id="supplierRef"
-              name="supplierRef"
+              id="refNo"
+              name="refNo"
               className="border rounded p-1 w-full bg-white h-[34px]"
-              placeholder="Supplier Ref"
-              onChange={e => setMasterData(prev => ({ ...prev, supplierRef: e.target.value }))}
-              value={masterData?.supplierRef ?? ""}
+              placeholder="Ref No"
+              onChange={e => setMasterData(prev => ({ ...prev, refNo: e.target.value }))}
+              value={masterData?.refNo ?? ""}
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -837,17 +837,31 @@ const PurchaseInvoice = () => {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
+            <label htmlFor="refNo" className="font-medium text-secondary">Supplier Ref</label>
             <input
               disabled={isEdit}
               type="text"
-              id="refNo"
-              name="refNo"
+              id="supplierRef"
+              name="supplierRef"
               className="border rounded p-1 w-full bg-white h-[34px]"
-              placeholder="Ref No"
-              onChange={e => setMasterData(prev => ({ ...prev, refNo: e.target.value }))}
-              value={masterData?.refNo ?? ""}
+              placeholder="Supplier Ref"
+              onChange={e => setMasterData(prev => ({ ...prev, supplierRef: e.target.value }))}
+              value={masterData?.supplierRef ?? ""}
             />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="date" className="font-medium text-secondary">Date</label>
+            <DatePicker
+              disabled={isEdit}
+              customInput={<CustomInput disabled={isEdit} />}
+              selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
+              id="PurchaseDate"
+              name="PurchaseDate"
+              dateFormat="dd-MM-yyyy"
+              className="border rounded p-1 w-full bg-white h-[34px]"
+              onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
+            />
+
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="purchasePerson" className="font-medium text-secondary">Purchase Person</label>
@@ -868,20 +882,7 @@ const PurchaseInvoice = () => {
               contentRender={PurchasePersonDataGridRender}
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="date" className="font-medium text-secondary">Date</label>
-            <DatePicker
-              disabled={isEdit}
-              customInput={<CustomInput disabled={isEdit} />}
-              selected={masterData?.docDate ?? new Date().toISOString().slice(0, 10)}
-              id="PurchaseDate"
-              name="PurchaseDate"
-              dateFormat="dd-MM-yyyy"
-              className="border rounded p-1 w-full bg-white h-[34px]"
-              onChange={e => setMasterData(prev => ({ ...prev, docDate: e }))}
-            />
-
-          </div>
+          
           <div className="flex flex-col gap-1 invisible">
 
           </div>
