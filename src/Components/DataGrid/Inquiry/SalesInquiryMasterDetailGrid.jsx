@@ -14,6 +14,7 @@ import { DollarSign, PackageOpen, Printer } from 'lucide-react';
 const DetailTabs = ({ data }) => {
     const details = data.details || [];
     const payments = data.payments || [];
+    const collects = data.collects || [];
 
     const tabs = [
         {
@@ -81,6 +82,20 @@ const DetailTabs = ({ data }) => {
                     precision: 2 // Allows 2 decimal places
                 }} />
                     <Column dataField="isVoid" caption="Is Void" dataType="boolean" />
+                </DataGrid>
+            ),
+        },
+        {
+            title: "Collects",
+            component: () => (
+                <DataGrid dataSource={collects} showBorders={true} columnAutoWidth={true}>
+                    <Column dataField="itemCode" caption="Item Code" />
+                    <Column dataField="uom" caption="UOM" />
+                    <Column dataField="description" caption="Description" />
+                    <Column dataField="desc2" caption="Desc2" />
+                    <Column dataField="qty" caption="Quantity" />
+                    <Column dataField="collectedQty" caption="Collected Qty" />
+                    <Column dataField="uncollectedQty" caption="Uncollected Qty" />
                 </DataGrid>
             ),
         },

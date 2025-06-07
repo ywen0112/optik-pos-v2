@@ -5,14 +5,16 @@ const getSalesInquiry = `${ApiBaseUrl}SalesInquiry/GetResults`;
 const getItemInquiry = `${ApiBaseUrl}ItemInquiry/GetResults`;
 const getItemHistory = `${ApiBaseUrl}ItemInquiry/GetItemHistorys`;
 
-export const GetSalesInquiry = ({companyId, fromDate, toDate, id, offset, limit}) =>{
+export const GetSalesInquiry = ({companyId, fromDate, toDate, id, offset, limit, showOutstanding, showUncollected}) =>{
     const body = JSON.stringify({
         companyId,
         fromDate,
         toDate,
         debtorId: id,
         offset,
-        limit
+        limit,
+        showOutstanding,
+        showUncollected,
     });
     return postRequest(getSalesInquiry, body);
 }

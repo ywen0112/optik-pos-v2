@@ -147,6 +147,8 @@ const SalesInquiry = () => {
           toDate: endDate,
           offset: skip || 0,
           limit: take || 10,
+          showOutstanding,
+          showUncollected,
         };
 
         if (selectedCustomer?.debtorId) {
@@ -288,6 +290,10 @@ const SalesInquiry = () => {
     setReportSelectionModal({ docId: "", docType: "" });
   };
 
+  const [showOutstanding, setShowOutstanding] = useState(false);
+  const [showUncollected, setShowUncollected] = useState(false);
+
+
   return (
     <>
       <ReportSelectionModal
@@ -339,6 +345,30 @@ const SalesInquiry = () => {
                 width: 400
               }}
             />
+          </div>
+
+          <div className="flex flex-col gap-2 mt-4">
+            <label className="block text-secondary font-medium">Filter Options</label>
+            <div className="flex items-center gap-6">
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  className="form-checkbox w-5 h-5 text-primary"
+                  checked={showOutstanding}
+                  onChange={(e) => setShowOutstanding(e.target.checked)}
+                />
+                <span className="ml-2">Show Outstanding</span>
+              </label>
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  className="form-checkbox w-5 h-5 text-primary"
+                  checked={showUncollected}
+                  onChange={(e) => setShowUncollected(e.target.checked)}
+                />
+                <span className="ml-2">Show Uncollected</span>
+              </label>
+            </div>
           </div>
 
         </div>
