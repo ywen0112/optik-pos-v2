@@ -1,4 +1,4 @@
-import Column from "devextreme-react/cjs/data-grid";
+import { Column } from "devextreme-react/data-grid";
 import StandardDataGridComponent from "../../BaseDataGrid";
 
 const OutstandingBalanceDataGrid = ({ ref, data }) => {
@@ -17,11 +17,12 @@ const OutstandingBalanceDataGrid = ({ ref, data }) => {
                 // onLoading={loading}
                 remoteOperations={{ paging: true }}
             >
-                <Column dataField="docType" />
-                <Column dataField="docNo" />
+                <Column dataField="docType" caption="Doc Type"/>
+                <Column dataField="docNo" caption="Doc No"/>
                 <Column
                     dataField="docDate"
                     dataType="date"
+                    caption="Date"
                     calculateDisplayValue={(rowData) => {
                         const date = new Date(rowData.docDate);
                         const dd = String(date.getDate()).padStart(2, '0');
@@ -31,27 +32,27 @@ const OutstandingBalanceDataGrid = ({ ref, data }) => {
                     }}
                 />
 
-                <Column dataField="debtorCode" />
-                <Column dataField="debtorName" />
-                <Column dataField="remark" />
-                <Column dataField="refNo" />
-                <Column dataField="salesPerson" />
-                <Column dataField="subTotal" format={{
+                <Column dataField="debtorCode" caption="Customer Code"/>
+                <Column dataField="debtorName" caption="Name"/>
+                <Column dataField="remark" caption="Remark"/>
+                <Column dataField="refNo" caption="Ref No"/>
+                <Column dataField="salesPerson" caption="Sales Person"/>
+                <Column dataField="subTotal" caption="Sub Total" format={{
                     type: "currency",
                     currency: "MYR",
                     precision: 2 // Allows 2 decimal places
                 }}/>
-                <Column dataField="roundingAdjustment" format={{
+                <Column dataField="roundingAdjustment" caption="Rounding Adj" format={{
                     type: "currency",
                     currency: "MYR",
                     precision: 2 // Allows 2 decimal places
                 }} />
-                <Column dataField="total" format={{
+                <Column dataField="total" caption="Total" format={{
                     type: "currency",
                     currency: "MYR",
                     precision: 2 // Allows 2 decimal places
                 }} />
-                <Column dataField="isVoid" />
+                <Column dataField="isVoid" caption="Is Void" />
                 <Column
                     dataField="paidedAmount"
                     caption="Paid Amount"
