@@ -693,7 +693,6 @@ const SalesOrder = () => {
     };
 
     const clearData = async () => {
-        setIsEdit(false);
         await createNewSalesOrder();
         setCustomerGridBoxValue({ debtorId: "", debtorCode: "", companyName: "" });
         setSalesPersonGridBoxValue({ id: "", Code: "", Name: "" });
@@ -801,6 +800,7 @@ const SalesOrder = () => {
         if (confirmModal.action === "clear") {
             setConfirmModal({ isOpen: false, action: "", data: null });
             await clearData();
+            setIsEdit(false);
             return;
         }
         try {
@@ -1043,7 +1043,6 @@ const SalesOrder = () => {
     }, [])
 
     const SalesOrderDataGridOnSelectionChanged = useCallback(async (e) => {
-        setIsEdit(true)
         const selected = e.selectedRowKeys?.[0];
         if (selected) {
             const recordRes = await GetSalesOrder({
@@ -1051,7 +1050,10 @@ const SalesOrder = () => {
                 userId,
                 id: selected
             })
-
+            if(!recordRes.success){
+               return;
+            }
+            setIsEdit(true)
             setSelectedSalesOrder({ salesOrderId: selected, docNo: recordRes.data?.docNo })
             setCustomerGridBoxValue({ debtorId: recordRes.data?.debtorId, debtorCode: recordRes.data?.debtorCode, companyName: recordRes.data?.debtorName })
             setSalesPersonGridBoxValue({ id: recordRes.data?.salesPersonUserID })
