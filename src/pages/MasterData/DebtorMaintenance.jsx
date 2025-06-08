@@ -36,7 +36,6 @@ const DebtorMaintenance = () => {
   };
 
   const handleOpenModal = async (debtor, mode) => {
-
     try {
       const data = await GetDebtor({ companyId: companyId, userId: userId, id: debtor.debtorId });
       if (data.success) {

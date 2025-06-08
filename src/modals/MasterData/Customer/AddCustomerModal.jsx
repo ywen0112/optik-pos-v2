@@ -242,6 +242,9 @@ const AddCustomerModal = ({
         setActiveTab("General");
 
         const fetchLatestSpectacles = async () => {
+            if(!isEdit && !isView){
+                return;
+            }
             try {
                 const response = await GetLatestDebtorSpectacles({
                     companyId,
@@ -261,6 +264,9 @@ const AddCustomerModal = ({
         };
 
         const fetchLatestLens = async () => {
+            if(!isEdit && !isView){
+                return;
+            }
             try {
                 const response = await GetLatestDebtorContactLens({
                     companyId,
