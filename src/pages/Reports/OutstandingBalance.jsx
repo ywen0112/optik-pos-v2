@@ -25,7 +25,7 @@ const OutstandingBalanceReport = () => {
 
     const handleGetOutstandingBalance = async () => {
         const outstandingStore = new CustomStore({
-            key: "DocumentId",
+            key: "documentId",
             load: async (loadOptions) => {
                 const { skip, take } = loadOptions;
                 const params = {
