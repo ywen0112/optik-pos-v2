@@ -1,4 +1,4 @@
-import { ApiBaseUrl, postRequest, getRequest } from "./apiconfig";
+import { ApiBaseUrl, ReportBaseUrl, postRequest, getRequest } from "./apiconfig";
 
 const getSalesReportType = `${ApiBaseUrl}Report/GetAvailableSalesDocReportName`;
 const getSalesDocReport = `${ApiBaseUrl}Report/GetSalesDocReport`;
@@ -12,6 +12,18 @@ const getOutstandingBalanceData = `${ApiBaseUrl}OutstandingBalance/GetResults`;
 const getOutstandingBalanceReport = `${ApiBaseUrl}OutstandingBalance/GenerateReport`;
 const getUncollectedOrderData = `${ApiBaseUrl}UncollectedOrder/GetResults`;
 const getUncollectedOrderReport = `${ApiBaseUrl}UncollectedOrder/GenerateReport`;
+const getStockBalanceData = `${ApiBaseUrl}StockBalance/GetResults`;
+const getStockBalanceReport = `${ApiBaseUrl}StockBalance/GenerateReport`;
+const getMonthlySalesSummaryData = `${ApiBaseUrl}MonthlySalesSummary/GetResults`;
+const getMonthlySalesSummaryReport = `${ApiBaseUrl}MonthlySalesSummary/GenerateReport`;
+const getSalesPerformanceSummaryData = `${ApiBaseUrl}SalesPerformanceSummary/GetResults`;
+const getSalesPerformanceSummaryReport = `${ApiBaseUrl}SalesPerformanceSummary/GenerateReport`;
+const getPurchaseReturnListingData = `${ApiBaseUrl}PurchaseReturnListing/GetResults`;
+const getPurchaseReturnListingReport = `${ApiBaseUrl}PurchaseReturnListing/GenerateReport`;
+
+export const GetReports = (companyId) => {
+    return getRequest(`${ReportBaseUrl}reporting/GetReports/${companyId}`);
+}
 
 export const GetSalesReportType = ({companyId, isCashSales}) =>{
     return getRequest(`${getSalesReportType}?companyId=${companyId}&isCashSales=${isCashSales}`)
@@ -131,4 +143,106 @@ export const GetUncollectedOrderReport = ({companyId, fromDate, toDate, userId, 
     });
 
     return postRequest(getUncollectedOrderReport, body);
+}
+
+export const GetStockBalanceData = ({companyId, date, includeZeroQuantity, limit, offset, userId, reportName}) =>{
+    const body = JSON.stringify({
+        companyId,
+        date,
+        includeZeroQuantity,
+        limit,
+        offset,
+        userId,
+        reportName
+    });
+
+    return postRequest(getStockBalanceData, body);
+}
+
+export const GetStockBalanceReport = ({companyId, date, includeZeroQuantity, limit, offset, userId, reportName}) =>{
+    const body = JSON.stringify({
+        companyId,
+        date,
+        includeZeroQuantity,
+        limit,
+        offset,
+        userId,
+        reportName
+    });
+
+    return postRequest(getStockBalanceReport, body);
+}
+
+export const GetMonthlySalesSummaryData = ({companyId, offset, limit, year, month}) =>{
+    const body = JSON.stringify({
+        companyId,
+        year,
+        month,
+        offset,
+        limit
+    });
+
+    return postRequest(getMonthlySalesSummaryData, body);
+}
+
+export const GetMonthlySalesSummaryReport = ({companyId, year, month, userId, reportName}) =>{
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        reportName,
+        year,
+        month,
+    });
+
+    return postRequest(getMonthlySalesSummaryReport, body);
+}
+
+export const GetSalesPerformanceSummaryData = ({companyId, fromDate, toDate, offset, limit}) => {
+    const body = JSON.stringify({
+        companyId,
+        fromDate,
+        toDate,
+        offset,
+        limit
+    });
+
+    return postRequest(getSalesPerformanceSummaryData, body);
+}
+
+export const GetSalesPerformanceReport = ({companyId, userId, reportName, fromDate, toDate}) => {
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        reportName,
+        fromDate,
+        toDate
+    });
+
+    return postRequest(getSalesPerformanceSummaryReport, body);
+}
+
+export const GetPurchaseReturnListingData = ({companyId, fromDate, toDate, showIsDamage, offset, limit}) => {
+    const body = JSON.stringify({
+        companyId,
+        fromDate,
+        toDate,
+        showIsDamage,
+        offset,
+        limit
+    });
+
+    return postRequest(getPurchaseReturnListingData, body);
+}
+
+export const GetPurchaseReturnListingReport = ({companyId, userId, reportName, fromDate, toDate, showIsDamage}) => {
+    const body = JSON.stringify({
+        companyId,
+        userId,
+        reportName,
+        fromDate,
+        toDate,
+        showIsDamage
+    });
+
+    return postRequest(getPurchaseReturnListingReport, body);
 }

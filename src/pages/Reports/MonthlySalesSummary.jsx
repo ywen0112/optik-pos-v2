@@ -1,71 +1,71 @@
 import CustomStore from "devextreme/data/custom_store";
 import { useRef, useState } from "react";
-import { GetOutstandingBalanceData, GetOutStandingBalanceReport } from "../../api/reportapi";
+import { GetMonthlySalesSummaryData, GetMonthlySalesSummaryReport } from "../../api/reportapi";
 import ErrorModal from "../../modals/ErrorModal";
 import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import CustomInput from "../../Components/input/dateInput";
-import OutstandingBalanceDataGrid from "../../Components/DataGrid/Report/OutstandingBalanceDataGrid";
+import MonthlySalesSummaryDataGrid from "../../Components/DataGrid/Report/MonthlySalesSummaryDataGrid";
 
-const OutstandingBalanceReport = () => {
+const MonthlySalesSummaryReport = () => {
     const companyId = sessionStorage.getItem("companyId");
     const userId = sessionStorage.getItem("userId");
     const gridRef = useRef(null);
     const [errorModal, setErrorModal] = useState({ title: "", message: "" });
-    const [startDate, setStartDate] = useState(() => {
-        const date = new Date();
-        date.setMonth(date.getMonth() - 1);
-        return date.toISOString().split('T')[0];
-    });
-
-
-    const [endDate, setEndDate] = useState(() => {
-        return new Date().toISOString().split('T')[0];
-    });
+    const [selectedDate, setSelectedDate] = useState(new Date());
     const [data, setData] = useState(null);
 
-    const handleGetOutstandingBalance = async () => {
-        const outstandingStore = new CustomStore({
-            key: "documentId",
+    const month = selectedDate.getMonth() + 1; 
+    const year = selectedDate.getFullYear();
+
+    const handleGetMonthlySalesSummary = async () => {
+        const MonthlySalesSummaryStore = new CustomStore({
+            key: "date",
             load: async (loadOptions) => {
                 const { skip, take } = loadOptions;
                 const params = {
                     companyId,
-                    fromDate: startDate,
-                    toDate: endDate,
+                    year,
+                    month,
                     offset: skip || 0,
                     limit: take || 10,
                 };
+
                 try {
-                    const res = await GetOutstandingBalanceData(params);
+                    const res = await GetMonthlySalesSummaryData(params);
+
                     if (!res.success) {
-                        throw new Error(res.errorMessage || "Failed to retrieve Daily Closing Summary");
+                        throw new Error(res.errorMessage || "Failed to retrieve Monthly Sales Summary");
                     }
+
                     return {
                         data: res.data,
-                        totalCount: res.totalRecords,
+                        totalCount: res.totalRecords || res.data.length,
                     };
                 } catch (error) {
                     setErrorModal({
                         title: "Report Error",
                         message: error.message || "An unexpected error occurred.",
                     });
+                    return { data: [], totalCount: 0 };
                 }
             }
-        })
-        setData(() => outstandingStore);
+        });
+
+        setData(() => MonthlySalesSummaryStore);
     }
 
     const handleGetReport = async (isDownload) => {
         try {
-            const reportName = "Outstanding Balance Report";
+            const reportName = "Monthly Sales Summary Report";
             const params = {
                 companyId: companyId,
                 userId: userId,
                 reportName: reportName,
-                fromDate: startDate,
-                toDate: endDate,
+                year: year,
+                month: month
             }
-            const res = await GetOutStandingBalanceReport(params)
+            const res = await GetMonthlySalesSummaryReport(params)
             const success = res.success
             if (success) {
                 if (isDownload) {
@@ -103,39 +103,28 @@ const OutstandingBalanceReport = () => {
         }
     }
 
-     return (
+    return (
         <>
             <ErrorModal title={errorModal.title} message={errorModal.message} onClose={() => setErrorModal({ title: "", message: "" })} />
             <div className="space-y-6 p-6 bg-white rounded shadow">
                 <div className="grid grid-cols-1 gap-2 w-1/2">
-                    <div className="w-full">
-                        <label className="block text-secondary font-medium mb-1">Date Range</label>
-                        <div className="flex flex-row gap-2">
+                    <div className="w-full flex items-end gap-4">
+                        <div>
+                            <label className="block text-secondary font-medium mb-1">Month/Year</label>
                             <DatePicker
-                                customInput={<CustomInput width="w-[400px]" />}
-                                selected={startDate}
-                                onChange={(date) => {
-                                    const isoDate = date.toISOString().split('T')[0]; // "YYYY-MM-DD"
-                                    setStartDate(isoDate);
-                                }}
-                                dateFormat="dd/MM/yyyy"
-                            />
-                            <span className="text-secondary self-center">to</span>
-                            <DatePicker
-                                customInput={<CustomInput width="w-[400px]" />}
-                                selected={endDate}
-                                onChange={(date) => {
-                                    const isoDate = date.toISOString().split('T')[0];
-                                    setEndDate(isoDate);
-                                }}
-                                dateFormat="dd/MM/yyyy"
+                                customInput={<CustomInput width="w-full" />}
+                                selected={selectedDate}
+                                onChange={(date) => setSelectedDate(date)}
+                                dateFormat="MM/yyyy"
+                                showMonthYearPicker
+                                showFullMonthYearPicker
                             />
                         </div>
                     </div>
                 </div>
                 <div className="pt-6 flex space-x-4">
                     <button
-                        onClick={async () => await handleGetOutstandingBalance(false)}
+                        onClick={async () => await handleGetMonthlySalesSummary(false)}
                         className="bg-primary text-white px-6 py-2 rounded">
                         Search
                     </button>
@@ -151,14 +140,10 @@ const OutstandingBalanceReport = () => {
                     </button> */}
                 </div>
 
-
-
                 <div className="mt-6">
-                    <OutstandingBalanceDataGrid
+                    <MonthlySalesSummaryDataGrid
                         ref={gridRef}
-                        // key={dataStoreKey}
                         data={data}
-                    // onPay={handleAddPaymentForSales}
                     />
                 </div>
             </div>
@@ -166,4 +151,4 @@ const OutstandingBalanceReport = () => {
     )
 }
 
-export default OutstandingBalanceReport;
+export default MonthlySalesSummaryReport;

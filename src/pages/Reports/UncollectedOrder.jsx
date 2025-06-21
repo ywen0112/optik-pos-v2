@@ -144,11 +144,11 @@ const UncollectedORderReport = () =>{
                         className="bg-primary text-white px-6 py-2 rounded">
                         Preview
                     </button>
-                    <button
+                    {/* <button
                         onClick={async () => await handleGetReport(true)}
                         className="bg-primary text-white px-6 py-2 rounded">
                         Export
-                    </button>
+                    </button> */}
                 </div>
 
 
