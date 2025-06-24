@@ -1,4 +1,3 @@
-import { TrashIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import CompanySelectionDataGrid from "../Components/DataGrid/CompanySelectionDataGrid"
@@ -15,7 +14,10 @@ const CompanySelection = ({ companies, onCancel }) => {
     <div className="flex flex-col h-screen w-screen items-center justify-end bg-secondary">
       <div>
 
-        <div className="flex items-center justify-center mb-4">
+        <div 
+          className="flex items-center justify-center mb-4 hover:cursor-pointer"
+          onClick={() => navigate("/report-management")}
+        >
           <span className="text-yellow-500 font-bold text-5xl mt-2">OPTIK</span>
           <span className="text-white font-bold text-5xl mt-2">POS</span>
         </div>

@@ -32,6 +32,11 @@ import DailyClosingSummaryReport from "../pages/Reports/DailyClosingSummary";
 import CommissionReport from "../pages/Reports/CommissionReport";
 import UncollectedORderReport from "../pages/Reports/UncollectedOrder";
 import OutstandingBalanceReport from "../pages/Reports/OutstandingBalance";
+import StockBalanceReport from "../pages/Reports/StockBalanceReport";
+import MonthlySalesSummaryReport from "../pages/Reports/MonthlySalesSummary";
+import SalesPerformanceSummaryReport from "../pages/Reports/SalesPerformanceSummary";
+import ReportManagement from "../login/ReportManagement";
+import PurchaseListingReport from "../pages/Reports/PurchaseReturnListing";
 
 const MainLayout = ({ title }) => {
   const location = useLocation();
@@ -41,6 +46,8 @@ const MainLayout = ({ title }) => {
     switch (location.pathname) {
       case "/user-profile":
         return <UserProfile />
+      case "/report-management":
+        return <ReportManagement />;
       case "/dashboard":
         return <Dashboard />;
       case "/sales-order":
@@ -71,6 +78,14 @@ const MainLayout = ({ title }) => {
         return <UncollectedORderReport />;
       case "/commision-report":
         return <CommissionReport />;
+      case "/stock-balance-report":
+        return <StockBalanceReport />;
+      case "/monthly-sales-summary":
+        return <MonthlySalesSummaryReport />;
+      case "/sales-performance-summary":
+        return <SalesPerformanceSummaryReport />;
+      case "/purchase-return-listing":
+        return <PurchaseListingReport />;
       case "/close-counter":
         return <Reports />;
       case "/user":

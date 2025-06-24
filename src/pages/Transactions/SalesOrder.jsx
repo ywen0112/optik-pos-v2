@@ -1767,9 +1767,7 @@ const SalesOrder = () => {
                     </div>
                 </div>
 
-                {/* Second row */}
                 <div className="grid grid-cols-12 gap-4 items-end mb-5">
-                    {/* Sales Person: 2 columns */}
                     <div className="col-span-2 flex flex-col">
                         <label htmlFor="salesPerson" className="font-medium text-secondary">Sales Person</label>
                         <DropDownBox
@@ -1787,10 +1785,12 @@ const SalesOrder = () => {
                             dataSource={userStore}
                             onOptionChanged={onSalesPersonGridBoxOpened}
                             contentRender={SalesPersonDataGridRender}
+                            dropDownOptions={{
+                                        width: 400
+                                    }}
                         />
                     </div>
 
-                    {/* Practitioner: 2 columns */}
                     <div className="col-span-2 flex flex-col">
                         <label htmlFor="practitioner" className="font-medium text-secondary">Practitioner</label>
                         <DropDownBox
@@ -1812,7 +1812,6 @@ const SalesOrder = () => {
                         />
                     </div>
 
-                    {/* Next Visit: 2 columns */}
                     <div className="col-span-2 flex flex-col">
                         <label htmlFor="nextVisit" className="font-medium text-secondary">Next Visit</label>
                         <DatePicker
@@ -1831,7 +1830,6 @@ const SalesOrder = () => {
                         />
                     </div>
 
-                    {/* Interval buttons: 4 columns (expanded) */}
                     <div className="col-span-3 flex flex-col">
                         <label className="font-medium text-secondary mb-1">Interval</label>
                         <div className="flex flex-wrap gap-2">
@@ -1840,8 +1838,7 @@ const SalesOrder = () => {
                                     disabled={isEdit}
                                     key={intv.months}
                                     type="button"
-                                    className={`text-sm px-1 py-0.5 rounded border w-16 h-10
-            ${selectedInterval === intv.months ? 'bg-slate-700 text-white' : 'bg-white text-gray-700'}`}
+                                    className={`text-sm px-1 py-0.5 rounded border w-16 h-10 ${selectedInterval === intv.months ? 'bg-slate-700 text-white' : 'bg-white text-gray-700'}`}
                                     onClick={() => pickInterval(intv.months)}
                                 >
                                     {intv.label}

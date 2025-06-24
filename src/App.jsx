@@ -7,6 +7,7 @@ import Login from "./Login/Login";
 import CompanySelection from "./login/CompanySelection";
 import MainLayout from "./layouts/MainLayout"; 
 import UserRegistrationPage from "./Registration";
+import ReportManagement from "./login/ReportManagement";
 
 config({licenseKey})
 
@@ -33,6 +34,7 @@ const App = () => {
       <Routes>
         <Route path="/login" element={isAuthenticated ? <Navigate to="/company-selection" /> : <Login onLoginSuccess={handleLoginSuccess} />} />
         <Route path="/company-selection" element={companies ? <CompanySelection companies={companies} onCancel={handleCancel} /> : <Navigate to="/login" />} /> 
+        <Route path="/report-management" element={companies ? <ReportManagement title="Report Management" /> : <Navigate to="/login" />} />
 
         <Route path="/user-profile"element={isAuthenticated ? <MainLayout title="User Profile" /> : <Navigate to="/login" />} />
 
@@ -50,6 +52,10 @@ const App = () => {
         <Route path="/outstanding-report" element={isAuthenticated ? <MainLayout title="Outstanding Balance Report" /> : <Navigate to="/login" />} />
         <Route path="/uncollected-order-list" element={isAuthenticated ? <MainLayout title="Uncollected Order List" /> : <Navigate to="/login" />} />
         <Route path="/commision-report" element={isAuthenticated ? <MainLayout title="Commission Report" /> : <Navigate to="/login" />} />
+        <Route path="/stock-balance-report" element={isAuthenticated ? <MainLayout title="Stock Balance Report" /> : <Navigate to="/login" />} />
+        <Route path="/monthly-sales-summary" element={isAuthenticated ? <MainLayout title="Monthly Sales Summary Report" /> : <Navigate to="/login" />} />
+        <Route path="/sales-performance-summary" element={isAuthenticated ? <MainLayout title="Sales Performance Summary Report" /> : <Navigate to="/login" />} />
+        <Route path="/purchase-return-listing" element={isAuthenticated ? <MainLayout title="Purchase Return Listing Report" /> : <Navigate to="/login" />} />
 
         <Route path="/close-counter" element={isAuthenticated ? <MainLayout title="Close Counter" /> : <Navigate to="/login" />} />
 

@@ -13,7 +13,10 @@ import { FileText, UserCheck,Wrench, ChevronDown, ChevronRight,
   PackageX,
   Calculator,
   MonitorX,
-  ClipboardX
+  ClipboardX,
+  Calendar,
+  Store,
+  File
 } from "lucide-react";
 import ErrorModal from "../modals/ErrorModal";
 import { CheckCounterSession } from "../api/apiconfig";
@@ -129,10 +132,14 @@ const SideBar = ({ onSelectCompany = () => {}, visible = true }) => {
     { name: "Reports", icon: <FileText size={20} />,
       children: [
         // { name: "Counter Session Report", icon: <Monitor size={20}/> , path: "/counter-session-report" },
-        { name: "Daily Closing Summary Report", icon: <NotepadText size={20}/>, path: "/daily-closing-summay-report" },
-        { name: "Outstanding Balance Report", icon: <FileX size={20}/>, path: "/outstanding-report" },
+        { name: "Daily Closing Summary", icon: <NotepadText size={20}/>, path: "/daily-closing-summay-report" },
+        { name: "Outstanding Balance", icon: <FileX size={20}/>, path: "/outstanding-report" },
         { name: "Uncollected Order List", icon: <PackageX size={20}/>, path: "/uncollected-order-list" },
-        { name: "Commission Report", icon: <Calculator size={20}/>, path: "/commision-report" },
+        { name: "Commission", icon: <Calculator size={20}/>, path: "/commision-report" },
+        { name: "Stock Balance", icon: <Store size={20}/>, path: "/stock-balance-report" },
+        { name: "Monthly Sales Summary", icon: <Calendar size={20}/>, path: "/monthly-sales-summary" },
+        { name: "Sales Performance Summary", icon: <File size={20}/>, path: "/sales-performance-summary" },
+        { name: "Purchase Return Listing", icon: <File size={20}/>, path: "/purchase-return-listing" },
       ]
     },
     { name: "Tools", icon: <Wrench size={20} />, 

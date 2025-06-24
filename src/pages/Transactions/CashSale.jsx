@@ -899,7 +899,7 @@ const CashSales = () => {
                         <textarea
                             id="remark"
                             name="remark"
-                            rows={6}
+                            rows={2}
                             className="border rounded p-1 w-full resize-none bg-white justify-self-end"
                             placeholder="Enter remarks…"
                             onChange={e => setMasterData(prev => ({ ...prev, remark: e.target.value }))}
@@ -907,7 +907,7 @@ const CashSales = () => {
                         />
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2">
                      <div className="flex flex-col gap-1 w-full">
                         <label htmlFor="refNo" className="font-medium text-secondary">Ref No.</label>
                         <input
